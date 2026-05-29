@@ -22,7 +22,7 @@ export default async function HomePage({ params }: LayoutProps) {
   return (
     <div className="">
       {/* <Whatsapp whatsapp = {whatsapp}/> */}
-       Hello Everyone
+       Hello Everyone Welcome EveryDay at Al3 Umran platform
     </div>
   );
 }
