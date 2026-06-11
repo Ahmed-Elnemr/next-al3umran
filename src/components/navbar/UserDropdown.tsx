@@ -1,13 +1,21 @@
-'use client';
-import React, { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
-import { useTranslations } from 'next-intl';
-import { 
-  Edit, Bell, Ticket, ShoppingCart, DollarSign, LogOut, Trash2 
-} from 'lucide-react';
-import LogoutModal from './LogoutModal';
-import DeleteAccountModal from './DeleteAccountModal';
-import apiServiceCall from '@/lib/apiServiceCall';
+"use client";
+
+import React, { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useTranslations } from "next-intl";
+import {
+  Bell,
+  Edit3,
+  LogOut,
+  Ticket,
+  Trash2,
+  UserRound,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+
+import LogoutModal from "./LogoutModal";
+import DeleteAccountModal from "./DeleteAccountModal";
 
 interface UserDropdownProps {
   isOpen: boolean;
@@ -18,7 +26,7 @@ interface UserDropdownProps {
   role?: string;
   isMobile?: boolean;
   onWalletClick?: () => void;
-  notificationsUnReadCount : string
+  notificationsUnReadCount: string;
 }
 
 const UserDropdown: React.FC<UserDropdownProps> = ({
@@ -28,20 +36,27 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
   token,
   name,
   role,
-  isMobile = false,
-  onWalletClick,
-  notificationsUnReadCount
+  notificationsUnReadCount,
 }) => {
+  const tn = useTranslations("navbar");
+  const t = useTranslations("UserDropdown");
 
-  const tn = useTranslations('navbar');
-  const t = useTranslations('UserDropdown');
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [unreadCount, setUnreadCount] = useState<number>(0);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const logoutModalRef = useRef<HTMLDivElement>(null);
   const deleteModalRef = useRef<HTMLDivElement>(null);
+
+  const isAr = locale === "ar";
+  const ArrowIcon = isAr ? ChevronLeft : ChevronRight;
+  const unreadCount = Number(notificationsUnReadCount || 0);
+
+  const closeDropdown = () => {
+    setShowLogoutModal(false);
+    setShowDeleteModal(false);
+    onClose();
+  };
 
   const handleLogout = () => {
     setShowLogoutModal(false);
@@ -53,34 +68,10 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
     closeDropdown();
   };
 
-  const closeDropdown = () => {
-    setShowLogoutModal(false);
-    setShowDeleteModal(false);
-    onClose();
-  };
-
-  // Fetch unread count
-  // useEffect(() => {
-  //   const fetchUnreadCount = async () => {
-  //     if (!token) return;
-  //     try {
-  //       const response = await apiServiceCall({
-  //         method: 'get',
-  //         url: 'notifications/unread-count',
-  //         headers: { Authorization: `Bearer ${token}` },
-  //       });
-  //       const count = response?.data?.unread_count ?? 0;
-  //       setUnreadCount(count);
-  //     } catch (error) {
-  //       console.error('Failed to fetch unread notifications count:', error);
-  //     }
-  //   };
-  //   fetchUnreadCount();
-  // }, [token]);
-
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
+
       if (
         !dropdownRef.current?.contains(target) &&
         !logoutModalRef.current?.contains(target) &&
@@ -89,97 +80,144 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
         closeDropdown();
       }
     };
+
     if (isOpen || showLogoutModal || showDeleteModal) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, showLogoutModal, showDeleteModal]);
 
   if (!isOpen) return null;
+
+  const itemClass =
+    "group w-full px-4 py-3 rounded-2xl flex items-center justify-between gap-3 text-[#263832] hover:bg-[#EEF6F3] transition";
+
+  const contentClass = "flex items-center gap-3";
 
   return (
     <>
       <div
         ref={dropdownRef}
-        className={`absolute lg:top-full top-12 ${
-          locale === 'ar' ? 'left-0 lg:left-0' : 'right-10 lg:right-0'
-        } bg-white shadow-lg rounded-md w-[250px] !z-10 py-3 text-right`}
+        dir={isAr ? "rtl" : "ltr"}
+        className={`absolute top-[calc(100%+12px)] ${
+          isAr ? "left-0" : "right-0"
+        } w-[285px] rounded-[26px] border border-[#E2ECE8] bg-white shadow-[0_22px_70px_rgba(16,24,32,0.18)] p-3 z-[100]`}
       >
-        <div className="flex md:hidden items-center gap-3 px-5 py-3 border-b border-gray-100">
-          <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-primary font-bold">
-            {name?.charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <p className="text-xs text-gray-500">{tn("welcome")}</p>
-            <p className="text-sm font-medium hover:text-primary text-gray-900">{name}</p>
+        <div className="rounded-[22px] bg-gradient-to-br from-[#0E6B58] to-[#101820] p-4 text-white mb-3 overflow-hidden relative">
+          <div className="absolute -top-10 -end-8 w-28 h-28 rounded-full bg-white/10" />
+          <div className="absolute -bottom-10 -start-8 w-24 h-24 rounded-full bg-[#C89B3C]/20" />
+
+          <div className="relative flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-white/15 border border-white/20 flex items-center justify-center">
+              <UserRound size={22} />
+            </div>
+
+            <div>
+              <p className="text-xs text-white/70">{tn("welcome")}</p>
+              <h3 className="text-sm font-black max-w-[170px] truncate">
+                {name || (isAr ? "مستخدم العمران" : "Al Omran User")}
+              </h3>
+            </div>
           </div>
         </div>
 
-        <ul className="flex flex-col gap-2 text-sm text-[#000] mt-2">
+        <ul className="flex flex-col gap-1 text-sm">
           <li>
             <Link
               onClick={closeDropdown}
               href={`/${locale}/edit-data`}
-              className="  px-5 py-2 flex items-center gap-3"
+              className={itemClass}
             >
-              <Edit size={20} className='text-primary' />
-              <span className="text-sm font-medium hover:text-primary">{t('editProfile')}</span>
+              <span className={contentClass}>
+                <span className="w-10 h-10 rounded-2xl bg-[#EEF6F3] text-[#0E6B58] flex items-center justify-center">
+                  <Edit3 size={18} />
+                </span>
+                <span className="font-bold">{t("editProfile")}</span>
+              </span>
+              <ArrowIcon size={16} className="text-[#9BAAA5]" />
             </Link>
           </li>
+
           <li>
             <Link
               onClick={closeDropdown}
               href={`/${locale}/notifications`}
-              className="  px-5 py-2 flex items-center gap-3"
+              className={itemClass}
             >
-              <Bell size={20} className='text-primary' />
-              <span className="text-sm font-medium hover:text-primary ">{t('notifications')}</span>
-              {notificationsUnReadCount > 0 && (
-                <h5 className="w-[24px] h-[24px] rounded-full bg-primary text-white flex items-center justify-center">
-                  {notificationsUnReadCount}
-                </h5>
-              )}
+              <span className={contentClass}>
+                <span className="w-10 h-10 rounded-2xl bg-[#EEF6F3] text-[#0E6B58] flex items-center justify-center">
+                  <Bell size={18} />
+                </span>
+                <span className="font-bold">{t("notifications")}</span>
+              </span>
+
+              <span className="flex items-center gap-2">
+                {unreadCount > 0 && (
+                  <span className="min-w-6 h-6 px-2 rounded-full bg-[#C89B3C] text-[#101820] text-xs font-black flex items-center justify-center">
+                    {unreadCount}
+                  </span>
+                )}
+                <ArrowIcon size={16} className="text-[#9BAAA5]" />
+              </span>
             </Link>
           </li>
-          {role === 'company' && (
-  <li>
-            <Link
-              onClick={closeDropdown}
-              href={`/${locale}/my-services`}
-              className="  px-5 py-2 flex items-center gap-3"
-            >
-              <Ticket size={20} className='text-primary' />
-              <span className="text-sm font-medium hover:text-primary">{locale === 'ar' ? "خدماتي" : "My Services"}</span>
-            </Link>
-          </li>
+
+          {role === "company" && (
+            <li>
+              <Link
+                onClick={closeDropdown}
+                href={`/${locale}/my-services`}
+                className={itemClass}
+              >
+                <span className={contentClass}>
+                  <span className="w-10 h-10 rounded-2xl bg-[#EEF6F3] text-[#0E6B58] flex items-center justify-center">
+                    <Ticket size={18} />
+                  </span>
+                  <span className="font-bold">
+                    {locale === "ar" ? "خدماتي" : "My Services"}
+                  </span>
+                </span>
+                <ArrowIcon size={16} className="text-[#9BAAA5]" />
+              </Link>
+            </li>
           )}
-        
-          
-      
-          <li>
+
+          <li className="pt-2 mt-2 border-t border-[#EDF3F0]">
             <button
-              onClick={(e) => { e.stopPropagation(); setShowLogoutModal(true); }}
-              className="  px-5 py-2 flex items-center gap-3"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowLogoutModal(true);
+              }}
+              className="w-full px-4 py-3 rounded-2xl flex items-center justify-between gap-3 text-[#B42318] hover:bg-[#FFF2F1] transition"
             >
-              <LogOut size={20}  className='text-primary' />
-              <span className="text-sm font-medium hover:text-primary">{t('logout')}</span>
+              <span className={contentClass}>
+                <span className="w-10 h-10 rounded-2xl bg-[#FFF2F1] text-[#B42318] flex items-center justify-center">
+                  <LogOut size={18} />
+                </span>
+                <span className="font-bold">{t("logout")}</span>
+              </span>
             </button>
           </li>
-          {/* <li>
-            <button
-              onClick={(e) => { e.stopPropagation(); setShowDeleteModal(true); }}
-              className="hover:text-[#080C22]  px-5 py-2 flex items-center gap-3"
-            >
-              <Trash2 size={20} className='text-primary' />
-              <span className="text-sm font-medium hover:text-primary">{t('deleteAccount')}</span>
-            </button>
-          </li> */}
+
+          {/* لو احتجت زر حذف الحساب بعدين، شيله من الكومنت */}
+          {false && (
+            <li>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowDeleteModal(true);
+                }}
+                className="w-full px-4 py-3 rounded-2xl flex items-center gap-3 text-[#B42318] hover:bg-[#FFF2F1] transition"
+              >
+                <Trash2 size={18} />
+                <span>{t("deleteAccount")}</span>
+              </button>
+            </li>
+          )}
         </ul>
       </div>
 
-      {/* Logout Modal */}
       {showLogoutModal && (
         <div ref={logoutModalRef}>
           <LogoutModal
@@ -191,7 +229,6 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
         </div>
       )}
 
-      {/* Delete Account Modal */}
       {showDeleteModal && (
         <div ref={deleteModalRef}>
           <DeleteAccountModal

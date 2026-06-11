@@ -1,4 +1,11 @@
-import { getHomeData  } from "../../src/lib/serverActions";
+import BookingSteps from "../../src/components/home/BookingSteps";
+import Categories from "../../src/components/home/Categories";
+import Hero from "../../src/components/home/Hero";
+import HomeCTA from "../../src/components/home/HomeCTA";
+import WhyAlOmran from "../../src/components/home/WhyAlOmran";
+import AvailableProperties from "../../src/components/home/AvailableProperties";
+import Footer from "../../src/components/home/Footer";
+import { getHomeData } from "../../src/lib/serverActions";
 import { cookies } from "next/headers";
 
 interface LayoutProps {
@@ -7,9 +14,9 @@ interface LayoutProps {
 
 export default async function HomePage({ params }: LayoutProps) {
   const { locale } = await params;
-    const cookieStore =  await cookies();
-    const token = cookieStore.get("token")?.value;
-     
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
   const homeData = await getHomeData(locale);
   const sliders = homeData?.data?.sliders || [];
   const about_page = homeData?.data?.about_page || [];
@@ -18,11 +25,21 @@ export default async function HomePage({ params }: LayoutProps) {
   const faq_items = homeData?.data?.faq_items || [];
   const steps = homeData?.data?.service_flow || [];
 
-
   return (
-    <div className="">
-      {/* <Whatsapp whatsapp = {whatsapp}/> */}
-       Hello Everyone Welcome EveryDay at Al3 Umran platform
+    <div className="bg-[#F6F4EE]">
+      <Hero />
+
+      <Categories />
+
+      <AvailableProperties />
+
+      <WhyAlOmran />
+
+      <BookingSteps />
+
+      <HomeCTA />
+
+      <Footer />
     </div>
   );
 }

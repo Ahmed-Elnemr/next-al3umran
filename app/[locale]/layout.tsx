@@ -7,7 +7,8 @@ import { cookies } from "next/headers";
 import React from "react";
 
 import "react-photo-view/dist/react-photo-view.css";
-// import { getSettingsData } from "@/lib/serverActions";
+import Navbar from "../../src/components/navbar";
+import { getSettingsData } from "../../src/lib/serverActions";
 
 
 export default async function RootLayout({
@@ -30,8 +31,8 @@ export default async function RootLayout({
     notFound();
   }
 
-  // const settingsData = await getSettingsData(currentLocale);
-  // const settings = settingsData?.data || [];
+  const settingsData = await getSettingsData(currentLocale);
+  const settings = settingsData?.data || [];
 
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
@@ -57,12 +58,11 @@ export default async function RootLayout({
           lang={currentLocale}
           className="min-h-screen overflow-hidden bg-white"
         >
-          {/* <Navbar
+          <Navbar
             bank_account={settings?.find((item: any) => item.key === "bankAccount")}
             token={token}
-            logo={logo}
             notificationsUnReadCount={0}
-          /> */}
+          />
           {/* <WhatsApp locale={currentLocale}/> */}
           <div>{children}</div>
           {/* <Footer settings={settings} locale={currentLocale} token={token} /> */}

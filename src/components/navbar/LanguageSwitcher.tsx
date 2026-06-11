@@ -1,42 +1,35 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
-import lang from "@/public/images/lang.png";
+import { Languages } from "lucide-react";
 
 const LanguageSelector: React.FC = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
   const isArabic = pathname.startsWith("/ar");
   const newLocale = isArabic ? "en" : "ar";
 
   const toggleLanguage = (e: React.MouseEvent) => {
     e.preventDefault();
+
     const pathWithoutLocale = pathname.replace(/^\/(ar|en)/, "");
-    
-    // Preserve query parameters
     const queryString = searchParams.toString();
     const queryPart = queryString ? `?${queryString}` : "";
-    
+
     window.location.href = `/${newLocale}${pathWithoutLocale}${queryPart}`;
   };
 
   return (
-    <a
-      href="#"
-      onClick={(e) => toggleLanguage(e)}
-      className="flex items-center justify-center ] h-[41px] rounded-[21px]  gap-1 cursor-pointer"
+    <button
+      onClick={toggleLanguage}
+      className="h-[48px] rounded-full bg-[#F4F8F6] border border-[#E3ECE8] text-[#101820] px-4 flex items-center justify-center gap-2 text-sm font-black hover:bg-[#0E6B58] hover:text-white transition"
+      type="button"
     >
-      <span className="text-[12px]">({isArabic ? "EN" : "AR"})</span>
-      <Image
-        src={lang}
-        alt="return"
-        className="returnn mr-1"
-        width={26}
-        height={26}
-      />
-    </a>
+      <Languages size={18} />
+      <span>{isArabic ? "EN" : "AR"}</span>
+    </button>
   );
 };
 
