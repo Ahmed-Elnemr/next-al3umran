@@ -2,14 +2,66 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===== Montserrat (Latin / English) ===== */
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/font/Montserrat-ExtraLight.otf') format('opentype');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/font/Montserrat-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/font/Montserrat-ExtraBold.otf') format('opentype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/font/Montserrat-Black.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ===== GE SS Two (Arabic) ===== */
+@font-face {
+  font-family: 'GE SS Two';
+  src: url('/font/GE_SS_Two_Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'GE SS Two';
+  src: url('/font/GE_SS_Two_Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'GE SS Two';
+  src: url('/font/GE_SS_Two_Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 html body[data-scroll-locked] {
   overflow: visible !important;
   margin-right: 0 !important;
 }
-body{
-     background-color: #eee !important;
-    font-family: 'Loew Next Arabic', sans-serif !important;
-
+body {
+  background-color: #eee !important;
+  font-family: 'Tajawal', sans-serif !important;
 }
 @layer base {
   html {
@@ -87,14 +139,11 @@ body{
 @layer base {
   * {
     @apply border-border;
-   font-family: 'Loew Next Arabic', sans-serif;
-
+    font-family: 'Tajawal', sans-serif;
   }
   body {
     @apply bg-background text-foreground;
-
-     font-family: 'Loew Next Arabic', sans-serif;
-
+    font-family: 'Tajawal', sans-serif;
   }
   .unique-h {
     @apply after:block after:w-[50px] after:h-[20px] after:border-b-[10px] ltr:after:border-l-[10px] rtl:after:border-r-[10px] after:-translate-y-4 ltr:after:-translate-x-4 rtl:after:translate-x-4 after:absolute after:z-[-10] relative after:border-[rgba(180,147,69,0.35)];

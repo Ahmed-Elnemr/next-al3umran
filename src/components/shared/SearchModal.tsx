@@ -18,7 +18,7 @@ function SearchModal({ lang, onClose }: SearchModalProps) {
 
   const handelSearch = () => {
     onClose();
-    redirect(`/${lang}/latest-events?keyword=${ref.current?.value}`);
+    redirect(`/${lang}/services?keyword=${ref.current?.value}`);
   };
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 z-[9999]">
@@ -65,7 +65,7 @@ function SearchModal({ lang, onClose }: SearchModalProps) {
             </button>
           </div>
 
-          <Link href={`/${lang}/latest-events`} onClick={() => onClose()} className="text-center bg-[#EB2302] mt-3 py-2 px-4 rounded-full text-white w-full">
+          <Link href={`/${lang}/services`} onClick={() => onClose()} className="text-center bg-[#EB2302] mt-3 py-2 px-4 rounded-full text-white w-full">
             {lang === "en" ? "All Events" : "كل الفاعليات"}
           </Link>
         </div>

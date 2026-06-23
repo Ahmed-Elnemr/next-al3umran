@@ -59,11 +59,11 @@ const HowOrder: React.FC<HowOrderProps> = async ({ steps }) => {
               <div className="mx-auto text-center">
                 <h2
                   className="lg:text-lg text-base font-bold text-[#080C22]"
-                  dangerouslySetInnerHTML={{ __html: step.title }}
+                  dangerouslySetInnerHTML={{ __html: String(step.title ?? "") }}
                 />
                 <p
                   className="text-sm text-[#989898] text-center mt-2"
-                  dangerouslySetInnerHTML={{ __html: step.description }}
+                  dangerouslySetInnerHTML={{ __html: String(step.description ?? "") }}
                 />
               </div>
             </div>

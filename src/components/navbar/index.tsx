@@ -21,8 +21,7 @@ import {
 import LanguageSelector from "./LanguageSwitcher";
 import UserDropdown from "./UserDropdown";
 import ConfirmWalletModal from "./ConfirmWalletModal";
-import apiServiceCall from "@/lib/apiServiceCall";
-import navUser from "@/public/images/nav-user.png";
+import apiServiceCall from "../../lib/apiServiceCall";
 
 interface NavbarProps {
   token?: string;
@@ -69,7 +68,7 @@ const Navbar = ({
       icon: Grid3X3,
     },
     {
-      href: `/${locale}/latest-events`,
+      href: `/${locale}/services`,
       label: t("latestEvents"),
       icon: Newspaper,
     },
@@ -167,7 +166,7 @@ const Navbar = ({
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-[#DCE6E2] bg-[#EEF6F3]">
                   <Image
-                    src={profileImage || navUser}
+                    src={profileImage}
                     width={36}
                     height={36}
                     alt="user"
@@ -287,7 +286,7 @@ const Navbar = ({
                     className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-[#DCE6E2] bg-[#EEF6F3]"
                   >
                     <Image
-                      src={profileImage || navUser}
+                      src={profileImage}
                       alt="profile"
                       width={44}
                       height={44}

@@ -41,13 +41,13 @@ const About: React.FC<AboutProps> = async ({ about_page }) => {
           {/* Intro */}
           <div
             className="text-lg lg:text-xl font-semibold mb-4"
-            dangerouslySetInnerHTML={{ __html: about_page.intro }}
+            dangerouslySetInnerHTML={{ __html: String(about_page.intro ?? "") }}
           />
 
           {/* Main Content */}
           <div
             className="text-sm lg:text-base leading-relaxed text-gray-700"
-            dangerouslySetInnerHTML={{ __html: about_page.content }}
+            dangerouslySetInnerHTML={{ __html: String(about_page.content ?? "") }}
           />
         </div>
       </div>

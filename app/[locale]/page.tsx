@@ -39,7 +39,6 @@ export default async function HomePage({ params }: LayoutProps) {
 
       <HomeCTA />
 
-      <Footer />
     </div>
   );
 }

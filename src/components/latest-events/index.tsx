@@ -101,7 +101,7 @@ const LastestEvents: React.FC<LastestEventsProps> = async ({ events, locale, isH
         {isHomePage && events.length > 6 && (
           <div className="text-center mt-10">
             <Link
-              href={`/${locale}/latest-events`}
+              href={`/${locale}/services`}
               className="inline-flex items-center justify-center px-6 py-3 bg-primary text-white font-medium rounded-[15px] hover:bg-primary-dark transition duration-300"
             >
               {t('viewMoreServices') || 'عرض المزيد من الخدمات'}

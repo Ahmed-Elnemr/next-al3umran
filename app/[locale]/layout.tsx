@@ -1,6 +1,6 @@
 import { ToastContainer } from "react-toastify";
 import { NextIntlClientProvider } from "next-intl";
-// import Providers from "@/providers/providers";
+import Providers from "@/providers/providers";
 import { notFound } from "next/navigation";
 import { locales } from "../../navigation";
 import { cookies } from "next/headers";
@@ -9,6 +9,7 @@ import React from "react";
 import "react-photo-view/dist/react-photo-view.css";
 import Navbar from "../../src/components/navbar";
 import { getSettingsData } from "../../src/lib/serverActions";
+import Footer from "../../src/components/home/Footer";
 
 
 export default async function RootLayout({
@@ -52,7 +53,7 @@ export default async function RootLayout({
       timeZone="Asia/Dubai"
     >
       <ToastContainer position="bottom-right" />
-      {/* <Providers locale={currentLocale || "en"}> */}
+      <Providers locale={currentLocale || "en"}>
         <div
           dir={currentLocale === "ar" ? "rtl" : "ltr"}
           lang={currentLocale}
@@ -65,9 +66,10 @@ export default async function RootLayout({
           />
           {/* <WhatsApp locale={currentLocale}/> */}
           <div>{children}</div>
+          <Footer/>
           {/* <Footer settings={settings} locale={currentLocale} token={token} /> */}
         </div>
-      {/* </Providers> */}
+      </Providers>
     </NextIntlClientProvider>
   );
 }

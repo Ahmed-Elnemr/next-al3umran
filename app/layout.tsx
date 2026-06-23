@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { Tajawal } from "next/font/google";
 
 import "../src/globals.css";
 import "swiper/css/pagination";
@@ -7,10 +7,13 @@ import "swiper/css/navigation";
 import "swiper/css";
 import 'aos/dist/aos.css';
 
-// const montserratArabic = localFont({
-//   src: "../public/assets/fonts/Montserrat-Arabic-Regular.ttf",
-//   display: "swap",
-// });
+const tajawal = Tajawal({
+  subsets: ["arabic", "latin"],
+  weight: ["300", "400", "500", "700", "800", "900"],
+  variable: "--font-tajawal",
+  display: "swap",
+});
+
 
 export async function generateMetadata({
   params,
@@ -146,7 +149,7 @@ export default async function RootLayout({
       <head>
       </head>
       <body
-        className={`min-h-screen`}
+        className={`min-h-screen ${tajawal.variable} ${tajawal.className}`}
         suppressHydrationWarning
       >
         {children}

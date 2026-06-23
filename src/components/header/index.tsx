@@ -48,12 +48,12 @@ const Header: React.FC<HeaderProps> = ({ sliders }) => {
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white px-4">
                   <h2
                     className="text-xl lg:text-4xl text-primary font-extrabold mb-3"
-                    dangerouslySetInnerHTML={{ __html: slide.title }}
+                    dangerouslySetInnerHTML={{ __html: String(slide.title ?? "") }}
                   />
 
                   <p
                     className="text-sm lg:text-lg max-w-[600px] leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: slide.description }}
+                    dangerouslySetInnerHTML={{ __html: String(slide.description ?? "") }}
                   />
                 </div>
               </div>
