@@ -654,6 +654,7 @@ const ServiceDetailsPage = ({ params }: ServiceDetailsPageProps) => {
                     {related.desc}
                   </p>
                 </Link>
+                
               );
             })}
           </div>
