@@ -7,11 +7,11 @@
     "errorDesc": "عذراً، حدث خطأ ما. يرجى المحاولة مرة أخرى",
     "tryAgain": "حاول مرة أخرى"
   },
-  "about" : {
-    "about" : "من نحن"
+  "about": {
+    "about": "من نحن"
   },
   "navbar": {
-    "home" : "الرئيسية",
+    "home": "الرئيسية",
     "aboutUs": "نبذة عنا",
     "categories": "الأقسام",
     "latestEvents": "الخدمات",
@@ -31,8 +31,7 @@
     "latestEventsSubtitle": "انتهز الفرصة وقم بالحجز في أحدث الخدمات",
     "bookNow": "احجز خدمتك الآن",
     "noEventsAvailable": "لا توجد أحداث متاحة",
-        "viewMoreServices": "عرض المزيد من الخدمات"
-
+    "viewMoreServices": "عرض المزيد من الخدمات"
   },
   "how": {
     "howOrderTitle": "كيف تطلب خدمتك ؟",
@@ -87,17 +86,17 @@
       "message": "الرسالة يجب أن تكون على الأقل 10 أحرف"
     }
   },
-  "serviceDetails" : {
+  "serviceDetails": {
     "aboutService": "عن الخدمة",
-        "features": "مميزات الخدمة",
-        "contactWhatsapp": "تواصل معنا على واتساب!",
-  "contactPhone": "اتصل بنا مباشرة للحجز!"
+    "features": "مميزات الخدمة",
+    "contactWhatsapp": "تواصل معنا على واتساب!",
+    "contactPhone": "اتصل بنا مباشرة للحجز!"
   },
   "footer": {
     "privacy_policy": "سياسة الخصوصية",
-  "terms_conditions": "الشروط والأحكام",
+    "terms_conditions": "الشروط والأحكام",
     "description": "منصة لتبادل وإعادة بيع التذاكر تتيح للمستخدمين تجربة آمنة وسهلة لشراء وبيع التذاكر لمجموعة متنوعة من الخدمات الترفيهية والرياضية والحفلات.",
-    "copyright": "© جميع الحقوق محفوظة -  خبب نينوي 2025",
+    "copyright": "© جميع الحقوق محفوظة -  العمران 2025",
     "quickLinks": "روابط سريعة",
     "aboutUs": "نبذة عنا",
     "categories": "الأقسام",
@@ -117,7 +116,7 @@
     "about": "عن الخدمة"
   },
   "BookTicket": {
-    "side-by-side" : "مقاعد متجاورة",
+    "side-by-side": "مقاعد متجاورة",
     "startsFrom": "تبدأ من",
     "loading": "جاري التحميل ...",
     "noTicketsAvailable": "لا يوجد تذاكر متاحة",
@@ -145,8 +144,8 @@
     }
   },
   "sellYourTicket": {
-     "seatNote": "ملاحظة: رقم المقعد لا يظهر في معلومات التذكرة المعروضة للبيع، فقط لتحديد التذاكر المتجاورة.",
-    "block_numberEnter" : "أدخل رقم المربع",
+    "seatNote": "ملاحظة: رقم المقعد لا يظهر في معلومات التذكرة المعروضة للبيع، فقط لتحديد التذاكر المتجاورة.",
+    "block_numberEnter": "أدخل رقم المربع",
     "common": {
       "ok": "حسناً"
     },
@@ -218,7 +217,7 @@
     }
   },
   "standTickets": {
-    "blockNumber" : "المربع : " ,
+    "blockNumber": "المربع : ",
     "addToCart": "أضف إلى السلة",
     "title": "تذاكر المقاعد",
     "stand": "الفئة",
@@ -240,14 +239,14 @@
       "noTicketsAvailable": "لا توجد تذاكر متاحة حاليًا",
       "loadTicketsFailed": "فشل تحميل التذاكر، يرجى المحاولة مرة أخرى"
     },
-    "ticketsCount" : "عدد التذاكر"
+    "ticketsCount": "عدد التذاكر"
   },
   "Payment": {
-  "checkout": {
-    "title": "الدفع وإنهاء الطلب",
-    "subtitle": "اختر طريقة الدفع المناسبة لإنهاء الطلب",
-    "price" : "السعر"
-  },
+    "checkout": {
+      "title": "الدفع وإنهاء الطلب",
+      "subtitle": "اختر طريقة الدفع المناسبة لإنهاء الطلب",
+      "price": "السعر"
+    },
     "couponApplied": "تم تطبيق الكوبون بنجاح!",
     "couponError": "خطأ في تطبيق الكوبون",
     "enterCoupon": "الرجاء إدخال كود الكوبون",
@@ -267,7 +266,7 @@
     "invalidEmails": "البريد الإلكتروني غير صحيح"
   },
   "Checkout": {
-    "blockNumber" : "المربع",
+    "blockNumber": "المربع",
     "seat": "المقعد",
     "row": "الصف",
     "title": "استكمال الطلب",
@@ -277,7 +276,7 @@
     "adjacent": "متجاورة ؟",
     "adjacentYes": "مقاعد متجاورة",
     "adjacentNo": "مقاعد غير متجاورة",
-    "price" : "السعر" 
+    "price": "السعر"
   },
   "Event": {
     "competition": "كأس العالم للأندية"
@@ -288,7 +287,7 @@
   },
   "Login": {
     "mobile_placeholder": "رقم الجوال",
-"mobile_invalid": "يجب أن يبدأ رقم الجوال بـ 05 ويكون رقمًا إماراتيًا صحيحًا",
+    "mobile_invalid": "يجب أن يبدأ رقم الجوال بـ 05 ويكون رقمًا إماراتيًا صحيحًا",
     "otp_sent": "تم إرسال كود التحقق إلى هاتفك المحمول",
     "login_error": "حدث خطأ أثناء تسجيل الدخول",
     "logging_in": "جاري تسجيل الدخول...",
@@ -305,22 +304,15 @@
     "login_image_alt": "رسم توضيحي لتسجيل الدخول",
     "login_title": "تسجيل الدخول",
     "login_subtitle": "قم بإدخال بيانات حسابك لتسجيل الدخول",
-    "no_account": "ليس لديك حساب على خبب نينوي ؟",
+    "no_account": "ليس لديك حساب على العمران ؟",
     "create_account": "إنشاء حساب جديد"
   },
   "RegisterPage": {
- 
-
-
     "password_min": "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
-
     "password_confirm_min": "تأكيد كلمة المرور مطلوب",
     "passwords_not_match": "كلمتا المرور غير متطابقتين",
-
     "or_drag_image_here": "أو اسحب الصورة هنا",
     "profile_image_error": "حدث خطأ في رفع الصورة",
-
-
     "register_success": "تم إنشاء الحساب بنجاح! جاري التحويل إلى صفحة تسجيل الدخول...",
     "login_button": "تسجيل الدخول إلى حساب موجود",
     "name_placeholder": "اسم المستخدم",
@@ -344,26 +336,26 @@
     "create_account": "إنشاء الحساب",
     "register_title": "إنشاء حساب جديد",
     "register_subtitle": "قم بإدخال البيانات التالية لاستكمال تسجيل حسابك",
-    "existing_account": "لديك حساب بالفعل على خبب نينوي ؟",
-     "enter_password_placeholder": "أدخل كلمة المرور",
-  "confirm_password_placeholder": "تأكيد كلمة المرور",
-  "click_to_upload": "اضغط للرفع",
-  "drag_or_click_here": "أو اسحب الصورة هنا",
-  "image_size_format": "PNG, JPG, JPEG (بحد أقصى 2MB)",
-  "create_account_button": "إنشاء حساب كشركة",
-  "register_as_client" : "تسجيل كعميل",
-  "register_as_company" : "تسجيل كشركة"
+    "existing_account": "لديك حساب بالفعل على العمران ؟",
+    "enter_password_placeholder": "أدخل كلمة المرور",
+    "confirm_password_placeholder": "تأكيد كلمة المرور",
+    "click_to_upload": "اضغط للرفع",
+    "drag_or_click_here": "أو اسحب الصورة هنا",
+    "image_size_format": "PNG, JPG, JPEG (بحد أقصى 2MB)",
+    "create_account_button": "إنشاء حساب كشركة",
+    "register_as_client": "تسجيل كعميل",
+    "register_as_company": "تسجيل كشركة"
   },
   "sells": {
     "sales_title": "المبيعات",
     "sales_subtitle": "قائمة طلبات مبيعات التذاكر الخاصة بك",
     "no_sales_title": "لا توجد لديك طلبات",
     "no_sales_subtitle": "لا توجد لديك أي طلبات بيع تذاكر سابقة",
-  "not_available": "غير متاح",
-  "buyer": "المشتري",
-  "tickets": "عدد التذاكر",
-   "ongoingOrders": "طلبات جارية",
-  "finishedOrders": "طلبات منتهية"
+    "not_available": "غير متاح",
+    "buyer": "المشتري",
+    "tickets": "عدد التذاكر",
+    "ongoingOrders": "طلبات جارية",
+    "finishedOrders": "طلبات منتهية"
   },
   "orderDetails": {
     "ticketImage": "صورة التذكرة",
@@ -375,7 +367,7 @@
     "adjacentSeats": "مقاعد متجاورة",
     "ticketPrice": "سعر التذكرة",
     "requestedPrice": "السعر المطلوب للبيع",
-    "blockNumber" : "المربع : {number}"
+    "blockNumber": "المربع : {number}"
   },
   "clientControls": {
     "editRequest": "تعديل الطلب",
@@ -417,7 +409,7 @@
     "loading": "جاري المعالجة..."
   },
   "orders": {
-    "blockNumber" : "المربع",
+    "blockNumber": "المربع",
     "row": "الصف",
     "seat": "المقعد",
     "title": "الطلبات",
@@ -445,7 +437,6 @@
     "ticketNumber": "رقم التذكرة",
     "gate": "البوابة",
     "category": "الفئة",
-   
     "gateOpensAt": "تفتح البوابة في الساعة",
     "am": "ص",
     "downloadTicket": "تحميل التذكرة",
@@ -465,7 +456,6 @@
     "order_date": "تاريخ الطلب",
     "view_details": "عرض تفاصيل الطلب",
     "no_orders": "لا توجد طلبات في هذا القسم",
-    
     "no_orders_title": "لا توجد لديك طلبات",
     "no_orders_subtitle": "لا توجد لديك أي طلبات تذاكر سابقة"
   },
@@ -485,19 +475,15 @@
       "name_required": "الاسم مطلوب",
       "number_required": "رقم الحساب مطلوب",
       "iban_required": "رقم الآيبان مطلوب"
-   
     },
     "confirmation": {
-    "title": "تم إنشاء محفظتك",
-    "message": "تم إنشاء محفظتك بنجاح يمكنك متابعة الرصيد وطلب سحب النقود",
-    "button": "حسناً"
-  },
-        "withdraw_instruction": "قم بكتابة المبلغ المراد سحبه من المحفظة لتحويله إلى حسابك البنكي",
-"amount_placeholder": "أدخل المبلغ بالدرهم",
+      "title": "تم إنشاء محفظتك",
+      "message": "تم إنشاء محفظتك بنجاح يمكنك متابعة الرصيد وطلب سحب النقود",
+      "button": "حسناً"
+    },
+    "withdraw_instruction": "قم بكتابة المبلغ المراد سحبه من المحفظة لتحويله إلى حسابك البنكي",
+    "amount_placeholder": "أدخل المبلغ بالدرهم",
     "send_request": "إرسال الطلب",
-   
-
-        
     "wallet_balance": "رصيد محفظتك",
     "withdraw_request": "طلب سحب",
     "wallet_history": "سجل العمليات",
@@ -527,7 +513,7 @@
     "failMessage": "فشل تسجيل الخروج"
   },
   "notifications": {
-       "notifications_title": "الإشعارات ({count})",
+    "notifications_title": "الإشعارات ({count})",
     "unread_count": "غير مقروء {count, plural, one {#} other {#}}",
     "mark_all_read": "تعيين الكل كمقروء",
     "delete_all": "حذف الكل",
@@ -580,7 +566,7 @@
     "close": "إغلاق"
   },
   "UserDropdown": {
-    "my-tickets" : "تذاكري",
+    "my-tickets": "تذاكري",
     "editProfile": "تعديل بياناتي",
     "notifications": "الاشعارات",
     "orders": "الطلبات",
@@ -588,10 +574,8 @@
     "wallet": "المحفظة",
     "logout": "تسجيل الخروج",
     "deleteAccount": "حذف الحساب",
-    "aa" : "تذاكري"
- 
+    "aa": "تذاكري"
   },
-  
   "events": {
     "allEvents": "إليك جميع الخدمات الخاصة بهذا القسم"
   },
@@ -605,41 +589,39 @@
     "imageTitle": "صورة التذكرة",
     "imageDescription": "قم برفع صورة الإرسال من ويبوك أو صورة محادثة أو إيميل الإرسال أو أخرى",
     "confirmButton": "تأكيد الإرسال",
-  "loadingButton": "جاري الرفع..."
+    "loadingButton": "جاري الرفع..."
   },
-   "order": {
+  "order": {
     "orderDetailsTitle": "تفاصيل الطلب",
     "publishDate": "تاريخ النشر",
     "notAvailable": "غير متوفر",
-    "ticketsCategory" : "فئة التذاكر ",
-    "rowNumber" : "رقم الصف",
-    "seatNumber" : "رقم المقعد"
-},
+    "ticketsCategory": "فئة التذاكر ",
+    "rowNumber": "رقم الصف",
+    "seatNumber": "رقم المقعد"
+  },
   "sell": {
     "title": "بيع خدمتك",
     "description": "إذا كان لديك تذكرة لا تريد استخدامها يمكنك عرضها للبيع"
   },
-  "otpCode" : {
-    "title" : "كود التحقق",
-    "desc" : "قم بإدخال كود التحقق الذي تم إرساله إليك عبر رقم الجوال"
+  "otpCode": {
+    "title": "كود التحقق",
+    "desc": "قم بإدخال كود التحقق الذي تم إرساله إليك عبر رقم الجوال"
   },
-  "my-tickets" : {
-    "noTickets" : "لا توجد تذاكر متاحة حالياً.",
-    "square" : "المربع",
-    "sar" : "درهم",
-
-      "myTickets": "تذاكري",
-  "ticketCategory": "الفئة",
-  "row": "الصف",
-  "seat": "المقعد",
-  "price": "السعر",
-  "status": "الحالة",
-  "paid": "مدفوع",
-  "pending": "قيد الانتظار",
-  "note": "ملاحظة: رقم المقعد لا يظهر في معلومات التذكرة المعروضة للبيع، فقط لتحديد التذاكر المتجاورة."
-
+  "my-tickets": {
+    "noTickets": "لا توجد تذاكر متاحة حالياً.",
+    "square": "المربع",
+    "sar": "درهم",
+    "myTickets": "تذاكري",
+    "ticketCategory": "الفئة",
+    "row": "الصف",
+    "seat": "المقعد",
+    "price": "السعر",
+    "status": "الحالة",
+    "paid": "مدفوع",
+    "pending": "قيد الانتظار",
+    "note": "ملاحظة: رقم المقعد لا يظهر في معلومات التذكرة المعروضة للبيع، فقط لتحديد التذاكر المتجاورة."
   },
-   "CancelTicketModal": {
+  "CancelTicketModal": {
     "title": "إلغاء التذكرة",
     "confirmation": "هل أنت متأكد أنك تريد إلغاء التذكرة رقم {ticketId}؟",
     "close": "إغلاق",
@@ -665,14 +647,14 @@
     "success": "تم تعديل التذكرة بنجاح",
     "error": "حدث خطأ أثناء تعديل التذكرة"
   },
-   "PaymentStatusModal": {
+  "PaymentStatusModal": {
     "successTitle": "تم الدفع بنجاح",
     "successDescription": "تمت معالجة دفعتك بنجاح.",
     "title": "فشل الدفع",
     "description": "حدثت مشكلة أثناء الدفع. يرجى المحاولة مرة أخرى.",
     "ok": "موافق"
   },
-    "company_name_placeholder": "اسم الشركة",
+  "company_name_placeholder": "اسم الشركة",
   "company_name_alt": "اسم الشركة",
   "email_placeholder": "البريد الإلكتروني",
   "email_alt": "البريد الإلكتروني",
@@ -691,11 +673,11 @@
   "image_size_format": "PNG, JPG, JPEG (بحد أقصى 2MB)",
   "create_account_button": "إنشاء حساب كشركة",
   "sellService": {
-    "submitting" : "جاري نشر الخدمة",
-  "priceRequired": "يرجى إدخال السعر",
-  "priceInvalid": "يجب أن يكون السعر موجبًا",
-  "priceFormat": "تنسيق السعر غير صحيح",
-  "priceNote": "يرجى إدخال السعر بالدرهم الإماراتي (AED)",
+    "submitting": "جاري نشر الخدمة",
+    "priceRequired": "يرجى إدخال السعر",
+    "priceInvalid": "يجب أن يكون السعر موجبًا",
+    "priceFormat": "تنسيق السعر غير صحيح",
+    "priceNote": "يرجى إدخال السعر بالدرهم الإماراتي (AED)",
     "title": "بيع خدمتك",
     "category": "اختر القسم",
     "categoryId": "معرف القسم",
@@ -716,8 +698,8 @@
     "descriptionRequired": "الوصف مطلوب",
     "descriptionShort": "الوصف قصير جداً (10 أحرف على الأقل)",
     "contentRequired": "المحتوى مطلوب",
-    "contentArPlaceholder" : "وصف الخدمة بالعربي",
-    "contentEnPlaceholder" : "وصف الخدمة بالأنجليزي",
+    "contentArPlaceholder": "وصف الخدمة بالعربي",
+    "contentEnPlaceholder": "وصف الخدمة بالأنجليزي",
     "titleArRequired": "العنوان العربي مطلوب",
     "titleEnRequired": "العنوان الإنجليزي مطلوب",
     "titleShort": "العنوان قصير جداً (3 أحرف على الأقل)",
@@ -734,32 +716,31 @@
     "descriptionLong": "المحتوى طويل جداً (1000 حرف كحد أقصى)",
     "descriptionShort": "المحتوى قصير جداً (10 أحرف على الأقل)"
   },
-  "commercial_register_placeholder" : "السجل التجاري",
-  "company_bio_placeholder" : "نبذة عن الشركة",
+  "commercial_register_placeholder": "السجل التجاري",
+  "company_bio_placeholder": "نبذة عن الشركة",
   "services": {
-    "basic_information" : "المعلومات الأساسية",
-    "address" : "العنوان",
-  "addNewService": "إضافة خدمة جديدة",
+    "basic_information": "المعلومات الأساسية",
+    "address": "العنوان",
+    "addNewService": "إضافة خدمة جديدة",
     "description": "وصف الخدمة",
-     "features": "الميزات",
+    "features": "الميزات",
     "addFeaturePlaceholder": "أضف ميزة جديدة...",
     "add": "إضافة",
     "removeFeature": "حذف الميزة",
     "category": "الفئة",
-  "selectCategory": "اختر الفئة",
-  "titleAr": "العنوان بالعربي",
-  "titleEn": "العنوان بالإنجليزي",
-  "contentAr": "الوصف بالعربي",
-  "contentEn": "الوصف بالإنجليزي",
-  "images": "الصور",
-  "existingImages": "الصور الحالية",
-  "newImages": "صور جديدة",
-  "uploadImages": "رفع صور",
-  "clickOrDrag": "اضغط أو اسحب الصور هنا",
-  "saving": "جاري الحفظ...",
-
-    "phone" : "رقم الجوال",
-    "mobile" : "رقم الواتس",
+    "selectCategory": "اختر الفئة",
+    "titleAr": "العنوان بالعربي",
+    "titleEn": "العنوان بالإنجليزي",
+    "contentAr": "الوصف بالعربي",
+    "contentEn": "الوصف بالإنجليزي",
+    "images": "الصور",
+    "existingImages": "الصور الحالية",
+    "newImages": "صور جديدة",
+    "uploadImages": "رفع صور",
+    "clickOrDrag": "اضغط أو اسحب الصور هنا",
+    "saving": "جاري الحفظ...",
+    "phone": "رقم الجوال",
+    "mobile": "رقم الواتس",
     "publishedServices": "الخدمات المنشورة",
     "noServices": "لا توجد خدمات مضافة حاليًا",
     "currency": "درهم",
@@ -774,24 +755,24 @@
     "save": "حفظ التعديلات",
     "confirmDelete": "تأكيد الحذف"
   },
-   "profile": {
+  "profile": {
     "editTitle": "تعديل بياناتي",
     "editSubtitle": "يمكنك تعديل بيانات حسابك",
     "companyName": "اسم الشركة",
-  "commercialRegister": "السجل التجاري",
-  "companyBio": "نبذة عن الشركة",
-  "currentPassword": "كلمة المرور الحالية",
-  "newPassword": "كلمة المرور الجديدة",
-  "confirmPassword": "تأكيد كلمة المرور",
-  "save": "حفظ التعديلات",
-  "updateSuccess": "تم تحديث البيانات بنجاح",
-  "updateError": "حدث خطأ أثناء التحديث",
-  "phone" : "رقم الجوال",
-  "profileImage" : "صورة البروفايل",
-  "email" :"البريد الإلكتروني",
-    "city" : "المدينة",
-    "name" : "الأسم",
-  "passwordChangeNote": "بعد تغيير كلمة المرور بنجاح، سيتم تسجيل خروجك من جميع الأجهزة وإعادة توجيهك إلى صفحة تسجيل الدخول.",
+    "commercialRegister": "السجل التجاري",
+    "companyBio": "نبذة عن الشركة",
+    "currentPassword": "كلمة المرور الحالية",
+    "newPassword": "كلمة المرور الجديدة",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "save": "حفظ التعديلات",
+    "updateSuccess": "تم تحديث البيانات بنجاح",
+    "updateError": "حدث خطأ أثناء التحديث",
+    "phone": "رقم الجوال",
+    "profileImage": "صورة البروفايل",
+    "email": "البريد الإلكتروني",
+    "city": "المدينة",
+    "name": "الأسم",
+    "passwordChangeNote": "بعد تغيير كلمة المرور بنجاح، سيتم تسجيل خروجك من جميع الأجهزة وإعادة توجيهك إلى صفحة تسجيل الدخول.",
     "changePassword": "تغيير كلمة المرور",
     "clickToChangePassword": "انقر لتحديث كلمة المرور الخاصة بك",
     "enterCurrentPassword": "أدخل كلمة المرور الحالية",
@@ -807,26 +788,24 @@
     "changing": "جاري التغيير...",
     "clickToChangeImage": "انقر لتغيير الصورة",
     "recommendedSize": "الحجم الموصى به: 500×500 بكسل",
-    "cancel" :"إلغاء"
-
- 
+    "cancel": "إلغاء"
   },
-    "i_accept": "أوافق على",
+  "i_accept": "أوافق على",
   "terms_and_conditions": "الشروط والأحكام",
   "and": "و",
   "privacy_policy": "سياسة الخصوصية",
-    "creating_account": "جارٍ إنشاء الحساب...",
-    "faq": {
+  "creating_account": "جارٍ إنشاء الحساب...",
+  "faq": {
     "title": "الأسئلة الشائعة",
     "description": "تعرف على إجابات أكثر الأسئلة شيوعًا حول خدماتنا — لتكون تجربتك أسهل وأوضح."
   },
-   "articles": {
+  "articles": {
     "title": "المقالات",
     "description": "اكتشف أحدث المقالات والنصائح المفيدة في مجال خدماتنا.",
     "readMore": "اقرأ المزيد",
     "latestArticles": "أحدث المقالات"
   },
-   "blogs": {
+  "blogs": {
     "title": "المدونة",
     "subtitle": "اكتشف أحدث المقالات والنصائح حول العناية بالسيارات والصيانة",
     "readMore": "قراءة المزيد",
@@ -847,33 +826,18 @@
   },
   "company_name_placeholder": "اسم الشركة",
   "company_name_required": "اسم الشركة مطلوب",
-
   "email_invalid": "البريد الإلكتروني غير صالح",
-
-  
   "mobile_format": "يجب أن يبدأ رقم الجوال بـ 05 ويتكون من 10 أرقام",
-
   "city_required": "يرجى اختيار المدينة",
-
   "commercial_register_alt": "أيقونة التأكيد",
   "commercial_register_required": "رقم السجل التجاري مطلوب",
-
   "company_bio_alt": "أيقونة نبذة الشركة",
   "company_bio_required": "نبذة الشركة مطلوبة (10 أحرف على الأقل)",
-
   "password_min": "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
-
   "confirm_password_min": "تأكيد كلمة المرور مطلوب",
   "passwords_not_match": "كلمتا المرور غير متطابقتين",
-
   "terms_accepted_required": "يجب قبول الشروط والأحكام",
-
-
   "change_image": "تغيير الصورة",
- 
-
   "registration_success": "تم التسجيل بنجاح! سيتم تحويلك إلى صفحة تسجيل الدخول.",
   "registration_error": "حدث خطأ أثناء التسجيل. يرجى المحاولة مرة أخرى."
-
 }
-  

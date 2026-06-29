@@ -1,10 +1,7 @@
 "use client";
 
-import { useLocale } from "next-intl";
-
 export default function Loading() {
-  const locale = useLocale();
-  const isAr = locale === "ar";
+  const isAr = true; // Fallback since this is root loading
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#F6F4EE]">

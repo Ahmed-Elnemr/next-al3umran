@@ -6,25 +6,55 @@ import Container from '@/components/shared/container';
 import InputComponent from '@/components/shared/reusableComponents/InputComponent';
 import CustomSelect from '@/components/shared/reusableComponents/CustomSelect';
 import { toast } from 'react-toastify';
-import { FiUploadCloud } from 'react-icons/fi';
+import { FiUploadCloud, FiHome } from 'react-icons/fi';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import apiServiceCall from '@/lib/apiServiceCall';
+import {
+  LuMapPin,
+  LuBed,
+  LuBath,
+  LuMaximize,
+  LuBuilding2,
+  LuDollarSign,
+  LuPhone,
+  LuSmartphone,
+  LuSend,
+  LuCheck,
+} from 'react-icons/lu';
 
 type FormValues = {
+  // القسم
   catalog_category_id: string;
+  
+  // بيانات العقار الأساسية
   title_ar: string;
   title_en: string;
   content_ar: string;
   content_en: string;
+  
+  // الميزات
   features: { value: string }[];
+  
+  // بيانات العقار
   price: string;
   phone: string;
   mobile: string;
+  
+  // بيانات العقار الإضافية (جديدة)
+  property_type: string; // sale | rent
+  bedrooms: string;
+  bathrooms: string;
+  area: string;
+  location_ar: string;
+  location_en: string;
+  company_name_ar: string;
+  company_name_en: string;
+  
+  // الصور
   images: File[];
 };
 
-// نوع بيانات القسم من API
 type Category = {
   id: number;
   name: string;
@@ -32,7 +62,7 @@ type Category = {
   image: string;
 };
 
-export default function SellYourService({token} : {token : string}) {
+export default function SellYourService({ token }: { token: string }) {
   const t = useTranslations('sellService');
   
   const [categories, setCategories] = useState<Category[]>([]);
@@ -45,6 +75,7 @@ export default function SellYourService({token} : {token : string}) {
     handleSubmit, 
     setValue, 
     reset,
+    watch,
     formState: { errors } 
   } = useForm<FormValues>({
     defaultValues: {
@@ -58,6 +89,14 @@ export default function SellYourService({token} : {token : string}) {
       price: '',
       phone: '',
       mobile: '',
+      property_type: 'sale',
+      bedrooms: '',
+      bathrooms: '',
+      area: '',
+      location_ar: '',
+      location_en: '',
+      company_name_ar: '',
+      company_name_en: '',
     },
   });
 
@@ -66,12 +105,13 @@ export default function SellYourService({token} : {token : string}) {
     name: 'features',
   });
 
-  /* ================= جلب الأقسام من API ================= */
+  const propertyType = watch('property_type');
+
+  /* ================= جلب الأقسام ================= */
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         setLoading(true);
-        // استدعاء API للحصول على الأقسام
         const response = await apiServiceCall({
           url: 'categories',
           method: 'GET',
@@ -93,41 +133,33 @@ export default function SellYourService({token} : {token : string}) {
     fetchCategories();
   }, []);
 
-  /* ================= Image Upload ================= */
+  /* ================= رفع الصور ================= */
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [previews, setPreviews] = useState<string[]>([]);
 
   const handleImageChange = (files: FileList) => {
-  const fileArray = Array.from(files);
-  
-  // الحصول على الصور الحالية
-  const currentImages = control._formValues.images || [];
-  
-  // الحد الأقصى 5 صور
-  const remainingSlots = 5 - currentImages.length;
-  const filesToAdd = fileArray.slice(0, remainingSlots);
-  
-  if (filesToAdd.length === 0) {
-    toast.warning(t('maxImagesWarning') || 'يمكنك رفع حتى 5 صور فقط');
-    return;
-  }
-  
-  // تحديث قيمة images في الفورم
-  const updatedImages = [...currentImages, ...filesToAdd];
-  setValue('images', updatedImages);
-  
-  // تنظيف المعاينات السابقة
-  previews.forEach(url => URL.revokeObjectURL(url));
-  
-  // إنشاء معاينات جديدة للصور المضافة
-  const previewUrls = filesToAdd.map(file => URL.createObjectURL(file));
-  setPreviews([...previews, ...previewUrls]);
-  
-  // تنظيف input file
-  if (fileRef.current) {
-    fileRef.current.value = '';
-  }
-};
+    const fileArray = Array.from(files);
+    const currentImages = control._formValues.images || [];
+    const remainingSlots = 5 - currentImages.length;
+    const filesToAdd = fileArray.slice(0, remainingSlots);
+    
+    if (filesToAdd.length === 0) {
+      toast.warning(t('maxImagesWarning') || 'يمكنك رفع حتى 5 صور فقط');
+      return;
+    }
+    
+    const updatedImages = [...currentImages, ...filesToAdd];
+    setValue('images', updatedImages);
+    
+    previews.forEach(url => URL.revokeObjectURL(url));
+    
+    const previewUrls = filesToAdd.map(file => URL.createObjectURL(file));
+    setPreviews([...previews, ...previewUrls]);
+    
+    if (fileRef.current) {
+      fileRef.current.value = '';
+    }
+  };
 
   const removeImage = (index: number) => {
     const newImages = [...previews];
@@ -135,133 +167,143 @@ export default function SellYourService({token} : {token : string}) {
     newImages.splice(index, 1);
     setPreviews(newImages);
     
-    // تحديث قيمة images في الفورم
     const currentImages = control._formValues.images || [];
     const updatedImages = currentImages.filter((_, i) => i !== index);
     setValue('images', updatedImages);
   };
 
-// ================= Submit =================
-const onSubmit = async (data: FormValues) => {
-  try {
-    setSubmitting(true);
-    
-    const formData = new FormData();
-    
-    // إضافة جميع الحقول المطلوبة
-    formData.append('catalog_category_id', data.catalog_category_id);
-    formData.append('title[ar]', data.title_ar);
-    formData.append('title[en]', data.title_en);
-    formData.append('content[ar]', data.content_ar);
-    formData.append('content[en]', data.content_en);
-    formData.append('price', data.price);
-    formData.append('phone', data.phone);
-    formData.append('mobile', data.mobile);
-    
-    // إضافة الميزات
-    data.features.forEach((feature, index) => {
-      if (feature.value.trim()) {
-        formData.append(`features[${index}]`, feature.value);
+  /* ================= إرسال البيانات ================= */
+  const onSubmit = async (data: FormValues) => {
+    try {
+      setSubmitting(true);
+      
+      const formData = new FormData();
+      
+      // البيانات الأساسية
+      formData.append('catalog_category_id', data.catalog_category_id);
+      formData.append('title[ar]', data.title_ar);
+      formData.append('title[en]', data.title_en);
+      formData.append('content[ar]', data.content_ar);
+      formData.append('content[en]', data.content_en);
+      
+      // بيانات العقار
+      formData.append('price', data.price);
+      formData.append('phone', data.phone);
+      formData.append('mobile', data.mobile);
+      formData.append('property_type', data.property_type);
+      formData.append('bedrooms', data.bedrooms);
+      formData.append('bathrooms', data.bathrooms);
+      formData.append('area', data.area);
+      formData.append('location[ar]', data.location_ar);
+      formData.append('location[en]', data.location_en);
+      formData.append('company_name[ar]', data.company_name_ar);
+      formData.append('company_name[en]', data.company_name_en);
+      
+      // الميزات
+      data.features.forEach((feature, index) => {
+        if (feature.value.trim()) {
+          formData.append(`features[${index}]`, feature.value);
+        }
+      });
+      
+      // الصور
+      if (data.images && data.images.length > 0) {
+        data.images.forEach((image, index) => {
+          if (image instanceof File) {
+            formData.append(`images[${index}]`, image);
+          }
+        });
       }
-    });
-    
-    // إضافة الصور بطريقة صحيحة
-    // تأكد من أن data.images موجودة وليست فارغة
-    if (data.images && data.images.length > 0) {
-      // استخدم forEach لإضافة كل صورة
-      data.images.forEach((image, index) => {
-        if (image instanceof File) {
-          formData.append(`images[${index}]`, image); // أو formData.append('images[]', image);
-        }
-      });
-    }
-    
-    // تسجيل البيانات للتحقق (للتdebugging فقط)
-    for (let [key, value] of formData.entries()) {
-    }
-    
-    // هنا رفع البيانات للخادم
-    const response = await apiServiceCall({
-      url: 'user/create/services', // تأكد من تعديل الرابط حسب API الخاص بك
-      method: 'POST',
-      body: formData,
-      headers: {
+      
+      const response = await apiServiceCall({
+        url: 'user/create/services',
+        method: 'POST',
+        body: formData,
+        headers: {
           'Content-Type': 'multipart/form-data',
-  
-        Authorization: `Bearer ${token}`
-      },
-    });
-    
-    if (response.status_code === 200 || response.status_code === 201) {
-      toast.success(t('success'));
-      
-      // إعادة تعيين الفورم
-      reset();
-      setPreviews([]);
-      previews.forEach(url => URL.revokeObjectURL(url));
-      
-      // إعادة ضبط الحقول
-      setValue('features', [{ value: '' }]);
-      setValue('images', []);
-    } else {
-      toast.error(response.message || t('submitError') || 'Failed to submit');
-    }
-    
-  } catch (error: any) {
-    console.error('Error submitting form:', error);
-    
-    // عرض رسالة الخطأ من السيرفر
-    if (error?.data?.message) {
-      toast.error(error.data.message);
-    } else if (error?.data?.errors) {
-      // إذا كان هناك أخطاء تحقق
-      Object.values(error.data.errors).forEach((err: any) => {
-        if (Array.isArray(err)) {
-          err.forEach(msg => toast.error(msg));
-        } else {
-          toast.error(err);
-        }
+          Authorization: `Bearer ${token}`
+        },
       });
-    } else {
-      toast.error(t('submitError') || 'An error occurred while submitting');
+      
+      if (response.status_code === 200 || response.status_code === 201) {
+        toast.success(t('success'));
+        reset();
+        setPreviews([]);
+        previews.forEach(url => URL.revokeObjectURL(url));
+        setValue('features', [{ value: '' }]);
+        setValue('images', []);
+      } else {
+        toast.error(response.message || t('submitError') || 'Failed to submit');
+      }
+      
+    } catch (error: any) {
+      console.error('Error submitting form:', error);
+      
+      if (error?.data?.message) {
+        toast.error(error.data.message);
+      } else if (error?.data?.errors) {
+        Object.values(error.data.errors).forEach((err: any) => {
+          if (Array.isArray(err)) {
+            err.forEach(msg => toast.error(msg));
+          } else {
+            toast.error(err);
+          }
+        });
+      } else {
+        toast.error(t('submitError') || 'An error occurred while submitting');
+      }
+    } finally {
+      setSubmitting(false);
     }
-  } finally {
-    setSubmitting(false);
-  }
-};
+  };
 
-  // تحويل البيانات للـ Select
   const categoryOptions = categories.map(category => ({
-    value: category.id.toString(), // تحويل ID إلى string
-    label: category.name, // استخدام الاسم مباشرة
+    value: category.id.toString(),
+    label: category.name,
   }));
+
+  const propertyTypeOptions = [
+    { value: 'sale', label: 'للبيع - For Sale' },
+    { value: 'rent', label: 'للإيجار - For Rent' },
+  ];
 
   return (
     <Container>
-      <div className="max-w-5xl mx-auto bg-white p-6 rounded-2xl shadow-md mt-10">
-        <h1 className="text-2xl font-bold mb-8 text-center">
-          {t('title')}
-        </h1>
+      <div className="max-w-6xl mx-auto bg-white p-6 lg:p-10 rounded-[42px] shadow-[0_30px_80px_rgba(16,24,32,0.08)] mt-10 border border-[#E7E1D6]">
+        <div className="text-center mb-10">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#0E6B58] to-[#101820] flex items-center justify-center mx-auto mb-4">
+            <FiHome size={32} className="text-[#C89B3C]" />
+          </div>
+          <h1 className="text-3xl font-black text-[#101820]">
+            {t('title') || 'إضافة عقار جديد'}
+          </h1>
+          <p className="text-[#63756F] mt-2">
+            {t('subtitle') || 'أضف عقارك الآن ووصل لعملاء جادين'}
+          </p>
+        </div>
         
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-          {/* ================= Top Section ================= */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Image Upload */}
+          {/* ========== القسم الأول: الصور والمعلومات الأساسية ========== */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* رفع الصور */}
             <div>
+              <label className="block text-sm font-bold text-[#101820] mb-3">
+                {t('images') || 'صور العقار'}
+              </label>
               <div 
                 onClick={() => fileRef.current?.click()}
-                className="cursor-pointer border-2 border-dashed rounded-2xl flex flex-col items-center justify-center min-h-[260px] bg-[#fafafa] hover:border-primary transition relative"
+                className="cursor-pointer border-2 border-dashed border-[#E7E1D6] rounded-3xl flex flex-col items-center justify-center min-h-[300px] bg-[#F6F4EE] hover:border-[#0E6B58] transition relative"
               >
                 {previews.length > 0 ? (
                   <div className="w-full p-4">
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-3">
                       {previews.map((preview, index) => (
-                        <div key={index} className="relative h-32 group">
+                        <div key={index} className="relative aspect-square rounded-2xl overflow-hidden group">
                           <Image 
                             src={preview} 
-                            alt={`service image ${index + 1}`}
+                            alt={`العقار ${index + 1}`}
                             fill
-                            className="object-cover rounded-lg"
+                            className="object-cover"
                           />
                           <button
                             type="button"
@@ -269,7 +311,7 @@ const onSubmit = async (data: FormValues) => {
                               e.stopPropagation();
                               removeImage(index);
                             }}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
                           >
                             ✕
                           </button>
@@ -278,16 +320,20 @@ const onSubmit = async (data: FormValues) => {
                     </div>
                     {previews.length < 5 && (
                       <div className="mt-4 text-center">
-                        <p className="text-sm text-gray-500">يمكنك إضافة المزيد من الصور</p>
+                        <p className="text-sm text-[#63756F]">
+                          {t('addMoreImages') || 'اضغط لإضافة المزيد من الصور'}
+                        </p>
                       </div>
                     )}
                   </div>
                 ) : (
                   <>
-                    <FiUploadCloud size={40} className="text-primary mb-3" />
-                    <p className="font-medium">{t('uploadImage')}</p>
-                    <span className="text-sm text-gray-400">
-                      {t('imageFormats')}
+                    <FiUploadCloud size={48} className="text-[#0E6B58] mb-3" />
+                    <p className="font-bold text-[#101820]">
+                      {t('uploadImage') || 'اضغط لرفع الصور'}
+                    </p>
+                    <span className="text-sm text-[#63756F] mt-1">
+                      {t('imageFormats') || 'JPG, PNG, WEBP - حتى 5 صور'}
                     </span>
                   </>
                 )}
@@ -300,27 +346,29 @@ const onSubmit = async (data: FormValues) => {
                   onChange={(e) => e.target.files && handleImageChange(e.target.files)}
                 />
               </div>
-              <p className="text-sm text-gray-500 mt-2">يمكنك رفع حتى 5 صور</p>
+              <p className="text-sm text-[#63756F] mt-2">
+                {t('maxImagesNote') || 'يمكنك رفع حتى 5 صور'}
+              </p>
             </div>
 
-            {/* Basic Info */}
-            <div className="flex flex-col gap-5">
-              {/* Category Select */}
+            {/* المعلومات الأساسية */}
+            <div className="space-y-5">
+              {/* القسم */}
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">
-                  {t('category')}
+                <label className="block text-sm font-bold text-[#101820] mb-2">
+                  {t('category') || 'القسم'}
                 </label>
                 {loading ? (
-                  <div className="bg-[#f5f5f5] h-[50px] rounded-xl flex items-center justify-center">
-                    <span className="text-gray-500">جاري تحميل الأقسام...</span>
+                  <div className="bg-[#F6F4EE] h-[54px] rounded-2xl flex items-center justify-center">
+                    <span className="text-[#63756F]">جاري تحميل الأقسام...</span>
                   </div>
                 ) : (
                   <CustomSelect
                     control={control}
                     name="catalog_category_id"
-                    placeholder="اختر القسم"
+                    placeholder={t('selectCategory') || 'اختر القسم'}
                     options={categoryOptions}
-                    rules={{ required: t('categoryRequired') || "Category is required" }}
+                    rules={{ required: t('categoryRequired') || "القسم مطلوب" }}
                   />
                 )}
                 {errors.catalog_category_id && (
@@ -330,25 +378,29 @@ const onSubmit = async (data: FormValues) => {
                 )}
               </div>
 
+              {/* العنوان عربي */}
               <InputComponent
                 register={register}
                 name="title_ar"
-                placeholder={t('titleAr')}
+                placeholder={t('titleAr') || 'العنوان بالعربية'}
                 error={errors.title_ar?.message}
+                icon={<LuBuilding2 className="text-[#63756F]" />}
                 rules={{ 
-                  required: t('titleArRequired') || "Arabic title is required",
+                  required: t('titleArRequired') || "العنوان بالعربية مطلوب",
                   minLength: {
                     value: 3,
-                    message: t('titleShort') || "Title is too short"
+                    message: t('titleShort') || "العنوان قصير جداً"
                   }
                 }}
               />
 
+              {/* العنوان إنجليزي */}
               <InputComponent
                 register={register}
                 name="title_en"
-                placeholder={t('titleEn')}
+                placeholder={t('titleEn') || 'Title in English'}
                 error={errors.title_en?.message}
+                icon={<LuBuilding2 className="text-[#63756F]" />}
                 rules={{ 
                   required: t('titleEnRequired') || "English title is required",
                   minLength: {
@@ -360,27 +412,162 @@ const onSubmit = async (data: FormValues) => {
             </div>
           </div>
 
-          {/* ================= Content Sections ================= */}
+          {/* ========== القسم الثاني: بيانات العقار ========== */}
+          <div className="bg-[#F6F4EE] rounded-3xl p-6 lg:p-8 border border-[#E7E1D6]">
+            <h2 className="text-xl font-black text-[#101820] mb-6 flex items-center gap-3">
+              <FiHome size={24} className="text-[#0E6B58]" />
+              {t('propertyDetails') || 'بيانات العقار'}
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {/* نوع العقار */}
+              <div>
+                <label className="block text-sm font-bold text-[#101820] mb-2">
+                  {t('propertyType') || 'نوع العقار'}
+                </label>
+                <CustomSelect
+                  control={control}
+                  name="property_type"
+                  placeholder={t('selectType') || 'اختر النوع'}
+                  options={propertyTypeOptions}
+                  rules={{ required: t('typeRequired') || "النوع مطلوب" }}
+                />
+                {errors.property_type && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.property_type.message}
+                  </p>
+                )}
+              </div>
+
+              {/* السعر */}
+              <InputComponent
+                register={register}
+                name="price"
+                type="number"
+                placeholder={t('price') || 'السعر'}
+                error={errors.price?.message}
+                icon={<LuDollarSign className="text-[#63756F]" />}
+                rules={{ 
+                  required: t('priceRequired') || "السعر مطلوب",
+                  min: { 
+                    value: 0, 
+                    message: t('priceInvalid') || "السعر يجب أن يكون موجباً" 
+                  }
+                }}
+              />
+
+              {/* عدد الغرف */}
+              <InputComponent
+                register={register}
+                name="bedrooms"
+                type="number"
+                placeholder={t('bedrooms') || 'عدد الغرف'}
+                error={errors.bedrooms?.message}
+                icon={<LuBed className="text-[#63756F]" />}
+                rules={{ 
+                  required: t('bedroomsRequired') || "عدد الغرف مطلوب",
+                  min: { value: 0, message: t('invalidNumber') || "رقم غير صحيح" }
+                }}
+              />
+
+              {/* عدد الحمامات */}
+              <InputComponent
+                register={register}
+                name="bathrooms"
+                type="number"
+                placeholder={t('bathrooms') || 'عدد الحمامات'}
+                error={errors.bathrooms?.message}
+                icon={<LuBath className="text-[#63756F]" />}
+                rules={{ 
+                  required: t('bathroomsRequired') || "عدد الحمامات مطلوب",
+                  min: { value: 0, message: t('invalidNumber') || "رقم غير صحيح" }
+                }}
+              />
+
+              {/* المساحة */}
+              <InputComponent
+                register={register}
+                name="area"
+                type="number"
+                placeholder={t('area') || 'المساحة (م²)'}
+                error={errors.area?.message}
+                icon={<LuMaximize className="text-[#63756F]" />}
+                rules={{ 
+                  required: t('areaRequired') || "المساحة مطلوبة",
+                  min: { value: 0, message: t('invalidNumber') || "رقم غير صحيح" }
+                }}
+              />
+
+              {/* الموقع عربي */}
+              <InputComponent
+                register={register}
+                name="location_ar"
+                placeholder={t('locationAr') || 'الموقع بالعربية'}
+                error={errors.location_ar?.message}
+                icon={<LuMapPin className="text-[#63756F]" />}
+                rules={{ 
+                  required: t('locationRequired') || "الموقع مطلوب"
+                }}
+              />
+
+              {/* الموقع إنجليزي */}
+              <InputComponent
+                register={register}
+                name="location_en"
+                placeholder={t('locationEn') || 'Location in English'}
+                error={errors.location_en?.message}
+                icon={<LuMapPin className="text-[#63756F]" />}
+                rules={{ 
+                  required: t('locationRequired') || "Location is required"
+                }}
+              />
+
+              {/* اسم الشركة عربي */}
+              <InputComponent
+                register={register}
+                name="company_name_ar"
+                placeholder={t('companyAr') || 'اسم الشركة بالعربية'}
+                error={errors.company_name_ar?.message}
+                icon={<LuBuilding2 className="text-[#63756F]" />}
+                rules={{ 
+                  required: t('companyRequired') || "اسم الشركة مطلوب"
+                }}
+              />
+
+              {/* اسم الشركة إنجليزي */}
+              <InputComponent
+                register={register}
+                name="company_name_en"
+                placeholder={t('companyEn') || 'Company name in English'}
+                error={errors.company_name_en?.message}
+                icon={<LuBuilding2 className="text-[#63756F]" />}
+                rules={{ 
+                  required: t('companyRequired') || "Company name is required"
+                }}
+              />
+            </div>
+          </div>
+
+          {/* ========== القسم الثالث: المحتوى ========== */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Arabic Content */}
             <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700">
-                {t('contentAr')}
+              <label className="block text-sm font-bold text-[#101820] mb-2">
+                {t('contentAr') || 'الوصف بالعربية'}
               </label>
               <textarea
                 {...register('content_ar', {
-                  required: t('contentRequired'),
+                  required: t('contentRequired') || "الوصف مطلوب",
                   minLength: {
                     value: 10,
-                    message: t('descriptionShort'),
+                    message: t('descriptionShort') || "الوصف قصير جداً",
                   },
                   maxLength: {
                     value: 1000,
-                    message: t('descriptionLong') || "Content is too long",
+                    message: t('descriptionLong') || "الوصف طويل جداً",
                   },
                 })}
-                placeholder={t('contentArPlaceholder') || "أدخل المحتوى باللغة العربية..."}
-                className="bg-[#f5f5f5] p-4 h-[150px] rounded-xl outline-none w-full resize-none"
+                placeholder={t('contentArPlaceholder') || "أدخل وصف العقار بالعربية..."}
+                className="bg-[#F6F4EE] p-4 h-[160px] rounded-2xl outline-none w-full resize-none border border-[#E7E1D6] focus:ring-2 focus:ring-[#0E6B58] transition"
               />
               {errors.content_ar && (
                 <p className="text-red-500 text-sm mt-1">
@@ -389,25 +576,24 @@ const onSubmit = async (data: FormValues) => {
               )}
             </div>
 
-            {/* English Content */}
             <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700">
-                {t('contentEn')}
+              <label className="block text-sm font-bold text-[#101820] mb-2">
+                {t('contentEn') || 'Description in English'}
               </label>
               <textarea
                 {...register('content_en', {
-                  required: t('contentRequired'),
+                  required: t('contentRequired') || "Description is required",
                   minLength: {
                     value: 10,
-                    message: t('descriptionShort'),
+                    message: t('descriptionShort') || "Description is too short",
                   },
                   maxLength: {
                     value: 1000,
-                    message: t('descriptionLong') || "Content is too long",
+                    message: t('descriptionLong') || "Description is too long",
                   },
                 })}
-                placeholder={t('contentEnPlaceholder') || "Enter content in English..."}
-                className="bg-[#f5f5f5] p-4 h-[150px] rounded-xl outline-none w-full resize-none"
+                placeholder={t('contentEnPlaceholder') || "Enter property description in English..."}
+                className="bg-[#F6F4EE] p-4 h-[160px] rounded-2xl outline-none w-full resize-none border border-[#E7E1D6] focus:ring-2 focus:ring-[#0E6B58] transition"
               />
               {errors.content_en && (
                 <p className="text-red-500 text-sm mt-1">
@@ -417,84 +603,29 @@ const onSubmit = async (data: FormValues) => {
             </div>
           </div>
 
-          {/* ================= Contact Information ================= */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <InputComponent
-              register={register}
-              name="phone"
-              type="number"
-              placeholder={t('phone')}
-              error={errors.phone?.message}
-              rules={{ 
-                required: t('phoneRequired') || "Phone number is required",
-                pattern: {
-                  value: /^[0-9]{10,15}$/,
-                  message: t('phoneInvalid') || "Enter a valid phone number"
-                }
-              }}
-            />
-
-            <InputComponent
-              register={register}
-              name="mobile"
-              type="number"
-              placeholder={t('mobile')}
-              error={errors.mobile?.message}
-              rules={{ 
-                required: t('mobileRequired') || "Mobile number is required",
-                pattern: {
-                  value: /^[0-9]{10,15}$/,
-                  message: t('mobileInvalid') || "Enter a valid mobile number"
-                }
-              }}
-            />
-
-          <InputComponent
-  register={register}
-  name="price"
-  type="number"
-  placeholder={t('price') + ' (AED)'} // placeholder يوضح العملة
-  error={errors.price?.message}
-  className="md:col-span-2"
-  rules={{ 
-    required: t('priceRequired') || "Price is required",
-    min: { 
-      value: 0, 
-      message: t('priceInvalid') || "Price must be positive" 
-    },
-    pattern: {
-      value: /^\d+(\.\d{1,2})?$/,
-      message: t('priceFormat') || "Invalid price format"
-    }
-  }}
-/>
-<p className="text-primary text-sm ">
-  {t('priceNote') || 'Please enter the price in UAE Dirham (AED)'}
-</p>
-
-          </div>
-
-          {/* ================= Features ================= */}
-          <div>
-            <h3 className="font-bold mb-4 text-gray-800">
-              {t('featuresTitle')}
+          {/* ========== القسم الرابع: الميزات ========== */}
+          <div className="bg-[#F6F4EE] rounded-3xl p-6 lg:p-8 border border-[#E7E1D6]">
+            <h3 className="text-xl font-black text-[#101820] mb-4 flex items-center gap-3">
+              <LuCheck size={24} className="text-[#0E6B58]" />
+              {t('featuresTitle') || 'مميزات العقار'}
             </h3>
+            
             <div className="grid grid-cols-1 gap-4">
               {fields.map((field, index) => (
-                <div key={field.id} className="flex gap-2">
+                <div key={field.id} className="flex gap-3">
                   <input
                     {...register(`features.${index}.value`, {
-                      required: index === 0 ? t('featureRequired') || "At least one feature is required" : false,
+                      required: index === 0 ? t('featureRequired') || "مطلوب ميزة واحدة على الأقل" : false,
                     })}
-                    placeholder={`${t('feature')} ${index + 1}`}
-                    className="bg-[#f5f5f5] h-[50px] rounded-xl px-4 w-full outline-none focus:ring-2 focus:ring-primary/20"
+                    placeholder={`${t('feature') || 'ميزة'} ${index + 1}`}
+                    className="bg-white h-[54px] rounded-2xl px-5 w-full outline-none border border-[#E7E1D6] focus:ring-2 focus:ring-[#0E6B58] transition"
                   />
                   {fields.length > 1 && (
                     <button
                       type="button"
                       onClick={() => remove(index)}
-                      className="text-red-500 font-bold w-10 h-[50px] rounded-xl bg-red-50 hover:bg-red-100 transition flex items-center justify-center"
-                      title={t('removeFeature') || "Remove feature"}
+                      className="text-red-500 font-bold w-12 h-[54px] rounded-2xl bg-red-50 hover:bg-red-100 transition flex items-center justify-center"
+                      title={t('removeFeature') || "حذف الميزة"}
                     >
                       ✕
                     </button>
@@ -502,29 +633,75 @@ const onSubmit = async (data: FormValues) => {
                 </div>
               ))}
             </div>
+            
             <button
               type="button"
               onClick={() => append({ value: '' })}
-              className="mt-4 text-primary font-bold hover:text-primary-dark transition flex items-center gap-2"
+              className="mt-4 text-[#0E6B58] font-bold hover:text-[#C89B3C] transition flex items-center gap-2"
             >
-              <span>+</span>
-              <span>{t('addFeature')}</span>
+              <span className="text-2xl">+</span>
+              <span>{t('addFeature') || 'إضافة ميزة جديدة'}</span>
             </button>
           </div>
 
-          {/* ================= Submit ================= */}
+          {/* ========== القسم الخامس: التواصل ========== */}
+          <div className="bg-[#F6F4EE] rounded-3xl p-6 lg:p-8 border border-[#E7E1D6]">
+            <h3 className="text-xl font-black text-[#101820] mb-4 flex items-center gap-3">
+              <LuPhone size={24} className="text-[#0E6B58]" />
+              {t('contactInfo') || 'معلومات التواصل'}
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <InputComponent
+                register={register}
+                name="phone"
+                type="tel"
+                placeholder={t('phone') || 'رقم الهاتف'}
+                error={errors.phone?.message}
+                icon={<LuPhone className="text-[#63756F]" />}
+                rules={{ 
+                  required: t('phoneRequired') || "رقم الهاتف مطلوب",
+                  pattern: {
+                    value: /^[0-9]{10,15}$/,
+                    message: t('phoneInvalid') || "رقم هاتف غير صحيح"
+                  }
+                }}
+              />
+
+              <InputComponent
+                register={register}
+                name="mobile"
+                type="tel"
+                placeholder={t('mobile') || 'رقم الجوال'}
+                error={errors.mobile?.message}
+                icon={<LuSmartphone className="text-[#63756F]" />}
+                rules={{ 
+                  required: t('mobileRequired') || "رقم الجوال مطلوب",
+                  pattern: {
+                    value: /^[0-9]{10,15}$/,
+                    message: t('mobileInvalid') || "رقم جوال غير صحيح"
+                  }
+                }}
+              />
+            </div>
+          </div>
+
+          {/* ========== زر الإرسال ========== */}
           <button
             type="submit"
             disabled={submitting || loading}
-            className="w-full bg-primary text-white py-4 rounded-xl font-bold text-lg hover:bg-primary-dark transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full py-4 bg-gradient-to-r from-[#0E6B58] to-[#101820] text-white rounded-2xl font-black text-lg hover:shadow-[0_20px_50px_rgba(14,107,88,0.3)] hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
           >
             {submitting ? (
               <>
-                <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span>
-                <span>{t('submitting') || 'Submitting...'}</span>
+                <span className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></span>
+                <span>{t('submitting') || 'جاري الإرسال...'}</span>
               </>
             ) : (
-              t('submit')
+              <>
+                <LuSend size={22} />
+                <span>{t('submit') || 'إضافة العقار'}</span>
+              </>
             )}
           </button>
         </form>

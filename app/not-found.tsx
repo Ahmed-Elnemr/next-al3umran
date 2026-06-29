@@ -1,19 +1,16 @@
-import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
 export default function NotFound() {
-  const t = useTranslations('error');
-
   return (
     <div className="flex h-screen flex-col items-center justify-center gap-4">
       <h1 className="text-4xl font-bold">404</h1>
-      <h2 className="text-xl">{t('pageNotFound')}</h2>
-      <p className="text-gray-500">{t('pageNotFoundDesc')}</p>
+      <h2 className="text-xl">Page Not Found / الصفحة غير موجودة</h2>
+      <p className="text-gray-500">The page you are looking for does not exist.</p>
       <Link
         href="/"
-        className="mt-4 rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 transition"
+        className="mt-4 rounded-md bg-[#0E6B58] px-4 py-2 text-white hover:bg-[#0B5445] transition"
       >
-        {t('backHome')}
+        Back to Home / العودة للرئيسية
       </Link>
     </div>
   );

@@ -26,7 +26,7 @@ const config: Config = {
           foreground: 'hsl(var(--popover-foreground))',
         },
         primary: {
-          DEFAULT: '#FFCC00', // اللون الأصفر الذهبي
+          DEFAULT: '#0E6B58', // اللون الأصفر الذهبي
           foreground: '#1F2937', // لون النص فوق الأصفر
         },
         secondary: {
