@@ -31,7 +31,7 @@ const AvailableProperties = () => {
       titleEn: "Luxury Villa With Private Garden",
       locationAr: "القاهرة الجديدة",
       locationEn: "New Cairo",
-      priceAr: "12,500,000 جنيه",
+      priceAr: "12,500,000 درهم",
       priceEn: "EGP 12,500,000",
       status: "sale",
       companyAr: "العمران للتسويق العقاري",
@@ -48,7 +48,7 @@ const AvailableProperties = () => {
       titleEn: "Modern Family House",
       locationAr: "الشيخ زايد",
       locationEn: "Sheikh Zayed",
-      priceAr: "8,900,000 جنيه",
+      priceAr: "8,900,000 درهم",
       priceEn: "EGP 8,900,000",
       status: "sale",
       companyAr: "الصفوة العقارية",
@@ -65,7 +65,7 @@ const AvailableProperties = () => {
       titleEn: "Standalone Villa With Luxury Finish",
       locationAr: "مدينتي",
       locationEn: "Madinaty",
-      priceAr: "65,000 جنيه / شهر",
+      priceAr: "65,000 درهم / شهر",
       priceEn: "EGP 65,000 / Month",
       status: "rent",
       companyAr: "رويال هومز",
@@ -82,7 +82,7 @@ const AvailableProperties = () => {
       titleEn: "Fully Finished Luxury Apartment",
       locationAr: "العاصمة الإدارية",
       locationEn: "New Capital",
-      priceAr: "4,200,000 جنيه",
+      priceAr: "4,200,000 درهم",
       priceEn: "EGP 4,200,000",
       status: "sale",
       companyAr: "نيو كابيتال بروبرتي",
@@ -99,7 +99,7 @@ const AvailableProperties = () => {
       titleEn: "Townhouse In Premium Compound",
       locationAr: "الساحل الشمالي",
       locationEn: "North Coast",
-      priceAr: "38,000 جنيه / شهر",
+      priceAr: "38,000 درهم / شهر",
       priceEn: "EGP 38,000 / Month",
       status: "rent",
       companyAr: "سي فيو العقارية",
@@ -116,7 +116,7 @@ const AvailableProperties = () => {
       titleEn: "Residential Land Investment Opportunity",
       locationAr: "العين السخنة",
       locationEn: "Ain Sokhna",
-      priceAr: "2,900,000 جنيه",
+      priceAr: "2,900,000 درهم",
       priceEn: "EGP 2,900,000",
       status: "sale",
       companyAr: "أفق للاستثمار العقاري",
@@ -133,7 +133,7 @@ const AvailableProperties = () => {
       titleEn: "Standalone House In Quiet Location",
       locationAr: "مدينة الشروق",
       locationEn: "El Shorouk",
-      priceAr: "7,500,000 جنيه",
+      priceAr: "7,500,000 درهم",
       priceEn: "EGP 7,500,000",
       status: "sale",
       companyAr: "دارك العقارية",
@@ -150,7 +150,7 @@ const AvailableProperties = () => {
       titleEn: "Luxury Duplex With Open View",
       locationAr: "مدينة نصر",
       locationEn: "Nasr City",
-      priceAr: "28,000 جنيه / شهر",
+      priceAr: "28,000 درهم / شهر",
       priceEn: "EGP 28,000 / Month",
       status: "rent",
       companyAr: "هوم لاين العقارية",
@@ -278,19 +278,18 @@ const PropertyCard = ({
 
         <div className="absolute start-4 top-4">
           <span
-            className={`rounded-full px-4 py-2 text-xs font-black shadow-lg backdrop-blur-md ${
-              isSale
+            className={`rounded-full px-4 py-2 text-xs font-black shadow-lg backdrop-blur-md ${isSale
                 ? "bg-[#C89B3C] text-[#101820]"
                 : "bg-[#0E6B58] text-white"
-            }`}
+              }`}
           >
             {isSale
               ? isAr
                 ? "للبيع"
                 : "For Sale"
               : isAr
-              ? "للإيجار"
-              : "For Rent"}
+                ? "للإيجار"
+                : "For Rent"}
           </span>
         </div>
 

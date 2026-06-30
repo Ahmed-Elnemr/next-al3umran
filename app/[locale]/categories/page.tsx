@@ -148,7 +148,7 @@ const CategoriesPage = () => {
       titleEn: "Luxury Villa With Private Garden",
       locationAr: "القاهرة الجديدة",
       locationEn: "New Cairo",
-      priceAr: "12,500,000 جنيه",
+      priceAr: "12,500,000 درهم",
       priceEn: "EGP 12,500,000",
       category: "villas",
       beds: 6,
@@ -163,7 +163,7 @@ const CategoriesPage = () => {
       titleEn: "Luxury Fully Finished Apartment",
       locationAr: "العاصمة الإدارية",
       locationEn: "New Capital",
-      priceAr: "4,200,000 جنيه",
+      priceAr: "4,200,000 درهم",
       priceEn: "EGP 4,200,000",
       category: "apartments",
       beds: 3,
@@ -178,7 +178,7 @@ const CategoriesPage = () => {
       titleEn: "Townhouse In Premium Compound",
       locationAr: "الساحل الشمالي",
       locationEn: "North Coast",
-      priceAr: "38,000 جنيه / شهر",
+      priceAr: "38,000 درهم / شهر",
       priceEn: "EGP 38,000 / Month",
       category: "townhouses",
       beds: 4,
@@ -193,7 +193,7 @@ const CategoriesPage = () => {
       titleEn: "Residential Land Investment Opportunity",
       locationAr: "العين السخنة",
       locationEn: "Ain Sokhna",
-      priceAr: "2,900,000 جنيه",
+      priceAr: "2,900,000 درهم",
       priceEn: "EGP 2,900,000",
       category: "lands",
       beds: 0,
@@ -232,22 +232,20 @@ const CategoriesPage = () => {
           <div className="flex items-center gap-2 bg-white rounded-full border border-[#E7E1D6] p-1 shadow-sm">
             <button
               onClick={() => setViewMode("grid")}
-              className={`p-2 rounded-full transition ${
-                viewMode === "grid"
-                  ? "bg-[#0E6B58] text-white"
-                  : "text-[#63756F] hover:bg-[#EEF6F3]"
-              }`}
+              className={`p-2 rounded-full transition ${viewMode === "grid"
+                ? "bg-[#0E6B58] text-white"
+                : "text-[#63756F] hover:bg-[#EEF6F3]"
+                }`}
               aria-label={isAr ? "عرض شبكي" : "Grid View"}
             >
               <Grid3X3 size={18} />
             </button>
             <button
               onClick={() => setViewMode("list")}
-              className={`p-2 rounded-full transition ${
-                viewMode === "list"
-                  ? "bg-[#0E6B58] text-white"
-                  : "text-[#63756F] hover:bg-[#EEF6F3]"
-              }`}
+              className={`p-2 rounded-full transition ${viewMode === "list"
+                ? "bg-[#0E6B58] text-white"
+                : "text-[#63756F] hover:bg-[#EEF6F3]"
+                }`}
               aria-label={isAr ? "عرض قائمة" : "List View"}
             >
               <LayoutList size={18} />
@@ -267,11 +265,10 @@ const CategoriesPage = () => {
                 onClick={() =>
                   setActiveCategory(isActive ? "all" : item.id)
                 }
-                className={`group rounded-[28px] bg-white border p-6 text-left transition ${
-                  isActive
-                    ? "border-[#0E6B58] shadow-[0_8px_30px_rgba(14,107,88,0.15)]"
-                    : "border-[#E7E1D6] shadow-sm hover:shadow-[0_16px_50px_rgba(16,24,32,0.08)] hover:-translate-y-1"
-                }`}
+                className={`group rounded-[28px] bg-white border p-6 text-left transition ${isActive
+                  ? "border-[#0E6B58] shadow-[0_8px_30px_rgba(14,107,88,0.15)]"
+                  : "border-[#E7E1D6] shadow-sm hover:shadow-[0_16px_50px_rgba(16,24,32,0.08)] hover:-translate-y-1"
+                  }`}
               >
                 <div className="flex items-start gap-4">
                   <div
@@ -295,11 +292,10 @@ const CategoriesPage = () => {
                   </div>
 
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center transition shrink-0 ${
-                      isActive
-                        ? "bg-[#0E6B58] text-white"
-                        : "bg-[#EEF6F3] text-[#0E6B58] group-hover:bg-[#0E6B58] group-hover:text-white"
-                    }`}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center transition shrink-0 ${isActive
+                      ? "bg-[#0E6B58] text-white"
+                      : "bg-[#EEF6F3] text-[#0E6B58] group-hover:bg-[#0E6B58] group-hover:text-white"
+                      }`}
                   >
                     {isActive ? (
                       <CheckCircle size={16} />
@@ -339,11 +335,10 @@ const CategoriesPage = () => {
             </div>
 
             <div
-              className={`grid ${
-                viewMode === "grid"
-                  ? "sm:grid-cols-2 lg:grid-cols-4 gap-5"
-                  : "grid-cols-1 gap-4"
-              }`}
+              className={`grid ${viewMode === "grid"
+                ? "sm:grid-cols-2 lg:grid-cols-4 gap-5"
+                : "grid-cols-1 gap-4"
+                }`}
             >
               {filteredProperties.map((property) => (
                 <PropertyCard
@@ -379,7 +374,7 @@ const CategoriesPage = () => {
             </div>
 
             <Link
-              href={`/${locale}/sell-your-service`}
+              href={`/${locale}/add-your-property`}
               className="h-12 rounded-full bg-[#C89B3C] text-[#101820] px-8 flex items-center gap-2 font-black hover:bg-[#d8aa49] transition shrink-0"
             >
               {isAr ? "أضف عقارك الآن" : "Add Your Property Now"}

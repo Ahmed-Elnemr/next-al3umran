@@ -29,7 +29,7 @@ const Footer = () => {
     },
     {
       label: isAr ? "أضف عقارك" : "Add Property",
-      href: `/${locale}/sell-your-service`,
+      href: `/${locale}/add-your-property`,
     },
     {
       label: isAr ? "من نحن" : "About Us",
@@ -91,7 +91,7 @@ const Footer = () => {
               </Link>
 
               <Link
-                href={`/${locale}/sell-your-service`}
+                href={`/${locale}/add-your-property`}
                 className="flex h-14 items-center justify-center rounded-full border border-white/20 bg-white/10 px-7 font-black text-white transition hover:-translate-y-1 hover:bg-white hover:text-[#101820]"
               >
                 {isAr ? "أضف عقارك" : "Add Property"}

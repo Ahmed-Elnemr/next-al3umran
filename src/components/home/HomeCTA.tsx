@@ -35,7 +35,7 @@ const HomeCTA = () => {
             </div>
 
             <Link
-              href={`/${locale}/sell-your-service`}
+              href={`/${locale}/add-your-property`}
               className="h-14 rounded-full bg-[#C89B3C] text-[#101820] px-7 flex items-center justify-center gap-2 font-black shadow-[0_20px_60px_rgba(200,155,60,0.35)] hover:-translate-y-1 transition"
             >
               {isAr ? "ابدأ نشر عقارك" : "Start Listing"}

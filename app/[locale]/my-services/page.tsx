@@ -31,7 +31,7 @@ const page = async ({ params }: LayoutProps) => {
         </h1>
 
         <Link
-          href={`/${locale}/sell-your-service`}
+          href={`/${locale}/add-your-property`}
           className="inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-primary text-white font-medium rounded-lg hover:bg-primary/90 transition-colors duration-200 shadow-sm hover:shadow-md self-center"
         >
           <Plus className="w-4 h-4" />

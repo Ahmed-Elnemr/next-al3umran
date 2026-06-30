@@ -93,7 +93,7 @@ const Hero = () => {
             </Link>
 
             <Link
-              href={`/${locale}/sell-your-service`}
+              href={`/${locale}/add-your-property`}
               className="flex h-14 items-center justify-center gap-2 rounded-full border border-white/35 bg-black/25 px-8 font-black text-white backdrop-blur-[2px] transition hover:-translate-y-1 hover:bg-white hover:text-[#101820]"
             >
               <Building2 size={19} />

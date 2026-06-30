@@ -150,7 +150,7 @@ const Navbar = ({
         <div className="relative hidden items-center gap-3 lg:flex">
           {role === "company" && (
             <Link
-              href={`/${locale}/sell-your-service`}
+              href={`/${locale}/add-your-property`}
               className="flex h-[48px] items-center justify-center gap-2 rounded-full bg-[#C89B3C] px-5 text-sm font-bold text-[#101820] shadow-[0_14px_35px_rgba(200,155,60,0.28)] transition hover:-translate-y-0.5"
             >
               <PlusCircle size={18} />
