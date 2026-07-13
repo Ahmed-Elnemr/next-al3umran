@@ -310,7 +310,27 @@ const CategoriesPage = () => {
         </div>
 
         {/* Featured Properties in Category */}
-        {(activeCategory !== "all" || filteredProperties.length > 0) && (
+        {activeCategory !== "all" && filteredProperties.length === 0 ? (
+          <div className="mb-10 rounded-[32px] border border-[#E7E1D6] bg-white p-12 text-center shadow-[0_10px_40px_rgba(16,24,32,0.05)]">
+            <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-[#F8F3EA] text-[#C89B3C]">
+              <Search size={36} />
+            </div>
+            <h3 className="text-2xl font-black text-[#101820]">
+              {isAr ? "لا توجد عقارات حالياً" : "No Properties Currently"}
+            </h3>
+            <p className="mt-3 text-[#63756F] max-w-md mx-auto leading-relaxed">
+              {isAr
+                ? "عذراً، لا توجد عقارات متاحة في هذه الفئة في الوقت الحالي. يرجى تصفح فئات أخرى أو العودة لاحقاً."
+                : "Sorry, no properties are available in this category at the moment. Please browse other categories or check back later."}
+            </p>
+            <button
+              onClick={() => setActiveCategory("all")}
+              className="mt-6 inline-flex h-12 items-center justify-center rounded-full bg-[#0E6B58] px-8 font-black text-white transition hover:-translate-y-1 hover:shadow-lg"
+            >
+              {isAr ? "عرض كل العقارات" : "View All Properties"}
+            </button>
+          </div>
+        ) : (activeCategory !== "all" || filteredProperties.length > 0) && (
           <div className="mb-10">
             <div className="flex items-center justify-between mb-6">
               <div>

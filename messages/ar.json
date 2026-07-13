@@ -296,6 +296,8 @@
     "customer": "مشتري / عميل",
     "company": "بائع / شركة",
     "select_client_type": "اختر نوع الحساب",
+    "login_success": "تم تسجيل الدخول بنجاح",
+    "session_save_error": "حدث خطأ أثناء حفظ الجلسة",
     "login": "تسجيل الدخول",
     "logging_in": "جاري تسجيل الدخول..."
   },

@@ -1,6 +1,6 @@
 'use client';
-import React, { useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import React, { useState, useEffect } from 'react';
+import { useForm, Controller, useWatch } from 'react-hook-form';
 import InputComponent from '@/components/shared/reusableComponents/InputComponent';
 import CustomSelect from '@/components/shared/reusableComponents/CustomSelect';
 import CountryPhoneInput from '@/components/shared/reusableComponents/CountryPhoneInput';
@@ -23,6 +23,7 @@ const companyRegisterSchema = z.object({
   company_name: z.string().min(3, "company_name_required"),
   email: z.string().email("email_invalid"),
   phone: z.string().min(5, 'mobile_format'),
+  country: z.string().min(1, "country_required"),
   city: z.string().min(1, "city_required"),
   commercial_register: z.string().min(3, "commercial_register_required"),
   company_bio: z.string().min(10, "company_bio_required"),
@@ -60,6 +61,7 @@ const CompanyRegisterForm = () => {
     handleSubmit,
     control,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<CompanyRegisterFormData>({
     resolver: zodResolver(companyRegisterSchema),
@@ -67,6 +69,7 @@ const CompanyRegisterForm = () => {
       company_name: "",
       email: "",
       phone: "",
+      country: "uae",
       city: "",
       commercial_register: "",
       company_bio: "",
@@ -76,15 +79,48 @@ const CompanyRegisterForm = () => {
     },
   });
 
-  const cityOptions = [
-    { value: '1', label: isAr ? 'دبي' : 'Dubai' },
-    { value: '2', label: isAr ? 'أبوظبي' : 'Abu Dhabi' },
-    { value: '3', label: isAr ? 'الشارقة' : 'Sharjah' },
-    { value: '4', label: isAr ? 'عجمان' : 'Ajman' },
-    { value: '5', label: isAr ? 'رأس الخيمة' : 'Ras Al Khaimah' },
-    { value: '6', label: isAr ? 'أم القيوين' : 'Umm Al Quwain' },
-    { value: '7', label: isAr ? 'الفجيرة' : 'Fujairah' },
-  ];
+  const selectedFormCountry = watch("country");
+
+  useEffect(() => {
+    setValue('city', '');
+  }, [selectedFormCountry, setValue]);
+
+  const getCityOptions = (countryCode: string) => {
+    switch (countryCode) {
+      case 'uae':
+        return [
+          { value: 'dubai', label: isAr ? 'دبي' : 'Dubai' },
+          { value: 'abu_dhabi', label: isAr ? 'أبوظبي' : 'Abu Dhabi' },
+          { value: 'sharjah', label: isAr ? 'الشارقة' : 'Sharjah' },
+          { value: 'ajman', label: isAr ? 'عجمان' : 'Ajman' },
+          { value: 'ras_al_khaimah', label: isAr ? 'رأس الخيمة' : 'Ras Al Khaimah' },
+          { value: 'umm_al_quwain', label: isAr ? 'أم القيوين' : 'Umm Al Quwain' },
+          { value: 'fujairah', label: isAr ? 'الفجيرة' : 'Fujairah' },
+        ];
+      case 'iraq':
+        return [
+          { value: 'baghdad', label: isAr ? 'بغداد' : 'Baghdad' },
+          { value: 'basra', label: isAr ? 'البصرة' : 'Basra' },
+          { value: 'erbil', label: isAr ? 'أربيل' : 'Erbil' },
+          { value: 'mosul', label: isAr ? 'الموصل' : 'Mosul' },
+          { value: 'sulaymaniyah', label: isAr ? 'السليمانية' : 'Sulaymaniyah' },
+          { value: 'karbala', label: isAr ? 'كربلاء' : 'Karbala' },
+          { value: 'najaf', label: isAr ? 'النجف' : 'Najaf' },
+        ];
+      case 'syria':
+        return [
+          { value: 'damascus', label: isAr ? 'دمشق' : 'Damascus' },
+          { value: 'aleppo', label: isAr ? 'حلب' : 'Aleppo' },
+          { value: 'homs', label: isAr ? 'حمص' : 'Homs' },
+          { value: 'hama', label: isAr ? 'حماة' : 'Hama' },
+          { value: 'latakia', label: isAr ? 'اللاذقية' : 'Latakia' },
+          { value: 'tartus', label: isAr ? 'طرطوس' : 'Tartus' },
+          { value: 'daraa', label: isAr ? 'درعا' : 'Daraa' },
+        ];
+      default:
+        return [];
+    }
+  };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -108,6 +144,7 @@ const CompanyRegisterForm = () => {
       formData.append('company_name', data.company_name);
       formData.append('email', data.email);
       formData.append('phone', fullPhone);
+      formData.append('country', data.country);
       formData.append('city', data.city);
       formData.append('commercial_register', data.commercial_register);
       formData.append('company_bio', data.company_bio);
@@ -168,6 +205,7 @@ const CompanyRegisterForm = () => {
           name: data.company_name,
           phone: fullPhone,
           email: data.email,
+          country: data.country,
           city: data.city,
           client_type: "company",
           password: data.password,
@@ -242,12 +280,35 @@ const CompanyRegisterForm = () => {
               placeholder={isAr ? 'رقم الهاتف (مثال: 501234567)' : 'Phone number (e.g. 501234567)'}
               countries={countries}
               selectedCountry={selectedCountry}
-              onCountryChange={setSelectedCountry}
+              onCountryChange={(country) => {
+                setSelectedCountry(country);
+              }}
               locale={locale}
             />
             
             {errors.phone && (
               <p className="mt-1 text-sm text-red-600">{t(errors.phone.message)}</p>
+            )}
+          </div>
+
+          {/* اختيار البلد */}
+          <div>
+            <label className={`block text-sm font-bold text-gray-700 mb-2 ${isAr ? 'text-right' : 'text-left'}`}>
+              {isAr ? 'البلد' : 'Country'}
+            </label>
+            <CustomSelect
+              name="country"
+              control={control}
+              options={[
+                { value: 'uae', label: isAr ? 'الإمارات' : 'UAE' },
+                { value: 'syria', label: isAr ? 'سوريا' : 'Syria' },
+                { value: 'iraq', label: isAr ? 'العراق' : 'Iraq' },
+              ]}
+              placeholder={isAr ? 'اختر البلد' : 'Select Country'}
+              icon={<Image src={location} alt="" width={24} height={24} />}
+            />
+            {errors.country && (
+              <p className="mt-1 text-sm text-red-600">{t(errors.country.message)}</p>
             )}
           </div>
 
@@ -259,7 +320,7 @@ const CompanyRegisterForm = () => {
             <CustomSelect
               name="city"
               control={control}
-              options={cityOptions}
+              options={getCityOptions(selectedFormCountry || selectedCountry.code)}
               placeholder={t('city_placeholder')}
               icon={<Image src={location} alt="" width={24} height={24} />}
             />

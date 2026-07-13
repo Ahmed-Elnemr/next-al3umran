@@ -125,6 +125,11 @@ export async function generateMetadata({
     },
   },
 
+  icons: {
+    icon: "/images/logo.png",
+    apple: "/images/logo.png",
+  },
+
   metadataBase: new URL("https://alomran.com"),
 };
 }

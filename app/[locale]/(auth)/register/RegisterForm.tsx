@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useForm } from "react-hook-form";
+import React, { useState, useEffect } from 'react';
+import { useForm, useWatch } from "react-hook-form";
 import { MdLockOutline } from "react-icons/md";
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
@@ -24,6 +24,7 @@ const registerSchema = z.object({
   name: z.string().min(3, 'name_min_length'),
   phone: z.string().min(5, 'mobile_format'),
   email: z.string().email('invalid_email'),
+  country: z.string({ required_error: 'country_required' }),
   city: z.string({ required_error: 'city_required' }),
   password: z.string().min(6, 'password_min'),
   password_confirmation: z.string().min(6, 'password_confirm_min'),
@@ -49,13 +50,51 @@ const RegisterForm: React.FC = () => {
   const [selectedCountry, setSelectedCountry] = useState(countries[0]);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  const { register, handleSubmit, control, formState: { errors }, setValue } =
+  const getCityOptions = (countryCode: string) => {
+    switch (countryCode) {
+      case 'uae':
+        return [
+          { value: 'dubai', label: isAr ? 'دبي' : 'Dubai' },
+          { value: 'abu_dhabi', label: isAr ? 'أبوظبي' : 'Abu Dhabi' },
+          { value: 'sharjah', label: isAr ? 'الشارقة' : 'Sharjah' },
+          { value: 'ajman', label: isAr ? 'عجمان' : 'Ajman' },
+          { value: 'ras_al_khaimah', label: isAr ? 'رأس الخيمة' : 'Ras Al Khaimah' },
+          { value: 'umm_al_quwain', label: isAr ? 'أم القيوين' : 'Umm Al Quwain' },
+          { value: 'fujairah', label: isAr ? 'الفجيرة' : 'Fujairah' },
+        ];
+      case 'iraq':
+        return [
+          { value: 'baghdad', label: isAr ? 'بغداد' : 'Baghdad' },
+          { value: 'basra', label: isAr ? 'البصرة' : 'Basra' },
+          { value: 'erbil', label: isAr ? 'أربيل' : 'Erbil' },
+          { value: 'mosul', label: isAr ? 'الموصل' : 'Mosul' },
+          { value: 'sulaymaniyah', label: isAr ? 'السليمانية' : 'Sulaymaniyah' },
+          { value: 'karbala', label: isAr ? 'كربلاء' : 'Karbala' },
+          { value: 'najaf', label: isAr ? 'النجف' : 'Najaf' },
+        ];
+      case 'syria':
+        return [
+          { value: 'damascus', label: isAr ? 'دمشق' : 'Damascus' },
+          { value: 'aleppo', label: isAr ? 'حلب' : 'Aleppo' },
+          { value: 'homs', label: isAr ? 'حمص' : 'Homs' },
+          { value: 'hama', label: isAr ? 'حماة' : 'Hama' },
+          { value: 'latakia', label: isAr ? 'اللاذقية' : 'Latakia' },
+          { value: 'tartus', label: isAr ? 'طرطوس' : 'Tartus' },
+          { value: 'daraa', label: isAr ? 'درعا' : 'Daraa' },
+        ];
+      default:
+        return [];
+    }
+  };
+
+  const { register, handleSubmit, control, watch, formState: { errors }, setValue } =
     useForm({
       resolver: zodResolver(registerSchema),
       defaultValues: {
         name: '',
         phone: '',
         email: '',
+        country: 'uae',
         city: '',
         password: '',
         password_confirmation: '',
@@ -63,6 +102,12 @@ const RegisterForm: React.FC = () => {
         profile_image: '',
       },
     });
+
+  const selectedFormCountry = watch("country");
+
+  useEffect(() => {
+    setValue('city', '');
+  }, [selectedFormCountry, setValue]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -98,6 +143,7 @@ const RegisterForm: React.FC = () => {
             phone: formData.get("phone") as string,
             email: formData.get("email") as string,
             city: formData.get("city") as string,
+            country: formData.get("country") as string,
             client_type: "customer",
             password: formData.get("password") as string,
             profile_image_url: imagePreview || "/images/register-user.png"
@@ -139,6 +185,7 @@ const RegisterForm: React.FC = () => {
     formData.append("name", data.name);
     formData.append("email", data.email);
     formData.append("phone", fullPhone);
+    formData.append("country", data.country);
     formData.append("city", data.city);
     formData.append("password", data.password);
     formData.append("password_confirmation", data.password_confirmation);
@@ -186,11 +233,32 @@ const RegisterForm: React.FC = () => {
             placeholder={isAr ? 'رقم الهاتف (مثال: 501234567)' : 'Phone number (e.g. 501234567)'}
             countries={countries}
             selectedCountry={selectedCountry}
-            onCountryChange={setSelectedCountry}
+            onCountryChange={(country) => {
+              setSelectedCountry(country);
+            }}
             locale={locale}
           />
           
           {errors.phone && <p className="text-sm text-red-600 mt-1">{t(errors.phone.message)}</p>}
+        </div>
+
+        {/* البلد */}
+        <div>
+          <label className={`block text-sm font-bold text-gray-700 mb-2 ${isAr ? 'text-right' : 'text-left'}`}>
+            {isAr ? 'البلد' : 'Country'}
+          </label>
+          <CustomSelect
+            name="country"
+            control={control}
+            options={[
+              { value: 'uae', label: isAr ? 'الإمارات' : 'UAE' },
+              { value: 'syria', label: isAr ? 'سوريا' : 'Syria' },
+              { value: 'iraq', label: isAr ? 'العراق' : 'Iraq' },
+            ]}
+            placeholder={isAr ? 'اختر البلد' : 'Select Country'}
+            icon={<Image src={locationIcon} alt="" width={24} height={24} />}
+          />
+          {errors.country && <p className="text-sm text-red-600 mt-1">{t(errors.country.message)}</p>}
         </div>
 
         {/* الايميل */}
@@ -216,15 +284,7 @@ const RegisterForm: React.FC = () => {
           <CustomSelect
             name="city"
             control={control}
-            options={[
-              { value: '1', label: isAr ? 'دبي' : 'Dubai' },
-              { value: '2', label: isAr ? 'أبوظبي' : 'Abu Dhabi' },
-              { value: '3', label: isAr ? 'الشارقة' : 'Sharjah' },
-              { value: '4', label: isAr ? 'عجمان' : 'Ajman' },
-              { value: '5', label: isAr ? 'رأس الخيمة' : 'Ras Al Khaimah' },
-              { value: '6', label: isAr ? 'أم القيوين' : 'Umm Al Quwain' },
-              { value: '7', label: isAr ? 'الفجيرة' : 'Fujairah' },
-            ]}
+            options={getCityOptions(selectedFormCountry || selectedCountry.code)}
             placeholder={t('city_placeholder')}
             icon={<Image src={locationIcon} alt="" width={24} height={24} />}
           />
