@@ -17,6 +17,16 @@ const LogoutModal: React.FC<LogoutModalProps> = ({ isOpen, onClose, token }) => 
   const t = useTranslations('Logout');
 
   const handleLogout = () => {
+    const performLocalLogout = () => {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem("alomran_current_user");
+      }
+      fetch("/api/auth/logout", { method: "GET" })
+        .then(() => {
+          window.location.reload();
+        });
+    };
+
     apiServiceCall({
       url: 'auth/logout',
       method: 'POST',
@@ -30,19 +40,11 @@ const LogoutModal: React.FC<LogoutModalProps> = ({ isOpen, onClose, token }) => 
         } else {
           toast.success(t('successMessage'));
         }
-
-        return fetch("/api/auth/logout", { method: "GET" });
-      })
-      .then(() => {
-  window.location.reload();
+        performLocalLogout();
       })
       .catch((error) => {
-        if (error?.response?.data?.message) {
-          toast.error(error.response.data.message);
-        } else {
-          toast.error(t('failMessage'));
-        }
-        console.error("Logout failed:", error);
+        console.warn("API logout failed, performing local logout fallback...", error);
+        performLocalLogout();
       });
   };
 

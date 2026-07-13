@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import wallet from '@/public/images/wallet.png';
-import sar from '@/public/images/redSar.png';
+import sar from '@/public/images/sar.png';
 import InputComponent from '@/components/shared/reusableComponents/InputComponent';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
@@ -42,23 +42,23 @@ const AccountBalance: React.FC<AccountBalanceProps> = ({ balance, bank, operatio
   const t = useTranslations('wallet');
 
   return (
-    <div className="mt-14 w-full lg:w-[50%]">
-      <Image src={wallet} alt="wallet" width={159} height={121} className="mx-auto" />
-
-      <div className="flex flex-col gap-2 items-center justify-center mt-5">
-        <p className="text-sm font-medium text-[#707070]">{t('wallet_balance')}</p>
-        <div className="flex items-center gap-2">
-          <span className="text-[43px] text-[#EB2302] font-bold">{balance}</span>
-          <Image src={sar} alt="sar" width={42.92} height={36} />
+    <div className="w-full flex flex-col items-center">
+      <div className="flex flex-col gap-2 items-center justify-center py-4 bg-[#F4F8F6] border border-[#0E6B58]/10 rounded-[28px] w-full max-w-sm mb-6">
+        <p className="text-xs font-bold text-[#5E6D68] uppercase tracking-wider">{t('wallet_balance')}</p>
+        <div className="flex items-center gap-3">
+          <span className="text-4xl font-black text-[#0E6B58]">{balance}</span>
+          <Image src={sar} alt="sar" width={32} height={27} className="object-contain" />
         </div>
       </div>
 
-      <div className="bg-[#f5f5f6] mt-5 !w-full lg:w-[414px] p-5 rounded-[15px] flex items-center justify-between">
-        <div>
-          <h3>{bank.bank_name}</h3>
-          <h2 className="my-1">{bank.name}</h2>
-          <h4>{bank.number}</h4>
-          <p className="text-xs text-gray-500 mt-1 break-all">
+      <div className="bg-[#F8F6F1] border border-[#E8E1D5] w-full max-w-md p-6 rounded-[24px] mb-6">
+        <h4 className="text-xs font-bold text-[#7A8782] uppercase tracking-wider mb-2">
+          {locale === 'ar' ? 'الحساب البنكي المرتبط' : 'Linked Bank Account'}
+        </h4>
+        <div className="space-y-1">
+          <h3 className="text-lg font-black text-[#101820]">{bank.bank_name}</h3>
+          <p className="text-sm font-bold text-[#5E6D68]">{bank.name}</p>
+          <p className="text-xs font-medium text-[#7A8782] mt-2 break-all bg-white/50 px-3 py-1.5 rounded-lg border border-[#E8E1D5]/40">
             {bank.iban?.slice(0, 5)} ************** {bank.iban?.slice(-2)}
           </p>
         </div>
@@ -66,22 +66,24 @@ const AccountBalance: React.FC<AccountBalanceProps> = ({ balance, bank, operatio
 
       <button
         onClick={() => setIsModalOpen(true)}
-        className="bg-[#EB2302] text-white mt-8 py-2 px-4 rounded-md w-full h-[62.67px]"
+        className="bg-[#0E6B58] text-white py-4 px-6 rounded-full font-bold w-full max-w-md transition hover:bg-[#0a4e40] shadow-[0_14px_35px_rgba(14,107,88,0.2)] mb-8"
       >
         {t('withdraw_request')}
       </button>
 
       {operations?.length > 0 && (
-        <div className="mt-10 lg:w-[414px] mx-auto">
-          <h3 className="text-lg font-bold text-[#EB2302] mb-4">{t('wallet_history')}</h3>
-          <ul className="flex flex-col gap-4">
+        <div className="w-full max-w-md mt-6">
+          <h3 className="text-lg font-black text-[#101820] mb-4 border-b border-[#E7E1D6] pb-2">
+            {t('wallet_history')}
+          </h3>
+          <ul className="flex flex-col gap-3">
             {operations.map((operation) => (
-              <li key={operation.id} className="bg-white shadow p-4 rounded-md">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-semibold text-[#333]">
+              <li key={operation.id} className="bg-[#F6F4EE]/40 border border-[#E7E1D6]/70 p-4 rounded-2xl shadow-sm">
+                <div className="flex justify-between items-center gap-4">
+                  <span className="text-sm font-bold text-[#101820] leading-relaxed">
                     {operation.content}
                   </span>
-                  <span className="text-xs text-gray-500">{operation.created_at}</span>
+                  <span className="text-[11px] font-medium text-[#7A8782] shrink-0">{operation.created_at}</span>
                 </div>
               </li>
             ))}
@@ -129,20 +131,20 @@ const WithdrawModal: React.FC<ModalProps> = ({ onClose, token, locale }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg w-[90%] lg:w-[477px] relative">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4 backdrop-blur-sm">
+      <div className="bg-[#F6F4EE] border border-[#E7E1D6] p-8 rounded-[28px] w-full max-w-md relative shadow-[0_30px_80px_rgba(16,24,32,0.15)] text-center">
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 text-gray-500 hover:text-black text-2xl"
+          className="absolute top-4 end-4 text-gray-500 hover:text-black text-2xl transition"
         >
           &times;
         </button>
-        <h2 className="text-[22px] text-[#EB2302] font-extrabold mb-4 text-center">{t('withdraw_request')}</h2>
-        <p className="text-gray-600 mb-6 text-center">
+        <h2 className="text-2xl font-black text-[#101820] mb-2 mt-4">{t('withdraw_request')}</h2>
+        <p className="text-[#5E6D68] mb-6 text-sm leading-relaxed">
           {t('withdraw_instruction')}
         </p>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="my-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="my-5 text-right">
           <InputComponent
             register={register}
             name="amount"
@@ -153,7 +155,7 @@ const WithdrawModal: React.FC<ModalProps> = ({ onClose, token, locale }) => {
           <div className="flex justify-center gap-4 mt-6">
             <button
               type="submit"
-              className="bg-[#EB2302] text-white px-6 py-2 rounded h-[62.5px] w-full"
+              className="bg-[#0E6B58] text-white px-6 py-4 rounded-full font-bold w-full h-[58px] transition hover:bg-[#0a4e40] shadow-[0_14px_35px_rgba(14,107,88,0.2)]"
             >
               {t('send_request')}
             </button>

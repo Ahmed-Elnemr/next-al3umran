@@ -37,6 +37,16 @@ export default async function RootLayout({
 
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
+  const role = cookieStore.get("client_type")?.value;
+  const userDataInfoStr = cookieStore.get("userDataInfo")?.value;
+  let userData = null;
+  if (userDataInfoStr) {
+    try {
+      userData = JSON.parse(userDataInfoStr);
+    } catch (e) {
+      console.error("Failed to parse userDataInfo cookie in layout", e);
+    }
+  }
   const isAr = currentLocale === "ar";
 
   // const logoAr = settings.find((item: any) => item.key === "logo_ar")?.value;
@@ -62,11 +72,13 @@ export default async function RootLayout({
           <Navbar
             bank_account={settings?.find((item: any) => item.key === "bankAccount")}
             token={token}
+            role={role}
+            userData={userData}
             notificationsUnReadCount={0}
           />
           {/* <WhatsApp locale={currentLocale}/> */}
           <div>{children}</div>
-          <Footer/>
+          <Footer />
           {/* <Footer settings={settings} locale={currentLocale} token={token} /> */}
         </div>
       </Providers>

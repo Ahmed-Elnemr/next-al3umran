@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { use, useRef } from "react";
+import { use, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -27,6 +27,8 @@ export default function PropertyDetailsPage({ params }: PageProps) {
   const { locale, id } = use(params);
   const isAr = locale === "ar";
   const BackIcon = isAr ? ArrowRight : ArrowLeft;
+
+  const [mainImage, setMainImage] = useState<string | null>(null);
 
   const sliderRef = useRef<HTMLDivElement | null>(null);
   const isDragging = useRef(false);
@@ -210,6 +212,8 @@ export default function PropertyDetailsPage({ params }: PageProps) {
     );
   }
 
+  const currentMainImage = mainImage || property.image;
+
   const title = isAr ? property.titleAr : property.titleEn;
   const location = isAr ? property.locationAr : property.locationEn;
   const price = isAr ? property.priceAr : property.priceEn;
@@ -277,10 +281,10 @@ export default function PropertyDetailsPage({ params }: PageProps) {
             <div className="overflow-hidden rounded-[36px] border border-white/70 bg-white/65 p-4 shadow-[0_30px_100px_rgba(16,24,32,0.10)] backdrop-blur-xl">
               <div className="relative h-[460px] overflow-hidden rounded-[28px]">
                 <img
-                  src={property.image}
+                  src={currentMainImage}
                   alt={title}
                   draggable={false}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover transition-opacity duration-300"
                 />
 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
@@ -339,7 +343,10 @@ export default function PropertyDetailsPage({ params }: PageProps) {
                         src={img}
                         alt={`${title} ${index + 1}`}
                         draggable={false}
-                        className="h-full w-full object-cover transition duration-500 hover:scale-105"
+                        onClick={() => setMainImage(img)}
+                        className={`h-full w-full object-cover transition duration-500 hover:scale-105 cursor-pointer ${
+                          currentMainImage === img ? "opacity-100" : "opacity-70 hover:opacity-100"
+                        }`}
                       />
                     </div>
                   ))}

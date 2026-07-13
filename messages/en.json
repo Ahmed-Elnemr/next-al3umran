@@ -35,7 +35,7 @@
     "latestEvents": "Services",
     "howToOrder": "How to Order?",
     "support": "Support",
-    "sellTicket": "Sell Your Service",
+    "sellTicket": "Add Property",
     "welcome": "Welcome",
     "newAccount": "Create Account",
     "login": "Login"
@@ -297,11 +297,19 @@
     "login": "Login",
     "password_placeholder": "Enter password",
     "select_client_type": "Select client type",
-    "customer": "Customer",
-    "company": "Company",
+    "customer": "Buyer / Client",
+    "company": "Seller / Company",
     "login_success": "Login successful",
     "password_invalid": "Invalid password",
-    "client_type_required": "Client type is required"
+    "client_type_required": "Client type is required",
+    "select_client_type": "Select account type",
+    "login": "Login",
+    "logging_in": "Logging in..."
+  },
+  "Countries": {
+    "uae": "UAE 🇦🇪",
+    "syria": "Syria 🇸🇾",
+    "iraq": "Iraq 🇮🇶"
   },
   "LoginPage": {
     "login_image_alt": "Login illustration",
@@ -642,50 +650,49 @@
   "desc": "Enter the verification code that was sent to your mobile number"
 },
 "my-tickets" : {
-      "noTickets" : "No tickets are currently available",
-  "square" : "Square",
+  "noTickets" : "No properties are currently listed",
+  "square" : "Bedrooms",
   "sar" : "AED",
-  "myTickets": "My Tickets",
-  "ticketCategory": "Category",
-  "row": "Row",
-  "seat": "Seat",
+  "myTickets": "My Listed Properties",
+  "ticketCategory": "Type",
+  "row": "Bathrooms",
+  "seat": "Area (m²)",
   "price": "Price",
   "status": "Status",
   "paid": "Paid",
-  "pending": "Pending",
-  "note": "Note: Seat number does not appear in the ticket details for sale, it is only for identifying adjacent tickets."
+  "pending": "Pending"
 },
   "CancelTicketModal": {
-    "title": "Cancel Ticket",
-    "confirmation": "Are you sure you want to cancel ticket number {ticketId}?",
+    "title": "Cancel Listing",
+    "confirmation": "Are you sure you want to cancel this listing?",
     "close": "Close",
     "confirm": "Confirm",
     "loading": "Cancelling...",
-    "success": "The ticket has been successfully cancelled ",
-    "error": "An error occurred while cancelling the ticket "
+    "success": "The listing has been successfully cancelled ",
+    "error": "An error occurred while cancelling the listing "
   },
   "serviceDetails" : {
- "aboutService": "About the Service",
-    "features": "Service Features",
-      "contactWhatsapp": "Contact us on WhatsApp!",
-  "contactPhone": "Call us directly to book!"
+    "aboutService": "About the Property",
+    "features": "Property Features",
+    "contactWhatsapp": "Contact us on WhatsApp!",
+    "contactPhone": "Call us directly to book!"
   },
   "EditTicketModal": {
-    "title": "Edit Ticket",
-    "subtitle": "Edit ticket details for ticket number {ticketId}",
-    "seatNumber": "Seat Number",
-    "rowNumber": "Row Number",
-    "blockNumber": "Block Number",
-    "price": "Ticket Price",
-    "stand": "Choose Category",
-    "standPlaceholder": "Select a category",
-    "ticketImage": "Ticket Image",
+    "title": "Edit Property",
+    "subtitle": "Edit property details",
+    "seatNumber": "Area (m²)",
+    "rowNumber": "Bathrooms Count",
+    "blockNumber": "Bedrooms Count",
+    "price": "Price",
+    "stand": "Select Type",
+    "standPlaceholder": "Select property type",
+    "ticketImage": "Property Image",
     "chooseImage": "Click here to choose an image",
     "cancel": "Cancel",
     "save": "Save",
     "loading": "Saving...",
-    "success": "The ticket has been updated successfully",
-    "error": "An error occurred while updating the ticket"
+    "success": "The property details have been updated successfully",
+    "error": "An error occurred while updating the property"
   },
     "PaymentStatusModal": {
     "successTitle": "Payment Successful",

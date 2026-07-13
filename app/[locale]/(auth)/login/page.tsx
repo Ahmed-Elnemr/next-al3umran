@@ -17,7 +17,7 @@ const LoginPage = async ({ params }: LayoutProps) => {
   const t = await getTranslations('LoginPage');
 
   return (
-   <div className = 'relative'>
+   <div className = 'relative my-10'>
       <div className = 'absolute top-20 hidden md:block left-0  '>
           <Image src = {bgLeft} alt = 'bgLeft' />
         </div>

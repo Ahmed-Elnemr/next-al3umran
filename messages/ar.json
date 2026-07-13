@@ -17,7 +17,7 @@
     "latestEvents": "الخدمات",
     "howToOrder": "كيف تطلب ؟",
     "support": "الدعم الفني",
-    "sellTicket": "بيع خدمتك",
+    "sellTicket": "إضافة عقار",
     "welcome": "مرحبا",
     "newAccount": "حساب جديد",
     "login": "تسجيل الدخول"
@@ -291,14 +291,18 @@
     "otp_sent": "تم إرسال كود التحقق إلى هاتفك المحمول",
     "login_error": "حدث خطأ أثناء تسجيل الدخول",
     "logging_in": "جاري تسجيل الدخول...",
-    "login": "تسجيل الدخول",
-    "password_placeholder": "أدخل كلمة المرور",
-    "select_client_type": "اختر نوع المستخدم",
-    "customer": "عميل",
-    "company": "شركة",
-    "login_success": "تم تسجيل الدخول بنجاح",
     "password_invalid": "كلمة المرور غير صالحة",
-    "client_type_required": "يجب اختيار نوع المستخدم"
+    "client_type_required": "يجب اختيار نوع المستخدم",
+    "customer": "مشتري / عميل",
+    "company": "بائع / شركة",
+    "select_client_type": "اختر نوع الحساب",
+    "login": "تسجيل الدخول",
+    "logging_in": "جاري تسجيل الدخول..."
+  },
+  "Countries": {
+    "uae": "الإمارات 🇦🇪",
+    "syria": "سوريا 🇸🇾",
+    "iraq": "العراق 🇮🇶"
   },
   "LoginPage": {
     "login_image_alt": "رسم توضيحي لتسجيل الدخول",
@@ -608,44 +612,43 @@
     "desc": "قم بإدخال كود التحقق الذي تم إرساله إليك عبر رقم الجوال"
   },
   "my-tickets": {
-    "noTickets": "لا توجد تذاكر متاحة حالياً.",
-    "square": "المربع",
+    "noTickets": "لا توجد عقارات معروضة حالياً.",
+    "square": "الغرف",
     "sar": "درهم",
-    "myTickets": "تذاكري",
-    "ticketCategory": "الفئة",
-    "row": "الصف",
-    "seat": "المقعد",
+    "myTickets": "عقاراتي المعروضة",
+    "ticketCategory": "النوع",
+    "row": "الحمامات",
+    "seat": "المساحة (م²)",
     "price": "السعر",
     "status": "الحالة",
     "paid": "مدفوع",
-    "pending": "قيد الانتظار",
-    "note": "ملاحظة: رقم المقعد لا يظهر في معلومات التذكرة المعروضة للبيع، فقط لتحديد التذاكر المتجاورة."
+    "pending": "قيد الانتظار"
   },
   "CancelTicketModal": {
-    "title": "إلغاء التذكرة",
-    "confirmation": "هل أنت متأكد أنك تريد إلغاء التذكرة رقم {ticketId}؟",
+    "title": "إلغاء الإعلان",
+    "confirmation": "هل أنت متأكد أنك تريد إلغاء هذا الإعلان؟",
     "close": "إغلاق",
     "confirm": "تأكيد",
     "loading": "جارٍ الإلغاء...",
-    "success": "تم إلغاء التذكرة بنجاح ✅",
-    "error": "حدث خطأ أثناء إلغاء التذكرة ❌"
+    "success": "تم إلغاء الإعلان بنجاح ✅",
+    "error": "حدث خطأ أثناء إلغاء الإعلان ❌"
   },
   "EditTicketModal": {
-    "title": "تعديل التذكرة",
-    "subtitle": "تعديل بيانات التذكرة رقم {ticketId}",
-    "seatNumber": "رقم المقعد",
-    "rowNumber": "رقم الصف",
-    "blockNumber": "رقم المربع",
-    "price": "سعر التذكرة",
-    "stand": "اختر الفئة",
-    "standPlaceholder": "اختر الفئة",
-    "ticketImage": "صورة التذكرة",
+    "title": "تعديل العقار",
+    "subtitle": "تعديل بيانات العقار",
+    "seatNumber": "المساحة (م²)",
+    "rowNumber": "عدد الحمامات",
+    "blockNumber": "عدد الغرف",
+    "price": "السعر",
+    "stand": "اختر النوع",
+    "standPlaceholder": "اختر النوع",
+    "ticketImage": "صورة العقار",
     "chooseImage": "اضغط هنا لاختيار صورة",
     "cancel": "إلغاء",
     "save": "حفظ",
     "loading": "جاري الحفظ...",
-    "success": "تم تعديل التذكرة بنجاح",
-    "error": "حدث خطأ أثناء تعديل التذكرة"
+    "success": "تم تعديل بيانات العقار بنجاح",
+    "error": "حدث خطأ أثناء تعديل العقار"
   },
   "PaymentStatusModal": {
     "successTitle": "تم الدفع بنجاح",

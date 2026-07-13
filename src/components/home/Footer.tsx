@@ -205,12 +205,23 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="flex flex-col items-center justify-between gap-4 border-t border-white/10 py-6 text-center md:flex-row">
+        <div className="flex flex-col items-center justify-between gap-6 border-t border-white/10 py-6 text-center lg:flex-row">
           <p className="text-sm font-bold text-white/50">
             {isAr
               ? "© جميع الحقوق محفوظة لمنصة العمران"
               : "© All rights reserved for Al Omran"}
           </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-3 bg-white/5 px-4 py-2.5 rounded-2xl border border-white/5">
+            {[1, 2, 3, 4, 5, 6, 7].map((num) => (
+              <img
+                key={num}
+                src={`/images/pay-${num}.png`}
+                alt={`pay-${num}`}
+                className="h-5 object-contain opacity-70 hover:opacity-100 transition-opacity"
+              />
+            ))}
+          </div>
 
           <div className="flex flex-wrap items-center justify-center gap-5 text-sm font-bold text-white/50">
             <Link href={`/${locale}/privacy`} className="transition hover:text-[#C89B3C]">

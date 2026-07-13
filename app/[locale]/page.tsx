@@ -4,6 +4,7 @@ import Hero from "../../src/components/home/Hero";
 import HomeCTA from "../../src/components/home/HomeCTA";
 import WhyAlOmran from "../../src/components/home/WhyAlOmran";
 import AvailableProperties from "../../src/components/home/AvailableProperties";
+import PackagesSection from "../../src/components/home/PackagesSection";
 import Footer from "../../src/components/home/Footer";
 import { getHomeData } from "../../src/lib/serverActions";
 import { cookies } from "next/headers";
@@ -36,6 +37,8 @@ export default async function HomePage({ params }: LayoutProps) {
       <WhyAlOmran />
 
       <BookingSteps />
+
+      <PackagesSection />
 
       <HomeCTA />
 

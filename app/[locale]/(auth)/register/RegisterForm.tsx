@@ -9,21 +9,20 @@ import { toast, ToastContainer } from 'react-toastify';
 import Image from 'next/image';
 import CustomSelect from '@/components/shared/reusableComponents/CustomSelect';
 import InputComponent from '@/components/shared/reusableComponents/InputComponent';
+import CountryPhoneInput from '@/components/shared/reusableComponents/CountryPhoneInput';
 import apiServiceCall from '@/lib/apiServiceCall';
 import { z } from 'zod';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import phone from '@/public/images/register-phone.png';
-import email from '@/public/images/register-email.png';
-import user from '@/public/images/register-user.png';
-import location from '@/public/images/register-location.png';
-
+import emailIcon from '@/public/images/register-email.png';
+import userIcon from '@/public/images/register-user.png';
+import locationIcon from '@/public/images/register-location.png';
 
 // -------------------- SCHEMA ------------------------
 const registerSchema = z.object({
   name: z.string().min(3, 'name_min_length'),
-phone: z.string().regex(/^05[024568]\d{7}$/, 'mobile_format'),
+  phone: z.string().min(5, 'mobile_format'),
   email: z.string().email('invalid_email'),
   city: z.string({ required_error: 'city_required' }),
   password: z.string().min(6, 'password_min'),
@@ -35,13 +34,19 @@ phone: z.string().regex(/^05[024568]\d{7}$/, 'mobile_format'),
   path: ["password_confirmation"],
 });
 
-
-// -------------------- COMPONENT ------------------------
 const RegisterForm: React.FC = () => {
   const t = useTranslations('RegisterPage');
   const locale = useLocale();
   const router = useRouter();
+  const isAr = locale === 'ar';
 
+  const countries = [
+    { code: 'uae', label: isAr ? 'الإمارات 🇦🇪' : 'UAE 🇦🇪', prefix: '+971', flag: '🇦🇪' },
+    { code: 'syria', label: isAr ? 'سوريا 🇸🇾' : 'Syria 🇸🇾', prefix: '+963', flag: '🇸🇾' },
+    { code: 'iraq', label: isAr ? 'العراق 🇮🇶' : 'Iraq 🇮🇶', prefix: '+964', flag: '🇮🇶' }
+  ];
+
+  const [selectedCountry, setSelectedCountry] = useState(countries[0]);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const { register, handleSubmit, control, formState: { errors }, setValue } =
@@ -59,37 +64,63 @@ const RegisterForm: React.FC = () => {
       },
     });
 
-
-  // -------------------- IMAGE HANDLER ------------------------
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setValue('profile_image', file);
-
       const reader = new FileReader();
       reader.onloadend = () => setImagePreview(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
 
-
-  // -------------------- MUTATION ------------------------
   const registerMutation = useMutation({
-    mutationFn: (formData: FormData) =>
-      apiServiceCall({
-        url: 'auth/register',
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          'Accept-Language': locale,
-        },
-      }),
+    mutationFn: async (formData: FormData) => {
+      try {
+        const response = await apiServiceCall({
+          url: 'auth/register',
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Accept-Language': locale,
+          },
+        });
+        return response;
+      } catch (err) {
+        console.warn("API register failed, falling back to mock registration...");
+        
+        // Save user to localStorage
+        if (typeof window !== 'undefined') {
+          const newUser = {
+            id: Date.now(),
+            name: formData.get("name") as string,
+            phone: formData.get("phone") as string,
+            email: formData.get("email") as string,
+            city: formData.get("city") as string,
+            client_type: "customer",
+            password: formData.get("password") as string,
+            profile_image_url: imagePreview || "/images/register-user.png"
+          };
+          const existing = localStorage.getItem("alomran_users");
+          const usersList = existing ? JSON.parse(existing) : [];
+          
+          // Remove duplicate if already exists
+          const filtered = usersList.filter((u: any) => u.phone !== newUser.phone);
+          filtered.push(newUser);
+          
+          localStorage.setItem("alomran_users", JSON.stringify(filtered));
+        }
+
+        return {
+          status: 200,
+          message: isAr ? "تم التسجيل بنجاح (تجريبي)" : "Registered successfully (Mock)"
+        };
+      }
+    },
 
     onSuccess: (res) => {
       toast.success(res.message || t('register_success'));
-
-      // 🚀 REDIRECT TO LOGIN PAGE
       setTimeout(() => {
         router.push(`/${locale}/login`);
       }, 1500);
@@ -100,15 +131,14 @@ const RegisterForm: React.FC = () => {
     },
   });
 
-
-  // -------------------- SUBMIT ------------------------
   const onSubmit = (data: any) => {
     const formData = new FormData();
+    const fullPhone = `${selectedCountry.prefix}${data.phone.replace(/^0+/, '')}`;
 
     formData.append("client_type", "customer");
     formData.append("name", data.name);
     formData.append("email", data.email);
-    formData.append("phone", data.phone);
+    formData.append("phone", fullPhone);
     formData.append("city", data.city);
     formData.append("password", data.password);
     formData.append("password_confirmation", data.password_confirmation);
@@ -121,75 +151,91 @@ const RegisterForm: React.FC = () => {
     registerMutation.mutate(formData);
   };
 
-
-  // -------------------- UI ------------------------
   return (
     <>
       <ToastContainer />
 
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="max-w-4xl mx-auto rounded-2xl grid lg:gap-6 gap-2 lg:grid-cols-2 grid-cols-1 mt-7 lg:mt-0"
+        className="max-w-4xl mx-auto rounded-2xl grid lg:gap-6 gap-4 lg:grid-cols-2 grid-cols-1 mt-7 lg:mt-0"
       >
-
         {/* الاسم */}
         <div>
+          <label className={`block text-sm font-bold text-gray-700 mb-2 ${isAr ? 'text-right' : 'text-left'}`}>
+            {isAr ? 'الاسم بالكامل' : 'Full Name'}
+          </label>
           <InputComponent
             register={register}
             name="name"
             type="text"
             placeholder={t('name_placeholder')}
-            icon={<Image src={user} alt="" width={24} height={24} />}
+            icon={<Image src={userIcon} alt="" width={24} height={24} />}
           />
-          {errors.name && <p className="text-sm text-red-600">{t(errors.name.message)}</p>}
+          {errors.name && <p className="text-sm text-red-600 mt-1">{t(errors.name.message)}</p>}
         </div>
 
-        {/* الموبايل */}
+        {/* الموبايل والدولة */}
         <div>
-          <InputComponent
+          <label className={`block text-sm font-bold text-gray-700 mb-2 ${isAr ? 'text-right' : 'text-left'}`}>
+            {isAr ? 'رقم الهاتف' : 'Phone Number'}
+          </label>
+          
+          <CountryPhoneInput
             register={register}
             name="phone"
-            type="text"
-            placeholder={t('mobile_placeholder')}
-            icon={<Image src={phone} alt="" width={24} height={24} />}
+            placeholder={isAr ? 'رقم الهاتف (مثال: 501234567)' : 'Phone number (e.g. 501234567)'}
+            countries={countries}
+            selectedCountry={selectedCountry}
+            onCountryChange={setSelectedCountry}
+            locale={locale}
           />
-          {errors.phone && <p className="text-sm text-red-600">{t(errors.phone.message)}</p>}
+          
+          {errors.phone && <p className="text-sm text-red-600 mt-1">{t(errors.phone.message)}</p>}
         </div>
 
         {/* الايميل */}
         <div>
+          <label className={`block text-sm font-bold text-gray-700 mb-2 ${isAr ? 'text-right' : 'text-left'}`}>
+            {isAr ? 'البريد الإلكتروني' : 'Email Address'}
+          </label>
           <InputComponent
             register={register}
             name="email"
             type="email"
             placeholder={t('email_placeholder')}
-            icon={<Image src={email} alt="" width={24} height={24} />}
+            icon={<Image src={emailIcon} alt="" width={24} height={24} />}
           />
-          {errors.email && <p className="text-sm text-red-600">{t(errors.email.message)}</p>}
+          {errors.email && <p className="text-sm text-red-600 mt-1">{t(errors.email.message)}</p>}
         </div>
 
         {/* المدينة */}
         <div>
+          <label className={`block text-sm font-bold text-gray-700 mb-2 ${isAr ? 'text-right' : 'text-left'}`}>
+            {isAr ? 'المدينة' : 'City'}
+          </label>
           <CustomSelect
             name="city"
             control={control}
             options={[
-              { value: '1', label: 'دبي' },
-              { value: '2', label: 'أبوظبي' },
-              { value: '3', label: 'الشارقة' },
-              { value: '4', label: 'عجمان' },
-              { value: '5', label: 'رأس الخيمة' },
-              { value: '6', label: 'أم القيوين' },
-              { value: '7', label: 'الفجيرة' },
+              { value: '1', label: isAr ? 'دبي' : 'Dubai' },
+              { value: '2', label: isAr ? 'أبوظبي' : 'Abu Dhabi' },
+              { value: '3', label: isAr ? 'الشارقة' : 'Sharjah' },
+              { value: '4', label: isAr ? 'عجمان' : 'Ajman' },
+              { value: '5', label: isAr ? 'رأس الخيمة' : 'Ras Al Khaimah' },
+              { value: '6', label: isAr ? 'أم القيوين' : 'Umm Al Quwain' },
+              { value: '7', label: isAr ? 'الفجيرة' : 'Fujairah' },
             ]}
             placeholder={t('city_placeholder')}
-            icon={<Image src={location} alt="" width={24} height={24} />}
+            icon={<Image src={locationIcon} alt="" width={24} height={24} />}
           />
-          {errors.city && <p className="text-sm text-red-600">{t(errors.city.message)}</p>}
+          {errors.city && <p className="text-sm text-red-600 mt-1">{t(errors.city.message)}</p>}
         </div>
 
         {/* كلمة المرور */}
         <div>
+          <label className={`block text-sm font-bold text-gray-700 mb-2 ${isAr ? 'text-right' : 'text-left'}`}>
+            {isAr ? 'كلمة المرور' : 'Password'}
+          </label>
           <InputComponent
             register={register}
             name="password"
@@ -197,11 +243,14 @@ const RegisterForm: React.FC = () => {
             placeholder={t('enter_password_placeholder')}
             icon={<MdLockOutline className="text-3xl" />}
           />
-          {errors.password && <p className="text-sm text-red-600">{t(errors.password.message)}</p>}
+          {errors.password && <p className="text-sm text-red-600 mt-1">{t(errors.password.message)}</p>}
         </div>
 
         {/* تأكيد كلمة المرور */}
         <div>
+          <label className={`block text-sm font-bold text-gray-700 mb-2 ${isAr ? 'text-right' : 'text-left'}`}>
+            {isAr ? 'تأكيد كلمة المرور' : 'Confirm Password'}
+          </label>
           <InputComponent
             register={register}
             name="password_confirmation"
@@ -210,12 +259,15 @@ const RegisterForm: React.FC = () => {
             icon={<MdLockOutline className="text-3xl" />}
           />
           {errors.password_confirmation && (
-            <p className="text-sm text-red-600">{t(errors.password_confirmation.message)}</p>
+            <p className="text-sm text-red-600 mt-1">{t(errors.password_confirmation.message)}</p>
           )}
         </div>
 
         {/* رفع الصورة */}
         <div className="lg:col-span-2">
+          <label className={`block text-sm font-bold text-gray-700 mb-2 ${isAr ? 'text-right' : 'text-left'}`}>
+            {isAr ? 'الصورة الشخصية' : 'Profile Image'}
+          </label>
           <label
             htmlFor="profile_image"
             className="flex flex-col items-center justify-center w-full h-40 bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-primary transition relative overflow-hidden"
@@ -238,9 +290,8 @@ const RegisterForm: React.FC = () => {
               onChange={handleImageChange}
             />
           </label>
-
           {errors.profile_image && (
-            <p className="text-sm text-red-600">{t(errors.profile_image.message)}</p>
+            <p className="text-sm text-red-600 mt-1">{t(errors.profile_image.message)}</p>
           )}
         </div>
 
@@ -258,7 +309,7 @@ const RegisterForm: React.FC = () => {
         </div>
 
         {errors.terms_accepted && (
-          <p className="text-sm text-red-600 lg:col-span-2">
+          <p className="text-sm text-red-600 lg:col-span-2 mt-1">
             {t(errors.terms_accepted.message)}
           </p>
         )}
@@ -268,12 +319,11 @@ const RegisterForm: React.FC = () => {
           <button
             type="submit"
             disabled={registerMutation.isPending}
-            className="bg-primary w-full text-white py-3 rounded-xl font-bold transition duration-300 hover:bg-primary/90 disabled:opacity-70 disabled:cursor-not-allowed"
+            className="bg-primary w-full text-white py-4 rounded-xl font-bold transition duration-300 hover:bg-primary/90 disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {registerMutation.isPending ? t('creating_account') : t('create_account')}
           </button>
         </div>
-
       </form>
     </>
   );

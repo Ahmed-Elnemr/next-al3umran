@@ -12,6 +12,8 @@ import {
   UserRound,
   ChevronLeft,
   ChevronRight,
+  Wallet,
+  Building2,
 } from "lucide-react";
 
 import LogoutModal from "./LogoutModal";
@@ -26,7 +28,9 @@ interface UserDropdownProps {
   role?: string;
   isMobile?: boolean;
   onWalletClick?: () => void;
-  notificationsUnReadCount: string;
+  notificationsUnReadCount: any;
+  onLogoutTrigger?: () => void;
+  buttonRef?: React.RefObject<any>;
 }
 
 const UserDropdown: React.FC<UserDropdownProps> = ({
@@ -37,15 +41,16 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
   name,
   role,
   notificationsUnReadCount,
+  buttonRef,
+  onWalletClick,
+  onLogoutTrigger,
 }) => {
   const tn = useTranslations("navbar");
   const t = useTranslations("UserDropdown");
 
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const logoutModalRef = useRef<HTMLDivElement>(null);
   const deleteModalRef = useRef<HTMLDivElement>(null);
 
   const isAr = locale === "ar";
@@ -53,14 +58,8 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
   const unreadCount = Number(notificationsUnReadCount || 0);
 
   const closeDropdown = () => {
-    setShowLogoutModal(false);
     setShowDeleteModal(false);
     onClose();
-  };
-
-  const handleLogout = () => {
-    setShowLogoutModal(false);
-    closeDropdown();
   };
 
   const handleDeleteAccount = () => {
@@ -74,19 +73,18 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
 
       if (
         !dropdownRef.current?.contains(target) &&
-        !logoutModalRef.current?.contains(target) &&
         !deleteModalRef.current?.contains(target)
       ) {
         closeDropdown();
       }
     };
 
-    if (isOpen || showLogoutModal || showDeleteModal) {
+    if (isOpen || showDeleteModal) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen, showLogoutModal, showDeleteModal]);
+  }, [isOpen, showDeleteModal]);
 
   if (!isOpen) return null;
 
@@ -100,9 +98,8 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
       <div
         ref={dropdownRef}
         dir={isAr ? "rtl" : "ltr"}
-        className={`absolute top-[calc(100%+12px)] ${
-          isAr ? "left-0" : "right-0"
-        } w-[285px] rounded-[26px] border border-[#E2ECE8] bg-white shadow-[0_22px_70px_rgba(16,24,32,0.18)] p-3 z-[100]`}
+        className={`absolute top-[calc(100%+12px)] ${isAr ? "left-0" : "right-0"
+          } w-[285px] rounded-[26px] border border-[#E2ECE8] bg-white shadow-[0_22px_70px_rgba(16,24,32,0.18)] p-3 z-[100]`}
       >
         <div className="rounded-[22px] bg-gradient-to-br from-[#0E6B58] to-[#101820] p-4 text-white mb-3 overflow-hidden relative">
           <div className="absolute -top-10 -end-8 w-28 h-28 rounded-full bg-white/10" />
@@ -167,7 +164,25 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
             <li>
               <Link
                 onClick={closeDropdown}
-                href={`/${locale}/my-services`}
+                href={`/${locale}/wallet`}
+                className={itemClass}
+              >
+                <span className={contentClass}>
+                  <span className="w-10 h-10 rounded-2xl bg-[#EEF6F3] text-[#0E6B58] flex items-center justify-center">
+                    <Wallet size={18} />
+                  </span>
+                  <span className="font-bold">{t("wallet")}</span>
+                </span>
+                <ArrowIcon size={16} className="text-[#9BAAA5]" />
+              </Link>
+            </li>
+          )}
+
+          {role === "company" && (
+            <li>
+              <Link
+                onClick={closeDropdown}
+                href={`/${locale}/packages`}
                 className={itemClass}
               >
                 <span className={contentClass}>
@@ -175,7 +190,27 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
                     <Ticket size={18} />
                   </span>
                   <span className="font-bold">
-                    {locale === "ar" ? "خدماتي" : "My Services"}
+                    {locale === "ar" ? "باقات الاشتراك" : "Subscriptions"}
+                  </span>
+                </span>
+                <ArrowIcon size={16} className="text-[#9BAAA5]" />
+              </Link>
+            </li>
+          )}
+
+          {role === "company" && (
+            <li>
+              <Link
+                onClick={closeDropdown}
+                href={`/${locale}/my-services`}
+                className={itemClass}
+              >
+                <span className={contentClass}>
+                  <span className="w-10 h-10 rounded-2xl bg-[#EEF6F3] text-[#0E6B58] flex items-center justify-center">
+                    <Building2 size={18} />
+                  </span>
+                  <span className="font-bold">
+                    {locale === "ar" ? "عقاراتي" : "My Properties"}
                   </span>
                 </span>
                 <ArrowIcon size={16} className="text-[#9BAAA5]" />
@@ -187,7 +222,8 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                setShowLogoutModal(true);
+                closeDropdown();
+                if (onLogoutTrigger) onLogoutTrigger();
               }}
               className="w-full px-4 py-3 rounded-2xl flex items-center justify-between gap-3 text-[#B42318] hover:bg-[#FFF2F1] transition"
             >
@@ -217,17 +253,6 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
           )}
         </ul>
       </div>
-
-      {showLogoutModal && (
-        <div ref={logoutModalRef}>
-          <LogoutModal
-            isOpen={showLogoutModal}
-            onClose={() => setShowLogoutModal(false)}
-            onConfirm={handleLogout}
-            token={token}
-          />
-        </div>
-      )}
 
       {showDeleteModal && (
         <div ref={deleteModalRef}>

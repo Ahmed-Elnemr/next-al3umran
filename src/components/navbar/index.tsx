@@ -20,36 +20,44 @@ import {
 
 import LanguageSelector from "./LanguageSwitcher";
 import UserDropdown from "./UserDropdown";
-import ConfirmWalletModal from "./ConfirmWalletModal";
+import LogoutModal from "./LogoutModal";
 import apiServiceCall from "../../lib/apiServiceCall";
 
 interface NavbarProps {
   token?: string;
-  bank_account: boolean;
-  logo: string;
-  role: string;
-  notificationsUnReadCount: string;
+  bank_account?: any;
+  logo?: string;
+  role?: string;
+  userData?: any;
+  notificationsUnReadCount: number;
 }
 
 const Navbar = ({
   token,
   logo,
   role,
+  userData,
   notificationsUnReadCount,
 }: NavbarProps) => {
+  const locale = useLocale();
+  const isAr = locale === "ar";
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false);
-  const [walletModalOpen, setWalletModalOpen] = useState(false);
-  const [name, setName] = useState<string | undefined>("");
-  const [profileImage, setProfileImage] = useState<string>("");
+  const [logoutModalOpen, setLogoutModalOpen] = useState(false);
+  const [name, setName] = useState<string | undefined>(userData?.name || userData?.company_name || "");
+  const [profileImage, setProfileImage] = useState<string>(userData?.profile_image_url || "");
 
-  const locale = useLocale();
   const t = useTranslations("navbar");
   const isAuthenticated = !!token;
-  const isAr = locale === "ar";
+
+  const displayName = name || (isAr ? "مستخدم" : "User");
+  const avatarSrc = profileImage || "/images/register-user.png";
 
   const menuRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const mobileButtonRef = useRef<HTMLButtonElement>(null);
 
   const navLinks = [
     {
@@ -81,6 +89,20 @@ const Navbar = ({
 
   useEffect(() => {
     const fetchUserProfile = async () => {
+      // Direct local storage check for instant mockup rendering
+      if (typeof window !== 'undefined') {
+        const cachedUserStr = localStorage.getItem("alomran_current_user");
+        if (cachedUserStr) {
+          try {
+            const cachedUser = JSON.parse(cachedUserStr);
+            setName(cachedUser?.name || cachedUser?.company_name || "");
+            setProfileImage(cachedUser?.profile_image_url || "");
+          } catch (e) {
+            console.error("Failed to parse local storage user", e);
+          }
+        }
+      }
+
       if (!token) return;
 
       try {
@@ -96,7 +118,31 @@ const Navbar = ({
         setName(response?.data?.user?.name || "");
         setProfileImage(response?.data?.user?.profile_image_url || "");
       } catch (error) {
-        console.error("Failed to fetch user profile", error);
+        console.warn("Failed to fetch user profile from API, trying cookie fallback...");
+        const getCookie = (cname: string) => {
+          if (typeof window === 'undefined') return "";
+          const nameEQ = cname + "=";
+          const ca = document.cookie.split(';');
+          for (let i = 0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+            if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+          }
+          return "";
+        };
+
+        const cachedUserStr = getCookie("userDataInfo");
+        if (cachedUserStr) {
+          try {
+            // Decodes URL encoded cookie strings cleanly
+            const decoded = decodeURIComponent(cachedUserStr);
+            const cachedUser = JSON.parse(decoded);
+            setName(cachedUser?.name || cachedUser?.company_name || "");
+            setProfileImage(cachedUser?.profile_image_url || "");
+          } catch (e) {
+            console.error("Failed to parse cached user cookie", e);
+          }
+        }
       }
     };
 
@@ -160,13 +206,14 @@ const Navbar = ({
 
           <div className="relative">
             <button
+              ref={buttonRef}
               onClick={() => setDropdownOpen((prev) => !prev)}
               className="flex h-[50px] min-w-[190px] items-center justify-between gap-3 rounded-full border border-[#DCE6E2] bg-white/90 px-3 text-[#101820] shadow-sm transition hover:border-[#0E6B58]/40"
             >
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-[#DCE6E2] bg-[#EEF6F3]">
                   <Image
-                    src={profileImage}
+                    src={avatarSrc}
                     width={36}
                     height={36}
                     alt="user"
@@ -177,7 +224,7 @@ const Navbar = ({
                 <div className={isAr ? "text-right" : "text-left"}>
                   <p className="text-[11px] text-[#7B8B86]">{t("welcome")}</p>
                   <p className="max-w-[92px] truncate text-xs font-bold text-[#101820]">
-                    {name}
+                    {displayName}
                   </p>
                 </div>
               </div>
@@ -192,8 +239,10 @@ const Navbar = ({
               locale={locale}
               token={token}
               onClose={() => setDropdownOpen(false)}
-              name={name}
+              name={displayName}
               role={role}
+              buttonRef={buttonRef}
+              onLogoutTrigger={() => setLogoutModalOpen(true)}
             />
           </div>
         </div>
@@ -221,7 +270,7 @@ const Navbar = ({
   };
 
   return (
-    <div className="w-full bg-white/90">
+    <div className="relative z-50 w-full bg-white/90">
       <header className="w-full border-y border-white/60 backdrop-blur-xl shadow-[0_18px_60px_rgba(16,24,32,0.12)]">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-[76px] items-center justify-between gap-4 lg:h-[88px]">
@@ -282,11 +331,12 @@ const Navbar = ({
               {isAuthenticated ? (
                 <div className="relative">
                   <button
+                    ref={mobileButtonRef}
                     onClick={() => setMobileDropdownOpen((prev) => !prev)}
                     className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-[#DCE6E2] bg-[#EEF6F3]"
                   >
                     <Image
-                      src={profileImage}
+                      src={avatarSrc}
                       alt="profile"
                       width={44}
                       height={44}
@@ -303,8 +353,10 @@ const Navbar = ({
                       token={token}
                       onClose={() => setMobileDropdownOpen(false)}
                       isMobile
-                      name={name}
+                      name={displayName}
                       role={role}
+                      buttonRef={mobileButtonRef}
+                      onLogoutTrigger={() => setLogoutModalOpen(true)}
                     />
                   )}
                 </div>
@@ -379,8 +431,12 @@ const Navbar = ({
         </div>
       </header>
 
-      {walletModalOpen && (
-        <ConfirmWalletModal onClose={() => setWalletModalOpen(false)} />
+      {logoutModalOpen && (
+        <LogoutModal
+          isOpen={logoutModalOpen}
+          onClose={() => setLogoutModalOpen(false)}
+          token={token || ""}
+        />
       )}
     </div>
   );
