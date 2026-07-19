@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Star, MessageCircle, Send } from "lucide-react";
+import Link from "next/link";
 
 type Review = {
   id: number;
@@ -41,60 +42,81 @@ const MOCK_REVIEWS: Review[] = [
 
 type Props = {
   isAr: boolean;
+  locale?: string;
 };
 
-export default function CompanyReviews({ isAr }: Props) {
+export default function CompanyReviews({ isAr, locale = "ar" }: Props) {
   const [reviews, setReviews] = useState<Review[]>(MOCK_REVIEWS);
   const [newRating, setNewRating] = useState(0);
   const [newComment, setNewComment] = useState("");
-  const [name, setName] = useState("");
+  
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userName, setUserName] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    // Check auth from local storage / cookies
+    let foundUser = null;
+    const cachedUserStr = localStorage.getItem("alomran_current_user");
+    if (cachedUserStr) {
+      try {
+        foundUser = JSON.parse(cachedUserStr);
+      } catch (e) {}
+    }
+
+    if (!foundUser) {
+      const nameEQ = "userDataInfo=";
+      const ca = document.cookie.split(';');
+      for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) === 0) {
+          const cookieStr = c.substring(nameEQ.length, c.length);
+          try {
+            foundUser = JSON.parse(decodeURIComponent(cookieStr));
+          } catch (e) {}
+        }
+      }
+    }
+
+    if (foundUser) {
+      setIsAuthenticated(true);
+      setUserName(foundUser.name || foundUser.company_name || (isAr ? "مستخدم" : "User"));
+    }
+  }, [isAr]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (newRating === 0 || !newComment.trim() || !name.trim()) return;
+    if (newRating === 0 || !newComment.trim() || !isAuthenticated) return;
 
     const newReview: Review = {
       id: Date.now(),
-      author: name,
+      author: userName,
       rating: newRating,
       commentAr: newComment,
       commentEn: newComment,
-      date: new Date().toISOString().split('T')[0],
+      date: new Date().toISOString().split("T")[0],
     };
 
     setReviews([newReview, ...reviews]);
     setNewRating(0);
     setNewComment("");
-    setName("");
   };
 
   const averageRating = reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length;
 
+  if (!mounted) return null;
+
   return (
-    <div className="mt-12 rounded-[32px] bg-white p-8 shadow-[0_20px_70px_rgba(16,24,32,0.06)] border border-[#E2ECE8]">
+    <div className="mt-16">
       <div className="flex items-center gap-3 mb-8">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FFF9E6] text-[#C89B3C]">
-          <Star size={24} className="fill-[#C89B3C]" />
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#EEF6F3] text-[#0E6B58]">
+          <MessageCircle size={24} />
         </div>
-        <div>
-          <h2 className="text-2xl font-black text-[#101820]">
-            {isAr ? "تقييمات العملاء" : "Customer Reviews"}
-          </h2>
-          <div className="flex items-center gap-2 mt-1">
-            <div className="flex items-center gap-0.5 text-[#C89B3C]">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  size={14}
-                  className={i < Math.round(averageRating) ? "fill-[#C89B3C]" : "text-gray-300"}
-                />
-              ))}
-            </div>
-            <span className="text-sm font-bold text-gray-500">
-              ({averageRating.toFixed(1)} / 5.0) - {reviews.length} {isAr ? "تقييمات" : "Reviews"}
-            </span>
-          </div>
-        </div>
+        <h2 className="text-2xl font-black text-[#101820]">
+          {isAr ? "تقييمات العملاء" : "Customer Reviews"}
+        </h2>
       </div>
 
       <div className="grid gap-12 md:grid-cols-[1fr_350px]">
@@ -122,62 +144,68 @@ export default function CompanyReviews({ isAr }: Props) {
           ))}
         </div>
 
-        {/* Add Review Form */}
+        {/* Add Review Form / Login Prompt */}
         <div className="bg-[#F7FAF8] rounded-[24px] p-6 border border-[#E2ECE8] h-fit">
           <h3 className="text-lg font-black text-[#101820] mb-4">
             {isAr ? "أضف تقييمك" : "Write a Review"}
           </h3>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-gray-600 mb-2">
-                {isAr ? "التقييم العام" : "Overall Rating"}
-              </label>
-              <div className="flex items-center gap-1 cursor-pointer">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    size={24}
-                    onClick={() => setNewRating(star)}
-                    className={
-                      star <= newRating
-                        ? "fill-[#C89B3C] text-[#C89B3C] transition-all hover:scale-110"
-                        : "text-gray-300 transition-all hover:scale-110 hover:text-[#C89B3C]"
-                    }
-                  />
-                ))}
+          
+          {isAuthenticated ? (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-600 mb-2">
+                  {isAr ? "التقييم العام" : "Overall Rating"}
+                </label>
+                <div className="flex items-center gap-1 cursor-pointer">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      size={24}
+                      onClick={() => setNewRating(star)}
+                      className={
+                        star <= newRating
+                          ? "fill-[#C89B3C] text-[#C89B3C] transition-all hover:scale-110"
+                          : "text-gray-300 transition-all hover:scale-110 hover:text-[#C89B3C]"
+                      }
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <div>
-              <input
-                type="text"
-                placeholder={isAr ? "اسمك الكامل" : "Your Full Name"}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full h-12 px-4 rounded-xl border border-[#E2ECE8] bg-white text-sm focus:border-[#0E6B58] focus:outline-none"
-                required
-              />
-            </div>
+              <div>
+                <textarea
+                  placeholder={isAr ? "شاركنا تجربتك مع هذه الشركة..." : "Share your experience..."}
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  className="w-full h-24 p-4 rounded-xl border border-[#E2ECE8] bg-white text-sm focus:border-[#0E6B58] focus:outline-none resize-none"
+                  required
+                />
+              </div>
 
-            <div>
-              <textarea
-                placeholder={isAr ? "شاركنا تجربتك مع هذه الشركة..." : "Share your experience..."}
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                className="w-full h-24 p-4 rounded-xl border border-[#E2ECE8] bg-white text-sm focus:border-[#0E6B58] focus:outline-none resize-none"
-                required
-              />
+              <button
+                type="submit"
+                disabled={newRating === 0 || !newComment.trim()}
+                className="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-[#101820] text-white font-bold transition hover:bg-[#0E6B58] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span>{isAr ? "إرسال التقييم" : "Submit Review"}</span>
+                <Send size={16} className={isAr ? "rotate-180" : ""} />
+              </button>
+            </form>
+          ) : (
+            <div className="text-center py-6">
+              <p className="text-sm text-gray-500 mb-4 leading-relaxed">
+                {isAr 
+                  ? "يجب عليك تسجيل الدخول أولاً لتتمكن من إضافة تقييم ومشاركة تجربتك مع الآخرين." 
+                  : "You must be logged in to write a review and share your experience with others."}
+              </p>
+              <Link 
+                href={`/${locale}/login`}
+                className="inline-flex h-11 items-center justify-center rounded-xl bg-[#0E6B58] px-6 text-sm font-bold text-white transition hover:bg-[#095746] w-full"
+              >
+                {isAr ? "تسجيل الدخول" : "Login to Review"}
+              </Link>
             </div>
-
-            <button
-              type="submit"
-              disabled={newRating === 0 || !newComment.trim() || !name.trim()}
-              className="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-[#101820] text-white font-bold transition hover:bg-[#0E6B58] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <span>{isAr ? "إرسال التقييم" : "Submit Review"}</span>
-              <Send size={16} className={isAr ? "rotate-180" : ""} />
-            </button>
-          </form>
+          )}
         </div>
       </div>
     </div>
