@@ -47,8 +47,7 @@ export type PropertyFiltersState = {
   city: string;
   type: string;
   status: string;
-  minPrice: string;
-  maxPrice: string;
+  priceRange: string;
   minBeds: string;
   sort: string;
 };
@@ -65,8 +64,7 @@ const PropertiesPage = () => {
     city: "all",
     type: "all",
     status: "all",
-    minPrice: "",
-    maxPrice: "",
+    priceRange: "all",
     minBeds: "all",
     sort: "newest",
   });
@@ -430,12 +428,15 @@ const PropertiesPage = () => {
       result = result.filter((item) => item.beds >= Number(filters.minBeds));
     }
 
-    if (filters.minPrice) {
-      result = result.filter((item) => item.price >= Number(filters.minPrice));
-    }
-
-    if (filters.maxPrice) {
-      result = result.filter((item) => item.price <= Number(filters.maxPrice));
+    if (filters.priceRange && filters.priceRange !== "all") {
+      const [minStr, maxStr] = filters.priceRange.split("-");
+      const min = minStr ? Number(minStr) : 0;
+      if (maxStr) {
+        const max = Number(maxStr);
+        result = result.filter((item) => item.price >= min && item.price <= max);
+      } else {
+        result = result.filter((item) => item.price >= min);
+      }
     }
 
     switch (filters.sort) {
@@ -469,8 +470,7 @@ const PropertiesPage = () => {
       city: "all",
       type: "all",
       status: "all",
-      minPrice: "",
-      maxPrice: "",
+      priceRange: "all",
       minBeds: "all",
       sort: "newest",
     });
@@ -534,7 +534,7 @@ const PropertiesPage = () => {
             </div>
           </div>
 
-          <div className="grid gap-7 lg:grid-cols-[340px_1fr]">
+          <div className="flex flex-col gap-7">
             <PropertyFilters
               isAr={isAr}
               filters={filters}

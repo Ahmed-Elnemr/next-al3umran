@@ -1,4 +1,6 @@
 "use client";
+import { useState, useRef, useEffect } from "react";
+import { useParams } from "next/navigation";
 
 import {
   BedDouble,
@@ -41,10 +43,12 @@ const PropertyFilters = ({
   };
 
   return (
-    <aside className="h-fit lg:sticky lg:top-24">
-      <div className="relative overflow-hidden rounded-[34px] border border-white/80 bg-white/85 p-5 shadow-[0_25px_90px_rgba(16,24,32,0.12)] backdrop-blur-xl">
-        <div className="pointer-events-none absolute -top-24 end-[-70px] h-56 w-56 rounded-full bg-[#C89B3C]/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 start-[-70px] h-64 w-64 rounded-full bg-[#0E6B58]/15 blur-3xl" />
+    <aside className="w-full relative z-20">
+      <div className="relative rounded-[34px] border border-white/80 bg-white/85 p-5 shadow-[0_25px_90px_rgba(16,24,32,0.12)] backdrop-blur-xl">
+        <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[34px]">
+          <div className="absolute -top-24 end-[-70px] h-56 w-56 rounded-full bg-[#C89B3C]/20 blur-3xl" />
+          <div className="absolute -bottom-24 start-[-70px] h-64 w-64 rounded-full bg-[#0E6B58]/15 blur-3xl" />
+        </div>
 
         <div className="relative">
           <div className="mb-6 flex items-center justify-between gap-3">
@@ -71,7 +75,7 @@ const PropertyFilters = ({
             </button>
           </div>
 
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-end">
             <FilterInput
               icon={<Search size={18} />}
               label={isAr ? "بحث" : "Search"}
@@ -135,25 +139,20 @@ const PropertyFilters = ({
               ]}
             />
 
-            <div className="grid grid-cols-2 gap-3">
-              <FilterInput
-                icon={<CircleDollarSign size={18} />}
-                label={isAr ? "أقل سعر" : "Min Price"}
-                value={filters.minPrice}
-                onChange={(value) => updateFilter("minPrice", value)}
-                placeholder="0"
-                type="number"
-              />
-
-              <FilterInput
-                icon={<CircleDollarSign size={18} />}
-                label={isAr ? "أعلى سعر" : "Max Price"}
-                value={filters.maxPrice}
-                onChange={(value) => updateFilter("maxPrice", value)}
-                placeholder="999999"
-                type="number"
-              />
-            </div>
+            <FilterSelect
+              icon={<CircleDollarSign size={18} />}
+              label={isAr ? "السعر" : "Price"}
+              value={filters.priceRange || "all"}
+              onChange={(value) => updateFilter("priceRange", value)}
+              options={[
+                { value: "all", label: isAr ? "كل الأسعار" : "All Prices" },
+                { value: "0-100000", label: isAr ? "أقل من 100,000" : "Under 100,000" },
+                { value: "100000-500000", label: "100,000 - 500,000" },
+                { value: "500000-1000000", label: "500,000 - 1,000,000" },
+                { value: "1000000-5000000", label: "1,000,000 - 5,000,000" },
+                { value: "5000000-", label: isAr ? "أكثر من 5,000,000" : "5,000,000+" },
+              ]}
+            />
 
             <FilterSelect
               icon={<BedDouble size={18} />}
@@ -203,7 +202,7 @@ const PropertyFilters = ({
             <button
               type="button"
               onClick={resetFilters}
-              className="mt-2 flex h-13 py-2 w-full items-center justify-center gap-2 rounded-2xl border border-[#D9D1C3] bg-[#101820] text-sm font-black text-white shadow-[0_14px_40px_rgba(16,24,32,0.18)] transition hover:-translate-y-1 hover:bg-[#0E6B58]"
+              className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl border border-[#D9D1C3] bg-[#101820] text-sm font-black text-white shadow-[0_14px_40px_rgba(16,24,32,0.18)] transition hover:-translate-y-1 hover:bg-[#0E6B58]"
             >
               <RotateCcw size={18} />
               {isAr ? "إعادة ضبط الفلترة" : "Reset Filters"}
@@ -228,34 +227,71 @@ const FilterSelect = ({
   onChange: (value: string) => void;
   options: { value: string; label: string }[];
 }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const params = useParams();
+  const isAr = String(params?.locale || "ar") === "ar";
+
+  const selectedOption = options.find((opt) => opt.value === value) || options[0];
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
-    <label className="group block">
+    <div className="group block relative" ref={dropdownRef}>
       <span className="mb-2 block text-sm font-black text-[#101820]">
         {label}
       </span>
 
       <div className="relative">
-        <span className="pointer-events-none absolute top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl bg-[#F6F4EE] text-[#0E6B58] start-3 transition group-focus-within:bg-[#0E6B58] group-focus-within:text-white">
+        <span className="pointer-events-none absolute top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl bg-[#F6F4EE] text-[#0E6B58] start-3 transition group-hover:bg-[#0E6B58] group-hover:text-white">
           {icon}
         </span>
 
-        <select
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="h-14 w-full appearance-none rounded-[20px] border border-[#E2DBCE] bg-white px-14 text-sm font-black text-[#101820] outline-none shadow-[0_10px_28px_rgba(16,24,32,0.04)] transition focus:border-[#0E6B58] focus:bg-[#FBFCFA] focus:shadow-[0_14px_38px_rgba(14,107,88,0.10)]"
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex h-14 w-full items-center justify-between rounded-[20px] border border-[#E2DBCE] bg-white ps-14 pe-4 text-sm font-black text-[#101820] shadow-[0_10px_28px_rgba(16,24,32,0.04)] transition hover:border-[#0E6B58] hover:shadow-[0_14px_38px_rgba(14,107,88,0.10)] focus:border-[#0E6B58] focus:outline-none"
         >
-          {options.map((option) => (
-            <option key={`${label}-${option.value}`} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
+          <span className="truncate">{selectedOption?.label}</span>
+          <ChevronDown
+            size={18}
+            className={`text-[#71807B] transition-transform duration-300 ${isOpen ? "rotate-180" : ""
+              }`}
+          />
+        </button>
 
-        <span className="pointer-events-none absolute top-1/2 -translate-y-1/2 text-[#71807B] end-4">
-          <ChevronDown size={18} />
-        </span>
+        {isOpen && (
+          <div className="absolute z-50 mt-2 w-full origin-top rounded-[20px] border border-[#E2DBCE] bg-white p-2 shadow-[0_20px_60px_rgba(16,24,32,0.15)] animate-in fade-in zoom-in-95">
+            <div className={`${options.length > 10 ? "max-h-[400px] overflow-y-auto" : ""} pr-1`}>
+              {options.map((option) => (
+                <button
+                  key={`${label}-${option.value}`}
+                  type="button"
+                  onClick={() => {
+                    onChange(option.value);
+                    setIsOpen(false);
+                  }}
+                  className={`w-full rounded-xl px-4 py-3 ${isAr ? "text-right" : "text-left"} text-sm font-bold transition-colors ${value === option.value
+                      ? "bg-[#0E6B58] text-white"
+                      : "text-[#101820] hover:bg-[#F6F4EE]"
+                    }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-    </label>
+    </div>
   );
 };
 
@@ -290,7 +326,7 @@ const FilterInput = ({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="h-14 w-full rounded-[20px] border border-[#E2DBCE] bg-white px-14 text-sm font-black text-[#101820] outline-none shadow-[0_10px_28px_rgba(16,24,32,0.04)] transition placeholder:text-[#A2AEA9] focus:border-[#0E6B58] focus:bg-[#FBFCFA] focus:shadow-[0_14px_38px_rgba(14,107,88,0.10)]"
+          className="h-14 w-full rounded-[20px] border border-[#E2DBCE] bg-white ps-14 pe-4 text-sm font-black text-[#101820] outline-none shadow-[0_10px_28px_rgba(16,24,32,0.04)] transition placeholder:text-[#A2AEA9] focus:border-[#0E6B58] focus:bg-[#FBFCFA] focus:shadow-[0_14px_38px_rgba(14,107,88,0.10)]"
         />
       </div>
     </label>

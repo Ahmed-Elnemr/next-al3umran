@@ -67,7 +67,7 @@ export default async function RootLayout({
         <div
           dir={currentLocale === "ar" ? "rtl" : "ltr"}
           lang={currentLocale}
-          className="min-h-screen overflow-hidden bg-white"
+          className="min-h-screen bg-white"
         >
           <Navbar
             bank_account={settings?.find((item: any) => item.key === "bankAccount")}

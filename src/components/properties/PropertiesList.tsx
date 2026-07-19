@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import {
   Bath,
   BedDouble,
@@ -150,12 +151,21 @@ const PropertyCard = ({
         </h3>
 
         <p className="mt-3 text-2xl font-black text-[#0E6B58]">
-          {property.price.toLocaleString(isAr ? "ar-EG" : "en-US")} {currency}
+          {property.price !== undefined 
+            ? `${property.price.toLocaleString(isAr ? "ar-EG" : "en-US")} ${currency || ''}`
+            : (isAr ? property.priceAr : property.priceEn)}
         </p>
 
-        <div className="mt-4 flex items-center gap-3 rounded-2xl border border-[#E8E1D5] bg-[#F8F6F1] px-4 py-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#101820] text-white">
-            <Building2 size={18} />
+        <Link
+          href={`/${locale}/companies/${property.companyId}`}
+          className="mt-4 flex items-center gap-3 rounded-2xl border border-[#E8E1D5] bg-[#F8F6F1] px-4 py-3 transition hover:border-[#C89B3C] hover:bg-[#F0EEE6]"
+        >
+          <div className="relative flex h-10 w-10 shrink-0 overflow-hidden items-center justify-center rounded-xl bg-[#101820] text-white">
+            {property.companyLogo ? (
+              <Image src={property.companyLogo} alt={company} fill className="object-cover" />
+            ) : (
+              <Building2 size={18} />
+            )}
           </div>
 
           <div className="min-w-0">
@@ -167,7 +177,7 @@ const PropertyCard = ({
               {company}
             </h4>
           </div>
-        </div>
+        </Link>
 
         <div className="mt-5 grid grid-cols-3 gap-2 border-y border-[#ECE6DA] py-4">
           <PropertyInfoItem

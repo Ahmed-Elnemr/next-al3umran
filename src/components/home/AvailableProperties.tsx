@@ -11,6 +11,8 @@ import {
   MapPin,
   Maximize2,
 } from "lucide-react";
+import Image from "next/image";
+import { properties } from "../../lib/mockData";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
@@ -21,145 +23,6 @@ import "swiper/css/navigation";
 const AvailableProperties = () => {
   const locale = useLocale();
   const isAr = locale === "ar";
-
-  const properties = [
-    {
-      id: 1,
-      image:
-        "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1400&q=90",
-      titleAr: "فيلا فاخرة بحديقة خاصة",
-      titleEn: "Luxury Villa With Private Garden",
-      locationAr: "القاهرة الجديدة",
-      locationEn: "New Cairo",
-      priceAr: "12,500,000 درهم",
-      priceEn: "EGP 12,500,000",
-      status: "sale",
-      companyAr: "العمران للتسويق العقاري",
-      companyEn: "Al Omran Real Estate",
-      beds: 6,
-      baths: 5,
-      area: 520,
-    },
-    {
-      id: 2,
-      image:
-        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=90",
-      titleAr: "منزل عائلي بتصميم حديث",
-      titleEn: "Modern Family House",
-      locationAr: "الشيخ زايد",
-      locationEn: "Sheikh Zayed",
-      priceAr: "8,900,000 درهم",
-      priceEn: "EGP 8,900,000",
-      status: "sale",
-      companyAr: "الصفوة العقارية",
-      companyEn: "Elite Real Estate",
-      beds: 5,
-      baths: 4,
-      area: 430,
-    },
-    {
-      id: 3,
-      image:
-        "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1400&q=90",
-      titleAr: "فيلا مستقلة بتشطيب فاخر",
-      titleEn: "Standalone Villa With Luxury Finish",
-      locationAr: "مدينتي",
-      locationEn: "Madinaty",
-      priceAr: "65,000 درهم / شهر",
-      priceEn: "EGP 65,000 / Month",
-      status: "rent",
-      companyAr: "رويال هومز",
-      companyEn: "Royal Homes",
-      beds: 7,
-      baths: 6,
-      area: 610,
-    },
-    {
-      id: 4,
-      image:
-        "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1400&q=90",
-      titleAr: "شقة فاخرة كاملة التشطيب",
-      titleEn: "Fully Finished Luxury Apartment",
-      locationAr: "العاصمة الإدارية",
-      locationEn: "New Capital",
-      priceAr: "4,200,000 درهم",
-      priceEn: "EGP 4,200,000",
-      status: "sale",
-      companyAr: "نيو كابيتال بروبرتي",
-      companyEn: "New Capital Property",
-      beds: 3,
-      baths: 2,
-      area: 185,
-    },
-    {
-      id: 5,
-      image:
-        "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&w=1400&q=90",
-      titleAr: "تاون هاوس داخل كمبوند راقي",
-      titleEn: "Townhouse In Premium Compound",
-      locationAr: "الساحل الشمالي",
-      locationEn: "North Coast",
-      priceAr: "38,000 درهم / شهر",
-      priceEn: "EGP 38,000 / Month",
-      status: "rent",
-      companyAr: "سي فيو العقارية",
-      companyEn: "Sea View Realty",
-      beds: 4,
-      baths: 3,
-      area: 295,
-    },
-    {
-      id: 6,
-      image:
-        "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1400&q=90",
-      titleAr: "أرض سكنية فرصة استثمارية",
-      titleEn: "Residential Land Investment Opportunity",
-      locationAr: "العين السخنة",
-      locationEn: "Ain Sokhna",
-      priceAr: "2,900,000 درهم",
-      priceEn: "EGP 2,900,000",
-      status: "sale",
-      companyAr: "أفق للاستثمار العقاري",
-      companyEn: "Ofuq Real Estate Investment",
-      beds: 0,
-      baths: 0,
-      area: 750,
-    },
-    {
-      id: 7,
-      image:
-        "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1400&q=90",
-      titleAr: "بيت مستقل بموقع هادئ",
-      titleEn: "Standalone House In Quiet Location",
-      locationAr: "مدينة الشروق",
-      locationEn: "El Shorouk",
-      priceAr: "7,500,000 درهم",
-      priceEn: "EGP 7,500,000",
-      status: "sale",
-      companyAr: "دارك العقارية",
-      companyEn: "Darak Properties",
-      beds: 5,
-      baths: 4,
-      area: 390,
-    },
-    {
-      id: 8,
-      image:
-        "https://images.unsplash.com/photo-1600573472592-401b489a3cdc?auto=format&fit=crop&w=1400&q=90",
-      titleAr: "دوبلكس فاخر بإطلالة مفتوحة",
-      titleEn: "Luxury Duplex With Open View",
-      locationAr: "مدينة نصر",
-      locationEn: "Nasr City",
-      priceAr: "28,000 درهم / شهر",
-      priceEn: "EGP 28,000 / Month",
-      status: "rent",
-      companyAr: "هوم لاين العقارية",
-      companyEn: "Home Line Realty",
-      beds: 4,
-      baths: 3,
-      area: 320,
-    },
-  ];
 
   return (
     <section
@@ -191,7 +54,14 @@ const AvailableProperties = () => {
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <Link
+                href={`/${locale}/properties`}
+                className="inline-flex items-center justify-center rounded-full bg-[#0E6B58] px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#101820]"
+              >
+                {isAr ? "عرض الكل" : "View All"}
+              </Link>
+              <div className="flex items-center gap-2">
               <button
                 type="button"
                 className="property-prev flex h-12 w-12 items-center justify-center rounded-full border border-[#D9D1C3] bg-white text-[#101820] shadow-sm transition hover:bg-[#101820] hover:text-white"
@@ -205,6 +75,7 @@ const AvailableProperties = () => {
               >
                 {isAr ? <ArrowLeft size={20} /> : <ArrowRight size={20} />}
               </button>
+              </div>
             </div>
           </div>
 
@@ -308,9 +179,16 @@ const PropertyCard = ({
 
         <p className="mt-3 text-2xl font-black text-[#0E6B58]">{price}</p>
 
-        <div className="mt-4 flex items-center gap-3 rounded-2xl border border-[#E8E1D5] bg-[#F8F6F1] px-4 py-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#101820] text-white">
-            <Building2 size={18} />
+        <Link
+          href={`/${locale}/companies/${property.companyId}`}
+          className="mt-4 flex items-center gap-3 rounded-2xl border border-[#E8E1D5] bg-[#F8F6F1] px-4 py-3 transition hover:border-[#C89B3C] hover:bg-[#F0EEE6]"
+        >
+          <div className="relative flex h-10 w-10 shrink-0 overflow-hidden items-center justify-center rounded-xl bg-[#101820] text-white">
+            {property.companyLogo ? (
+              <Image src={property.companyLogo} alt={company} fill className="object-cover" />
+            ) : (
+              <Building2 size={18} />
+            )}
           </div>
 
           <div className="min-w-0">
@@ -321,7 +199,7 @@ const PropertyCard = ({
               {company}
             </h4>
           </div>
-        </div>
+        </Link>
 
         <div className="mt-5 grid grid-cols-3 gap-2 border-y border-[#ECE6DA] py-4">
           <PropertyInfoItem

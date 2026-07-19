@@ -76,6 +76,11 @@ const Navbar = ({
       icon: Grid3X3,
     },
     {
+      href: `/${locale}/properties`,
+      label: isAr ? "العقارات" : "Properties",
+      icon: Building2,
+    },
+    {
       href: `/${locale}/services`,
       label: t("latestEvents"),
       icon: Newspaper,
