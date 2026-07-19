@@ -153,10 +153,11 @@ const PackagesPage = () => {
       ],
       featuresEn: [
         'List unlimited properties',
-        'Feature 5 properties at search tops',
-        'Premium consultancy and advisor support',
+        'Feature 10 properties at search tops',
+        'Premium consultancy & advisor support',
         'Full professional dashboard & CRM API access',
-        'Free professional photoshoot for 1 property monthly',
+        'Dedicated personal account manager',
+        'Free professional photoshoot monthly',
       ],
     },
   ];
@@ -206,34 +207,32 @@ const PackagesPage = () => {
         </div>
 
         {/* Pricing Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center pt-8">
           {packages.map((pkg) => {
             const isActive = subscribedPackage === pkg.id;
             
             return (
               <div 
                 key={pkg.id} 
-                className={`bg-white rounded-[32px] border relative overflow-hidden transition-all duration-300 flex flex-col justify-between p-8 hover:shadow-[0_20px_50px_rgba(16,24,32,0.06)] hover:-translate-y-1.5 ${
-                  isActive 
-                    ? 'border-[#C89B3C] ring-2 ring-[#C89B3C]/50 shadow-[0_20px_50px_rgba(200,155,60,0.1)]' 
-                    : 'border-[#E2ECE8]'
-                }`}
+                className={"relative flex flex-col justify-between px-8 rounded-[32px] transition-all duration-300 bg-gradient-to-b " + pkg.bgGradient + (pkg.id === "silver" ? " py-12 shadow-[0_30px_60px_rgba(14,107,88,0.15)] md:-translate-y-4 md:scale-105 z-10" : " py-8 shadow-sm hover:shadow-xl hover:-translate-y-1 z-0")} style={{ borderColor: (isActive || pkg.id === "silver") ? pkg.color : pkg.color + '40', borderWidth: (isActive || pkg.id === "silver") ? '2px' : '1px' }}
               >
                 {/* Badges */}
                 {(pkg.badgeAr || isActive) && (
-                  <span className="absolute top-4 end-4 text-[10px] font-black uppercase px-3 py-1.5 rounded-full text-white bg-gradient-to-r from-[#C89B3C] to-[#101820] shadow-sm">
-                    {isActive 
-                      ? (isAr ? 'نشطة حالياً' : 'Active Plan') 
-                      : (isAr ? pkg.badgeAr : pkg.badgeEn)}
-                  </span>
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex justify-center z-20">
+                    <span className="inline-flex whitespace-nowrap rounded-full px-5 py-1.5 text-[11px] font-black uppercase tracking-wider text-white shadow-lg" style={{ backgroundColor: pkg.color }}>
+                      {isActive 
+                        ? (isAr ? 'نشطة حالياً' : 'Active Plan') 
+                        : (isAr ? pkg.badgeAr : pkg.badgeEn)}
+                    </span>
+                  </div>
                 )}
 
                 {/* Card Title & Icon */}
                 <div>
-                  <div className="w-14 h-14 rounded-2xl bg-[#F7FAF8] flex items-center justify-center mb-6">
+                  <div className={"w-14 h-14 rounded-2xl flex items-center justify-center mb-6 " + (pkg.id === "silver" ? "bg-white/10" : "bg-[#F7FAF8]")}>
                     {pkg.icon}
                   </div>
-                  <h3 className="text-xl font-black text-gray-900 mb-2">
+                  <h3 className="text-xl font-black mb-2 text-gray-900">
                     {isAr ? pkg.nameAr : pkg.nameEn}
                   </h3>
                   
@@ -246,13 +245,13 @@ const PackagesPage = () => {
                   </div>
 
                   {/* Divider */}
-                  <div className="w-full h-px bg-gray-100 my-6" />
+                  <div className="w-full h-px my-6" style={{ backgroundColor: pkg.color + '30' }} />
 
                   {/* Features List */}
                   <ul className="space-y-4">
                     {(isAr ? pkg.featuresAr : pkg.featuresEn).map((feature, index) => (
                       <li key={index} className="flex items-start gap-3">
-                        <span className="w-5 h-5 rounded-full bg-[#EEF6F3] text-[#0E6B58] flex items-center justify-center shrink-0 mt-0.5">
+                        <span className={"w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 " + (pkg.id === "silver" ? "bg-[#0E6B58] text-white" : "bg-[#EEF6F3] text-[#0E6B58]")}>
                           <Check size={12} strokeWidth={3} />
                         </span>
                         <span className="text-sm font-semibold text-gray-600 leading-normal">
@@ -268,11 +267,7 @@ const PackagesPage = () => {
                   <button
                     disabled={isActive || loadingId !== null}
                     onClick={() => handleSubscribe(pkg)}
-                    className={`w-full py-4 rounded-2xl font-black text-sm transition-all duration-200 ${
-                      isActive
-                        ? 'bg-[#EEF6F3] text-[#0E6B58] cursor-default'
-                        : 'bg-[#0E6B58] hover:bg-[#095746] text-white hover:shadow-lg'
-                    } disabled:opacity-70`}
+                    className={"w-full py-4 rounded-2xl font-black text-sm transition-all duration-200 shadow-sm border-2 disabled:opacity-70"} style={isActive ? { backgroundColor: pkg.color + '20', color: pkg.color, borderColor: 'transparent', cursor: 'default' } : { backgroundColor: pkg.id === 'silver' ? pkg.color : 'white', color: pkg.id === 'silver' ? 'white' : pkg.color, borderColor: pkg.color }}
                   >
                     {loadingId === pkg.id 
                       ? (isAr ? 'جاري الاشتراك...' : 'Subscribing...')

@@ -50,13 +50,17 @@ const PackagesSection = () => {
       bgGradient: 'from-[#ffffff] to-[#fcfaf4]',
       featuresAr: [
         'نشر حتى 5 عقارات نشطة',
-        'دعم فني عبر واتساب',
         'ظهور العقارات في محركات البحث',
+        'لوحة تحكم أساسية لإدارة الإعلانات',
+        'دعم فني عبر واتساب خلال أوقات العمل',
+        'شعار شركتك في صفحة العقار',
       ],
       featuresEn: [
         'List up to 5 active properties',
-        'Technical support via WhatsApp',
         'SEO index listing',
+        'Basic dashboard for listing management',
+        'WhatsApp support during working hours',
+        'Company logo on property page',
       ],
     },
     {
@@ -71,15 +75,19 @@ const PackagesSection = () => {
       bgGradient: 'from-[#f0f9f6] to-[#ffffff]',
       featuresAr: [
         'نشر حتى 15 عقار نشط',
-        'تميز عقارين في الصفحة الأولى للموقع',
-        'دعم فني مخصص وسريع 24/7',
+        'تميز 3 عقارات في الصفحة الأولى للموقع',
         'إحصائيات متقدمة وحصرية للمشاهدات',
+        'علامة "حساب موثق" لزيادة الموثوقية',
+        'إرسال إشعارات للمشترين المهتمين',
+        'دعم فني مخصص وسريع 24/7',
       ],
       featuresEn: [
         'List up to 15 active properties',
-        'Feature 2 properties on home page',
-        'Priority 24/7 technical support',
+        'Feature 3 properties on home page',
         'Advanced traffic & lead analytics',
+        '"Verified Account" badge for higher trust',
+        'Push notifications to interested buyers',
+        'Priority 24/7 technical support',
       ],
     },
     {
@@ -94,14 +102,18 @@ const PackagesSection = () => {
       bgGradient: 'from-[#fbf7ee] to-[#ffffff]',
       featuresAr: [
         'نشر عدد غير محدود من العقارات',
-        'تميز 5 عقارات في قمة نتائج البحث',
-        'دعم فني وتوجيه استشاري خاص',
+        'تميز 10 عقارات في قمة نتائج البحث',
+        'دعم فني وتوجيه استشاري عقاري خاص',
+        'لوحة تحكم احترافية كاملة وتكامل مع CRM',
+        'مدير حساب شخصي مخصص لشركتك',
         'تصوير فوتوغرافي احترافي مجاني لعقار شهرياً',
       ],
       featuresEn: [
         'List unlimited properties',
-        'Feature 5 properties at search tops',
+        'Feature 10 properties at search tops',
         'Premium consultancy & advisor support',
+        'Full professional dashboard & CRM API access',
+        'Dedicated personal account manager',
         'Free professional photoshoot monthly',
       ],
     },
@@ -146,25 +158,27 @@ const PackagesSection = () => {
         </div>
 
         {/* Dynamic Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center pt-8">
           {previewPackages.map((pkg) => (
-            <div
-              key={pkg.id}
-              className={`bg-gradient-to-b ${pkg.bgGradient} rounded-[32px] border border-[#E2ECE8] p-8 flex flex-col justify-between transition-all duration-300 hover:shadow-[0_20px_50px_rgba(16,24,32,0.05)] hover:-translate-y-1.5 relative`}
-            >
-              {pkg.badgeAr && (
-                <span className="absolute top-4 end-4 text-[9px] font-black uppercase px-2.5 py-1 rounded-full text-white bg-gradient-to-r from-[#C89B3C] to-[#101820] shadow-sm">
-                  {isAr ? pkg.badgeAr : pkg.badgeEn}
-                </span>
-              )}
+              <div
+                key={pkg.id}
+                className={"relative flex flex-col justify-between px-8 rounded-[32px] transition-all duration-300 bg-gradient-to-b " + pkg.bgGradient + (pkg.id === "silver" ? " py-12 shadow-[0_30px_60px_rgba(14,107,88,0.15)] md:-translate-y-4 md:scale-105 z-10" : " py-8 shadow-sm hover:shadow-xl hover:-translate-y-1 z-0")} style={{ borderColor: pkg.id === "silver" ? pkg.color : pkg.color + '40', borderWidth: pkg.id === "silver" ? '2px' : '1px' }}
+              >
+                {pkg.badgeAr && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex justify-center z-20">
+                    <span className="inline-flex whitespace-nowrap rounded-full px-5 py-1.5 text-[11px] font-black uppercase tracking-wider text-white shadow-md" style={{ backgroundColor: pkg.color }}>
+                      {isAr ? pkg.badgeAr : pkg.badgeEn}
+                    </span>
+                  </div>
+                )}
 
               <div>
                 {/* Icon Circle */}
-                <div className="w-12 h-12 rounded-2xl bg-white border border-[#E2ECE8] flex items-center justify-center mb-6 shadow-sm">
+                <div className={"w-12 h-12 rounded-2xl flex items-center justify-center mb-6 shadow-sm " + (pkg.id === "silver" ? "bg-white/10 border-white/10" : "bg-white border-[#E2ECE8]")}>
                   {pkg.icon}
                 </div>
 
-                <h3 className="text-lg font-black text-gray-900 mb-1">
+                <h3 className="text-lg font-black mb-1 text-gray-900">
                   {isAr ? pkg.nameAr : pkg.nameEn}
                 </h3>
 
@@ -176,16 +190,16 @@ const PackagesSection = () => {
                   </span>
                 </div>
 
-                <div className="w-full h-px bg-gray-100 my-5" />
+                <div className="w-full h-px my-5" style={{ backgroundColor: pkg.color + '30' }} />
 
                 {/* Features */}
                 <ul className="space-y-3.5">
                   {(isAr ? pkg.featuresAr : pkg.featuresEn).map((feature, idx) => (
                     <li key={idx} className="flex items-start gap-2.5">
-                      <span className="w-4 h-4 rounded-full bg-[#EEF6F3] text-[#0E6B58] flex items-center justify-center shrink-0 mt-0.5">
+                      <span className={"w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 " + (pkg.id === "silver" ? "bg-[#0E6B58] text-white" : "bg-[#EEF6F3] text-[#0E6B58]")}>
                         <Check size={10} strokeWidth={4} />
                       </span>
-                      <span className="text-xs font-bold text-gray-600">
+                      <span className="text-xs font-bold text-gray-700">
                         {feature}
                       </span>
                     </li>
@@ -197,7 +211,7 @@ const PackagesSection = () => {
               <div className="mt-8">
                 <Link
                   href={token ? `/${locale}/packages` : `/${locale}/login`}
-                  className="w-full py-3.5 rounded-xl font-black text-xs text-center block transition-all duration-200 bg-white border border-[#0E6B58] text-[#0E6B58] hover:bg-[#0E6B58] hover:text-white"
+                  className="w-full py-3.5 rounded-xl font-black text-xs text-center block transition-all duration-200 shadow-sm border-2" style={{ backgroundColor: pkg.id === 'silver' ? pkg.color : 'white', color: pkg.id === 'silver' ? 'white' : pkg.color, borderColor: pkg.color }}
                 >
                   {isAr ? 'اشترك الآن' : 'Subscribe Now'}
                 </Link>
