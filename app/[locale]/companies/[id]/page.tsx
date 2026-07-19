@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import PropertiesList from "../../../../src/components/properties/PropertiesList";
+import CompanyReviews from "../../../../src/components/companies/CompanyReviews";
 import { properties } from "../../../../src/lib/mockData";
 
 interface PageProps {
@@ -176,6 +177,8 @@ export default function CompanyProfilePage({ params }: PageProps) {
             properties={mockProperties}
             resetFilters={() => {}}
           />
+
+          <CompanyReviews isAr={isAr} />
         </div>
       </section>
     </main>

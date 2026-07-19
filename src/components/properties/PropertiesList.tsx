@@ -9,8 +9,10 @@ import {
   MapPin,
   Maximize2,
   SearchX,
+  Heart,
 } from "lucide-react";
 import type { PropertyItem } from "../../../app/[locale]/properties/page";
+import { useFavorites } from "../../../src/hooks/useFavorites";
 
 type Props = {
   isAr: boolean;
@@ -92,6 +94,9 @@ const PropertyCard = ({
   const currency = isAr ? property.currencyAr : property.currencyEn;
   const isSale = property.status === "sale";
 
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const favorited = isFavorite(property.id);
+
   const typeLabel = {
     villa: isAr ? "فيلا" : "Villa",
     house: isAr ? "بيت" : "House",
@@ -102,7 +107,7 @@ const PropertyCard = ({
   }[property.type];
 
   return (
-    <article className="group flex h-full min-h-[545px] flex-col overflow-hidden rounded-[30px] border border-[#E4DED1] bg-white shadow-[0_18px_55px_rgba(16,24,32,0.08)] transition duration-300 hover:-translate-y-2 hover:shadow-[0_30px_90px_rgba(16,24,32,0.16)]">
+    <article className="group flex h-full min-h-[545px] flex-col overflow-hidden rounded-[30px] border border-[#E4DED1] bg-white  transition duration-300 ">
       <div className="relative h-[240px] overflow-hidden">
         <img
           src={property.image}
@@ -113,7 +118,22 @@ const PropertyCard = ({
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
 
-        <div className="absolute start-4 top-4 flex flex-wrap gap-2">
+        <div className="absolute top-4 left-4 z-10">
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              toggleFavorite(property.id, isAr);
+            }}
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-lg backdrop-blur transition-all hover:scale-110"
+          >
+            <Heart 
+              size={18} 
+              className={favorited ? "fill-red-500 text-red-500" : "text-gray-600"} 
+            />
+          </button>
+        </div>
+
+        <div className="absolute right-4 top-4 flex flex-wrap gap-2 z-10">
           <span
             className={`w-max rounded-full px-4 py-2 text-xs font-black shadow-lg ${
               isSale
@@ -128,10 +148,6 @@ const PropertyCard = ({
               : isAr
               ? "للإيجار"
               : "For Rent"}
-          </span>
-
-          <span className="w-max rounded-full bg-white/90 px-4 py-2 text-xs font-black text-[#101820] shadow-lg backdrop-blur">
-            {typeLabel}
           </span>
         </div>
 

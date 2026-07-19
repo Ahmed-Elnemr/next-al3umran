@@ -423,11 +423,6 @@ body {
 }
 
 
-
- .group:hover img {
-      filter: grayscale(0) sepia(1) hue-rotate(-50deg) saturate(6) brightness(1);
-    }
-
 input[type="checkbox"]:checked::after {
   content: "✓";
   display: block;

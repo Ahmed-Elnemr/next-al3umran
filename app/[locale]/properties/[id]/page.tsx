@@ -17,6 +17,8 @@ import {
   Phone,
 } from "lucide-react";
 import Image from "next/image";
+import { Heart } from "lucide-react";
+import { useFavorites } from "../../../../src/hooks/useFavorites";
 
 interface PageProps {
   params: Promise<{
@@ -40,6 +42,8 @@ export default function PropertyDetailsPage({ params }: PageProps) {
 
 
   const property = properties.find((item) => item.id === Number(id));
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const favorited = property ? isFavorite(property.id) : false;
 
   if (!property) {
     return (
@@ -113,20 +117,30 @@ export default function PropertyDetailsPage({ params }: PageProps) {
   return (
     <main
       dir={isAr ? "rtl" : "ltr"}
-      className="min-h-screen bg-[#EEF2EC] pt-5 pb-16"
+      className="min-h-screen bg-[#EEF2EC] pt-5 pb-32"
     >
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(200,155,60,0.22),transparent_32%),radial-gradient(circle_at_bottom_left,rgba(14,107,88,0.18),transparent_35%)]" />
-        <div className="absolute inset-0 opacity-[0.22] bg-[linear-gradient(rgba(16,24,32,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(16,24,32,0.06)_1px,transparent_1px)] bg-[size:64px_64px]" />
-
         <div className="relative mx-auto max-w-7xl px-4">
-          <Link
-            href={`/${locale}`}
-            className="mb-6 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-black text-[#101820] shadow-sm transition hover:bg-[#101820] hover:text-white"
-          >
-            <BackIcon size={18} />
-            {isAr ? "العودة للرئيسية" : "Back Home"}
-          </Link>
+          <div className="flex justify-between items-center mb-6">
+            <Link
+              href={`/${locale}/properties`}
+              className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-black text-[#101820] shadow-sm transition hover:bg-[#101820] hover:text-white"
+            >
+              <BackIcon size={18} />
+              {isAr ? "العودة للعقارات" : "Back to Properties"}
+            </Link>
+
+            <button
+              onClick={() => toggleFavorite(property.id, isAr)}
+              className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-[0_10px_30px_rgba(16,24,32,0.05)] transition hover:scale-110"
+            >
+              <Heart 
+                size={22} 
+                className={favorited ? "fill-red-500 text-red-500" : "text-gray-600"} 
+              />
+            </button>
+          </div>
+          
 
           <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
             <div className="overflow-hidden rounded-[36px] border border-white/70 bg-white/65 p-4 shadow-[0_30px_100px_rgba(16,24,32,0.10)] backdrop-blur-xl">
@@ -287,7 +301,7 @@ export default function PropertyDetailsPage({ params }: PageProps) {
           </div>
 
           <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_0.4fr]">
-            <section className="rounded-[36px] border border-white/70 bg-white p-6 shadow-[0_20px_70px_rgba(16,24,32,0.08)] md:p-8">
+            <section className="rounded-[36px] border border-white/70 bg-white p-8 shadow-[0_20px_70px_rgba(16,24,32,0.08)] md:p-12">
               <h2 className="text-2xl font-black text-[#101820]">
                 {isAr ? "وصف العقار" : "Property Description"}
               </h2>
@@ -297,7 +311,7 @@ export default function PropertyDetailsPage({ params }: PageProps) {
               </p>
             </section>
 
-            <section className="rounded-[36px] border border-white/70 bg-white p-6 shadow-[0_20px_70px_rgba(16,24,32,0.08)]">
+            <section className="rounded-[36px] border border-white/70 bg-white p-8 shadow-[0_20px_70px_rgba(16,24,32,0.08)] md:p-12">
               <h2 className="text-2xl font-black text-[#101820]">
                 {isAr ? "مميزات العقار" : "Property Features"}
               </h2>

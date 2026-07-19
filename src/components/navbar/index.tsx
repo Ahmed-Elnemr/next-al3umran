@@ -16,6 +16,7 @@ import {
   Grid3X3,
   Headphones,
   Newspaper,
+  Heart,
 } from "lucide-react";
 
 import LanguageSelector from "./LanguageSwitcher";
@@ -209,6 +210,14 @@ const Navbar = ({
             </Link>
           )}
 
+          <Link
+            href={`/${locale}/favorites`}
+            className="flex h-[50px] w-[50px] items-center justify-center rounded-full border border-[#DCE6E2] bg-white/90 text-[#0E6B58] shadow-sm transition hover:bg-[#EEF6F3]"
+            title={isAr ? "المفضلة" : "Favorites"}
+          >
+            <Heart size={20} />
+          </Link>
+
           <div className="relative">
             <button
               ref={buttonRef}
@@ -256,6 +265,14 @@ const Navbar = ({
 
     return (
       <div className="hidden items-center gap-3 lg:flex">
+        <Link
+          href={`/${locale}/favorites`}
+          className="flex h-[48px] w-[48px] items-center justify-center rounded-full border border-[#DCE6E2] bg-white/90 text-[#0E6B58] shadow-sm transition hover:bg-[#EEF6F3]"
+          title={isAr ? "المفضلة" : "Favorites"}
+        >
+          <Heart size={20} />
+        </Link>
+
         <Link
           href={`/${locale}/register`}
           className="flex h-[48px] items-center justify-center rounded-full border border-[#0E6B58]/25 px-5 text-sm font-bold text-[#0E6B58] transition hover:bg-[#EEF6F3]"
@@ -406,6 +423,17 @@ const Navbar = ({
                     </li>
                   );
                 })}
+
+                <li>
+                  <Link
+                    href={`/${locale}/favorites`}
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-3 rounded-2xl border border-[#EDF3F0] bg-white px-4 py-3 text-sm font-bold text-[#101820]"
+                  >
+                    <Heart size={18} className="text-[#0E6B58]" />
+                    {isAr ? "المفضلة" : "Favorites"}
+                  </Link>
+                </li>
 
                 {!isAuthenticated && (
                   <div className="grid grid-cols-2 gap-2 pt-2">
