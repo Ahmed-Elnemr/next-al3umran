@@ -123,14 +123,36 @@ export default function CompanyProfilePage({ params }: PageProps) {
 
             {/* Actions */}
             <div className="flex w-full shrink-0 flex-col gap-3 md:w-[240px] md:pt-4">
-              <button className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#101820] text-sm font-black text-white shadow-lg transition hover:bg-[#0E6B58]">
+              <a
+                href="https://wa.me/971500000000"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex h-14 w-full items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-[#25D366] to-[#128C7E] text-sm font-black text-white shadow-[0_10px_30px_rgba(37,211,102,0.3)] transition-all hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(37,211,102,0.4)]"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="h-5 w-5 transition-transform group-hover:scale-110"
+                >
+                  <path d="M11.944 0A12 12 0 000 12a12 12 0 001.914 6.542L.357 23.36l4.981-1.306A11.97 11.97 0 0011.944 24c6.627 0 12-5.373 12-12s-5.373-12-12-12zm7.142 17.135c-.294.832-1.464 1.547-2.228 1.636-.612.072-1.398.243-3.957-.818-3.074-1.272-5.06-4.423-5.215-4.63-.153-.207-1.246-1.657-1.246-3.159 0-1.503.784-2.251 1.058-2.551.273-.3.593-.375.793-.375.197 0 .393 0 .563.007.185.008.431-.072.673.513.255.614.882 2.152.96 2.308.077.155.128.337.026.541-.102.203-.153.328-.306.508-.153.18-.32.396-.46.544-.155.166-.316.347-.137.656.177.307.788 1.306 1.69 2.11 1.164 1.037 2.148 1.357 2.454 1.512.306.155.485.128.665-.078.18-.204.766-.893.97-1.199.204-.307.41-.256.69-.153.28.102 1.77.836 2.075.99.307.154.512.23.588.358.077.128.077.742-.217 1.574z" />
+                </svg>
+                {isAr ? "التحدث عبر الواتساب" : "Chat on WhatsApp"}
+              </a>
+              <a
+                href="tel:+971500000000"
+                className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#0062FF] text-sm font-black text-white shadow-[0_10px_30px_rgba(0,98,255,0.2)] transition-all hover:-translate-y-1 hover:bg-[#0050D1] hover:shadow-[0_20px_40px_rgba(0,98,255,0.3)]"
+              >
                 <Phone size={18} />
                 {isAr ? "اتصل الآن" : "Call Now"}
-              </button>
-              <button className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl border-2 border-[#E8E1D5] bg-white text-sm font-black text-[#101820] transition hover:border-[#C89B3C] hover:bg-[#F8F6F1]">
+              </a>
+              <a
+                href="mailto:info@company.com"
+                className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl border-2 border-[#E8E1D5] bg-white text-sm font-black text-[#101820] transition hover:-translate-y-1 hover:border-[#C89B3C] hover:bg-[#F8F6F1]"
+              >
                 <Mail size={18} />
                 {isAr ? "أرسل رسالة" : "Send Email"}
-              </button>
+              </a>
             </div>
           </div>
         </div>
