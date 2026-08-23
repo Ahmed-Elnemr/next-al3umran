@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Check, ShieldCheck, Sparkles, Zap } from 'lucide-react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { envelopeList, fetchClient, getPackages } from '../../../src/lib/api/client';
 
 interface Package {
   id: string;
@@ -28,6 +29,7 @@ const PackagesPage = () => {
   const [role, setRole] = useState<string | null>(null);
   const [balance, setBalance] = useState<number>(0);
   const [subscribedPackage, setSubscribedPackage] = useState<string | null>(null);
+  const [packages, setPackages] = useState<Package[]>([]);
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -58,109 +60,80 @@ const PackagesPage = () => {
     }
 
     // Load active package
-    const savedPackage = localStorage.getItem('alomran_subscribed_package');
-    setSubscribedPackage(savedPackage);
+    const token = getCookie('token');
+    getPackages(locale)
+      .then((res) => {
+        const palettes = [
+          { color: '#B45309', icon: <ShieldCheck size={28} className="text-[#B45309]" /> },
+          { color: '#0E6B58', icon: <Zap size={28} className="text-[#0E6B58]" /> },
+          { color: '#C89B3C', icon: <Sparkles size={28} className="text-[#C89B3C]" /> },
+        ];
+        setPackages(
+          envelopeList(res).map((item: any, index: number) => ({
+            id: String(item.id),
+            nameAr: item.name,
+            nameEn: item.name,
+            price: item.price,
+            color: palettes[index % palettes.length].color,
+            icon: palettes[index % palettes.length].icon,
+            badgeAr: item.badge,
+            badgeEn: item.badge,
+            featuresAr: item.features || [],
+            featuresEn: item.features || [],
+          }))
+        );
+      })
+      .catch(() => setPackages([]));
+
+    if (token) {
+      fetchClient('wallet', locale, { token })
+        .then((res) => {
+          if (res?.data?.balance !== undefined) {
+            setBalance(Number(res.data.balance));
+          }
+        })
+        .catch(() => {});
+    }
   }, [locale, router]);
 
-  const handleSubscribe = (pkg: Package) => {
-    if (balance < pkg.price) {
-      toast.error(
-        isAr 
-          ? 'رصيد محفظتك غير كافٍ للاشتراك بهذه الباقة. يرجى شحن المحفظة أولاً.' 
-          : 'Insufficient wallet balance. Please top up your wallet first.'
-      );
+  const handleSubscribe = async (pkg: Package) => {
+    const getCookie = (name: string) => {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+      return null;
+    };
+    const token = getCookie('token');
+    if (!token) {
+      router.push(`/${locale}/login`);
       return;
     }
 
     setLoadingId(pkg.id);
-    
-    setTimeout(() => {
-      const newBalance = balance - pkg.price;
-      setBalance(newBalance);
-      localStorage.setItem('alomran_wallet_balance', newBalance.toString());
-      localStorage.setItem('alomran_subscribed_package', pkg.id);
+    try {
+      const res = await fetchClient('subscriptions', locale, {
+        method: 'POST',
+        body: { package_id: Number(pkg.id) },
+        token,
+      });
+      setBalance(Number(res?.data?.balance ?? balance - pkg.price));
       setSubscribedPackage(pkg.id);
-      setLoadingId(null);
-      
       toast.success(
-        isAr 
-          ? `تهانينا! تم الاشتراك في باقة ${pkg.nameAr} بنجاح.` 
+        isAr
+          ? `تهانينا! تم الاشتراك في باقة ${pkg.nameAr} بنجاح.`
           : `Congratulations! Subscribed to ${pkg.nameEn} successfully.`
       );
-    }, 1500);
+    } catch (error: any) {
+      const message =
+        error?.data?.message ||
+        (isAr
+          ? 'رصيد محفظتك غير كافٍ للاشتراك بهذه الباقة. يرجى شحن المحفظة أولاً.'
+          : 'Insufficient wallet balance. Please top up your wallet first.');
+      toast.error(message);
+    } finally {
+      setLoadingId(null);
+    }
   };
-
-  const packages: Package[] = [
-    {
-      id: 'basic',
-      nameAr: 'الباقة البرونزية',
-      nameEn: 'Bronze Package',
-      price: 150,
-      color: '#B45309',
-      icon: <ShieldCheck size={28} className="text-[#B45309]" />,
-      featuresAr: [
-        'نشر حتى 5 عقارات نشطة',
-        'دعم فني عبر واتساب',
-        'ظهور العقارات في محركات البحث',
-        'لوحة تحكم أساسية لإحصائيات المشاهدة',
-      ],
-      featuresEn: [
-        'List up to 5 active properties',
-        'Technical support via WhatsApp',
-        'SEO index listing',
-        'Basic views dashboard analytics',
-      ],
-    },
-    {
-      id: 'silver',
-      nameAr: 'الباقة الفضية الأكثر طلباً',
-      nameEn: 'Silver Package (Most Popular)',
-      price: 350,
-      color: '#0E6B58',
-      icon: <Zap size={28} className="text-[#0E6B58]" />,
-      badgeAr: 'الأكثر شعبية',
-      badgeEn: 'Most Popular',
-      featuresAr: [
-        'نشر حتى 15 عقار نشط',
-        'تميز عقارين في الصفحة الأولى للموقع',
-        'دعم فني مخصص وسريع 24/7',
-        'إحصائيات متقدمة وحصرية للمشاهدات',
-        'مشاركة العقارات في منصات التواصل الخاصة بالعمران',
-      ],
-      featuresEn: [
-        'List up to 15 active properties',
-        'Feature 2 properties on home page',
-        'Priority 24/7 technical support',
-        'Advanced traffic & lead analytics',
-        'Social media coverage on Al Omran channels',
-      ],
-    },
-    {
-      id: 'gold',
-      nameAr: 'الباقة الذهبية الملكية',
-      nameEn: 'Gold Royal Package',
-      price: 600,
-      color: '#C89B3C',
-      icon: <Sparkles size={28} className="text-[#C89B3C]" />,
-      badgeAr: 'الأقوى تميزاً',
-      badgeEn: 'Premium Choice',
-      featuresAr: [
-        'نشر عدد غير محدود من العقارات',
-        'تميز 5 عقارات في قمة نتائج البحث الأولى',
-        'دعم فني وتوجيه استشاري عقاري خاص',
-        'لوحة تحكم احترافية كاملة وتكامل مع CRM',
-        'تصوير فوتوغرافي احترافي مجاني لعقار واحد شهرياً',
-      ],
-      featuresEn: [
-        'List unlimited properties',
-        'Feature 10 properties at search tops',
-        'Premium consultancy & advisor support',
-        'Full professional dashboard & CRM API access',
-        'Dedicated personal account manager',
-        'Free professional photoshoot monthly',
-      ],
-    },
-  ];
 
   if (role && role !== 'company') {
     return null; // Will redirect

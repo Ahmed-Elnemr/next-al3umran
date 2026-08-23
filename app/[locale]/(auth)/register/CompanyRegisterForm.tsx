@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { useForm, Controller, useWatch } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import InputComponent from '@/components/shared/reusableComponents/InputComponent';
 import CustomSelect from '@/components/shared/reusableComponents/CustomSelect';
 import CountryPhoneInput from '@/components/shared/reusableComponents/CountryPhoneInput';
@@ -9,14 +9,13 @@ import user from '@/public/images/register-user.png';
 import email from '@/public/images/register-email.png';
 import location from '@/public/images/register-location.png';
 import check from '@/public/images/register-check.png';
-import { MdLockOutline } from 'react-icons/md';
 import { useTranslations, useLocale } from 'next-intl';
-import { useRouter } from 'next/navigation';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import apiServiceCall from '@/lib/apiServiceCall';
+import apiServiceCall, { apiErrorMessage, apiFieldErrors, translateOrRaw } from '@/lib/apiServiceCall';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import OtpCode from '../login/OtpCode';
 
 // ------------------------- Schema Validation ---------------------------
 const companyRegisterSchema = z.object({
@@ -27,15 +26,10 @@ const companyRegisterSchema = z.object({
   city: z.string().min(1, "city_required"),
   commercial_register: z.string().min(3, "commercial_register_required"),
   company_bio: z.string().min(10, "company_bio_required"),
-  password: z.string().min(6, "password_min"),
-  password_confirmation: z.string().min(6, "confirm_password_min"),
   terms_accepted: z.boolean().refine(val => val === true, {
     message: "terms_accepted_required",
   }),
   profile_image: z.any().optional(),
-}).refine((data) => data.password === data.password_confirmation, {
-  message: "passwords_not_match",
-  path: ["password_confirmation"],
 });
 
 type CompanyRegisterFormData = z.infer<typeof companyRegisterSchema>;
@@ -43,9 +37,11 @@ type CompanyRegisterFormData = z.infer<typeof companyRegisterSchema>;
 const CompanyRegisterForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [otpOpen, setOtpOpen] = useState(false);
+  const [otpPhone, setOtpPhone] = useState('');
+  const [otpCountryCode, setOtpCountryCode] = useState('+971');
   const t = useTranslations();
   const locale = useLocale();
-  const router = useRouter();
   const isAr = locale === 'ar';
 
   const countries = [
@@ -61,6 +57,7 @@ const CompanyRegisterForm = () => {
     handleSubmit,
     control,
     setValue,
+    setError,
     watch,
     formState: { errors },
   } = useForm<CompanyRegisterFormData>({
@@ -73,8 +70,6 @@ const CompanyRegisterForm = () => {
       city: "",
       commercial_register: "",
       company_bio: "",
-      password: "",
-      password_confirmation: "",
       terms_accepted: false,
     },
   });
@@ -83,6 +78,8 @@ const CompanyRegisterForm = () => {
 
   useEffect(() => {
     setValue('city', '');
+    const match = countries.find((country) => country.code === selectedFormCountry);
+    if (match) setSelectedCountry(match);
   }, [selectedFormCountry, setValue]);
 
   const getCityOptions = (countryCode: string) => {
@@ -136,95 +133,64 @@ const CompanyRegisterForm = () => {
 
   const onSubmit = async (data: CompanyRegisterFormData) => {
     setIsLoading(true);
-    const fullPhone = `${selectedCountry.prefix}${data.phone.replace(/^0+/, '')}`;
-    
+    const localPhone = data.phone.replace(/\D/g, '').replace(/^0+/, '');
+
     try {
       const formData = new FormData();
       formData.append('client_type', 'company');
       formData.append('company_name', data.company_name);
       formData.append('email', data.email);
-      formData.append('phone', fullPhone);
+      formData.append('phone', localPhone);
+      formData.append('country_code', selectedCountry.prefix);
       formData.append('country', data.country);
       formData.append('city', data.city);
       formData.append('commercial_register', data.commercial_register);
       formData.append('company_bio', data.company_bio);
-      formData.append('password', data.password);
-      formData.append('password_confirmation', data.password_confirmation);
-      formData.append('terms_accepted', 'true');
-      
+      formData.append('terms_accepted', '1');
+
       if (data.profile_image) {
         formData.append('profile_image', data.profile_image);
       }
 
-      const response = await apiServiceCall({
+      await apiServiceCall({
         url: 'auth/register',
         method: 'POST',
         body: formData,
         headers: {
           'Accept-Language': locale,
-          "Content-Type": "multipart/form-data"
+          'X-Locale': locale,
         },
       });
 
-      if (response?.status_code === 200 || response?.status_code === 201) {
-        toast.success(t('registration_success') || (isAr ? 'تم التسجيل بنجاح' : 'Registration successful'));
-        
-        if (response.data?.token) {
-          try {
-            await fetch('/api/auth/set-token', {
-              method: 'POST',
-              headers: { 
-                'Content-Type': 'application/json',
-                'Accept-Language': locale 
-              },
-              body: JSON.stringify({
-                token: response.data.token,
-                userId: response.data.user?.id,
-                userDataInfo: response.data.user,
-                mobile: fullPhone,
-                userType: 'company'
-              }),
-            });
-          } catch (tokenError) {
-            console.error('Token storage error:', tokenError);
-          }
-        }
-
-        setTimeout(() => {
-          window.location.href = `/${locale}`;
-        }, 1200);
-      } else {
-        throw new Error(response?.message || "Registration failed");
-      }
+      setOtpPhone(localPhone);
+      setOtpCountryCode(selectedCountry.prefix);
+      setOtpOpen(true);
+      toast.success(isAr ? 'تم إرسال رمز التحقق' : 'Verification code sent');
     } catch (error: any) {
-      console.warn("API registration failed, falling back to mock registration...");
-      
-      if (typeof window !== 'undefined') {
-        const newUser = {
-          id: Date.now(),
-          name: data.company_name,
-          phone: fullPhone,
-          email: data.email,
-          country: data.country,
-          city: data.city,
-          client_type: "company",
-          password: data.password,
-          profile_image_url: selectedImage || "/images/register-user.png"
-        };
-        const existing = localStorage.getItem("alomran_users");
-        const usersList = existing ? JSON.parse(existing) : [];
-        const filtered = usersList.filter((u: any) => u.phone !== newUser.phone);
-        filtered.push(newUser);
-        localStorage.setItem("alomran_users", JSON.stringify(filtered));
-      }
-
-      toast.success(isAr ? 'تم التسجيل بنجاح (تجريبي)' : 'Registration successful (Mock)');
-      
-      setTimeout(() => {
-        router.push(`/${locale}/login`);
-      }, 1500);
+      Object.entries(apiFieldErrors(error)).forEach(([key, message]) => {
+        setError(key as keyof CompanyRegisterFormData, { type: 'server', message });
+      });
+      toast.error(apiErrorMessage(error, t('registration_error') || (isAr ? 'تعذر إنشاء الحساب' : 'Could not create account')));
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const resendOtp = async () => {
+    try {
+      await apiServiceCall({
+        url: 'auth/resend-otp',
+        method: 'POST',
+        body: {
+          phone: otpPhone,
+          country_code: otpCountryCode,
+          purpose: 'register',
+        },
+        headers: { 'Accept-Language': locale, 'X-Locale': locale },
+      });
+      toast.success(isAr ? 'تم إعادة إرسال الرمز' : 'Code resent');
+    } catch (error: any) {
+      toast.error(apiErrorMessage(error, isAr ? 'تعذر إعادة الإرسال' : 'Could not resend code'));
     }
   };
 
@@ -247,7 +213,7 @@ const CompanyRegisterForm = () => {
               icon={<Image src={user} alt="" width={24} height={24} />}
             />
             {errors.company_name && (
-              <p className="mt-1 text-sm text-red-600">{t(errors.company_name.message)}</p>
+              <p className="mt-1 text-sm text-red-600">{translateOrRaw(t, errors.company_name.message)}</p>
             )}
           </div>
 
@@ -264,7 +230,7 @@ const CompanyRegisterForm = () => {
               icon={<Image src={email} alt="" width={24} height={24} />}
             />
             {errors.email && (
-              <p className="mt-1 text-sm text-red-600">{t(errors.email.message)}</p>
+              <p className="mt-1 text-sm text-red-600">{translateOrRaw(t, errors.email.message)}</p>
             )}
           </div>
 
@@ -282,12 +248,13 @@ const CompanyRegisterForm = () => {
               selectedCountry={selectedCountry}
               onCountryChange={(country) => {
                 setSelectedCountry(country);
+                setValue('country', country.code);
               }}
               locale={locale}
             />
             
             {errors.phone && (
-              <p className="mt-1 text-sm text-red-600">{t(errors.phone.message)}</p>
+              <p className="mt-1 text-sm text-red-600">{translateOrRaw(t, errors.phone.message)}</p>
             )}
           </div>
 
@@ -308,7 +275,7 @@ const CompanyRegisterForm = () => {
               icon={<Image src={location} alt="" width={24} height={24} />}
             />
             {errors.country && (
-              <p className="mt-1 text-sm text-red-600">{t(errors.country.message)}</p>
+              <p className="mt-1 text-sm text-red-600">{translateOrRaw(t, errors.country.message)}</p>
             )}
           </div>
 
@@ -325,7 +292,7 @@ const CompanyRegisterForm = () => {
               icon={<Image src={location} alt="" width={24} height={24} />}
             />
             {errors.city && (
-              <p className="mt-1 text-sm text-red-600">{t(errors.city.message)}</p>
+              <p className="mt-1 text-sm text-red-600">{translateOrRaw(t, errors.city.message)}</p>
             )}
           </div>
 
@@ -342,7 +309,7 @@ const CompanyRegisterForm = () => {
               icon={<Image src={check} alt="" width={24} height={24} />}
             />
             {errors.commercial_register && (
-              <p className="mt-1 text-sm text-red-600">{t(errors.commercial_register.message)}</p>
+              <p className="mt-1 text-sm text-red-600">{translateOrRaw(t, errors.commercial_register.message)}</p>
             )}
           </div>
 
@@ -359,41 +326,7 @@ const CompanyRegisterForm = () => {
               icon={<Image src={check} alt="" width={24} height={24} />}
             />
             {errors.company_bio && (
-              <p className="mt-1 text-sm text-red-600">{t(errors.company_bio.message)}</p>
-            )}
-          </div>
-
-          {/* كلمة المرور */}
-          <div>
-            <label className={`block text-sm font-bold text-gray-700 mb-2 ${isAr ? 'text-right' : 'text-left'}`}>
-              {isAr ? 'كلمة المرور' : 'Password'}
-            </label>
-            <InputComponent
-              register={register}
-              name="password"
-              placeholder={t('password_placeholder')}
-              type="password"
-              icon={<MdLockOutline className="text-2xl" />}
-            />
-            {errors.password && (
-              <p className="mt-1 text-sm text-red-600">{t(errors.password.message)}</p>
-            )}
-          </div>
-
-          {/* تأكيد كلمة المرور */}
-          <div>
-            <label className={`block text-sm font-bold text-gray-700 mb-2 ${isAr ? 'text-right' : 'text-left'}`}>
-              {isAr ? 'تأكيد كلمة المرور' : 'Confirm Password'}
-            </label>
-            <InputComponent
-              register={register}
-              name="password_confirmation"
-              placeholder={t('confirm_password_placeholder')}
-              type="password"
-              icon={<MdLockOutline className="text-2xl" />}
-            />
-            {errors.password_confirmation && (
-              <p className="mt-1 text-sm text-red-600">{t(errors.password_confirmation.message)}</p>
+              <p className="mt-1 text-sm text-red-600">{translateOrRaw(t, errors.company_bio.message)}</p>
             )}
           </div>
 
@@ -418,7 +351,7 @@ const CompanyRegisterForm = () => {
             </label>
           </div>
           {errors.profile_image && (
-            <p className="mt-1 text-sm text-red-600">{t(errors.profile_image.message)}</p>
+            <p className="mt-1 text-sm text-red-600">{translateOrRaw(t, errors.profile_image.message)}</p>
           )}
         </div>
 
@@ -442,7 +375,7 @@ const CompanyRegisterForm = () => {
           </label>
         </div>
         {errors.terms_accepted && (
-          <p className="text-sm text-red-600">{errors.terms_accepted.message}</p>
+          <p className="text-sm text-red-600">{translateOrRaw(t, errors.terms_accepted.message)}</p>
         )}
 
         {/* زر الإرسال */}
@@ -451,9 +384,18 @@ const CompanyRegisterForm = () => {
           disabled={isLoading}
           className="w-full py-4 bg-[#0E6B58] text-white font-bold rounded-xl shadow-lg transition hover:bg-[#0a4e40] disabled:opacity-50"
         >
-          {isLoading ? (isAr ? 'جاري إنشاء الحساب...' : 'Creating Account...') : (isAr ? 'إنشاء حساب كبائع' : 'Register as Seller')}
+          {isLoading ? (isAr ? 'جاري إرسال الرمز...' : 'Sending code...') : (isAr ? 'إرسال رمز التحقق' : 'Send verification code')}
         </button>
       </form>
+
+      <OtpCode
+        isOpen={otpOpen}
+        onClose={() => setOtpOpen(false)}
+        phone={otpPhone}
+        countryCode={otpCountryCode}
+        purpose="register"
+        onResendCode={resendOtp}
+      />
     </div>
   );
 };

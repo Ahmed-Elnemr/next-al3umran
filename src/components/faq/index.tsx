@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { FiChevronDown, FiChevronUp } from "react-icons/fi";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 interface FaqItem {
   question: string;
@@ -17,6 +17,8 @@ interface FaqProps {
 const Faq: React.FC<FaqProps> = ({ faq_items }) => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const t = useTranslations('faq')
+  const locale = useLocale();
+  const isAr = locale === "ar";
   const toggle = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
   };
@@ -25,7 +27,9 @@ const Faq: React.FC<FaqProps> = ({ faq_items }) => {
     return (
       <section className="bg-[#f9f9f9] py-16">
         <div className="max-w-5xl mx-auto px-6 text-center">
-          <p className="text-gray-500 text-sm">لا توجد أسئلة شائعة حالياً.</p>
+          <p className="text-gray-500 text-sm">
+            {isAr ? "لا توجد أسئلة شائعة حالياً." : "No FAQs yet."}
+          </p>
         </div>
       </section>
     );

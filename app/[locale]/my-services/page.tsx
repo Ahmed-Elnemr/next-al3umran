@@ -15,7 +15,7 @@ interface LayoutProps {
 const page = async ({ params }: LayoutProps) => {
   const { locale } = await params;
   const t = await getTranslations("services");
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
 
   const servicesResponse = await getMyServices(locale);

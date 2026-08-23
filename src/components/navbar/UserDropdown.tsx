@@ -140,6 +140,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
             <Link
               onClick={closeDropdown}
               href={`/${locale}/notifications`}
+              prefetch={false}
               className={itemClass}
             >
               <span className={contentClass}>

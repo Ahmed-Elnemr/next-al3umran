@@ -48,12 +48,17 @@ const clearAuthToken = async () => {
   try {
     const response = await apiServiceCall({
       method: "post",
-      url: "auth/profile/update",
+      url: "profile",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: data,
+      body: {
+        _method: "PUT",
+        current_password: data.current_password,
+        password: data.password,
+        password_confirmation: data.password_confirmation,
+      },
     });
 
     toast.success(

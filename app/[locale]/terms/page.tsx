@@ -1,5 +1,5 @@
 import React from "react";
-import { getSettingsData } from "../../../src/lib/serverActions";
+import { getTerms } from "../../../src/lib/serverActions";
 import Container from "../../../src/components/shared/container";
 
 interface LayoutProps {
@@ -8,28 +8,22 @@ interface LayoutProps {
 
 const page = async ({ params }: LayoutProps) => {
   const { locale } = await params;
-
-  const settingsResponse = await getSettingsData(locale);
-
-  const privacyPolicy = settingsResponse?.data?.find(
-    (item: any) => item.key === "terms_conditions"
-  );
+  const terms = await getTerms(locale);
+  const value = terms?.data?.value;
 
   return (
-   <Container>
-     <div className="container mx-auto p-6">
-      <h1 className="text-xl font-bold mb-4">{locale === 'ar' ? ' الشروط والأحكام' : 'Terms Conditions'}</h1>
-
-      {privacyPolicy?.value ? (
-        <div
-          className="prose max-w-none"
-          dangerouslySetInnerHTML={{ __html: privacyPolicy.value }}
-        />
-      ) : (
-        <p>لا توجد سياسة خصوصية حالياً</p>
-      )}
-    </div>
-   </Container>
+    <Container>
+      <div className="container mx-auto p-6">
+        <h1 className="text-xl font-bold mb-4">
+          {locale === "ar" ? "الشروط والأحكام" : "Terms & Conditions"}
+        </h1>
+        {value ? (
+          <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: value }} />
+        ) : (
+          <p>{locale === "ar" ? "لا توجد شروط حالياً" : "No terms are available yet."}</p>
+        )}
+      </div>
+    </Container>
   );
 };
 

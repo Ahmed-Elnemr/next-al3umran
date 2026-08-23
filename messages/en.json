@@ -290,7 +290,7 @@
 
   "Login": {
     "mobile_placeholder": "Mobile number",
-"mobile_invalid": "Mobile number must be a valid UAE number starting with 05 and 10 digits long",
+    "mobile_invalid": "Enter a valid phone number without the country code",
     "otp_sent": "Verification code sent to your mobile",
     "login_error": "Error during login",
     "logging_in": "Logging in...",
@@ -314,7 +314,7 @@
   "LoginPage": {
     "login_image_alt": "Login illustration",
     "login_title": "Login",
-    "login_subtitle": "Enter your account details to login",
+    "login_subtitle": "Enter your phone number to receive a verification code",
     "no_account": "Don't have an account on Koora Tact?",
     "create_account": "Create new account"
   },
@@ -338,7 +338,8 @@
     "name_min_length": "Username must be at least 3 characters",
     "mobile_placeholder": "Mobile number",
     "mobile_icon_alt": "Phone icon",
-    "mobile_format": "Mobile number must be a valid UAE number starting with 05 and 10 digits long",
+    "mobile_format": "Enter a valid phone number without the country code",
+    "country_required": "Country is required",
     "email_placeholder": "Email",
     "email_icon_alt": "Email icon",
     "invalid_email": "Invalid email address",
@@ -859,12 +860,13 @@
     "passwordRequirement3": "Contains at least one number",
     "changing": "Changing...",
     "clickToChangeImage": "Click to change image",
+    "uploadImage": "Upload image",
     "recommendedSize": "Recommended size: 500×500 pixels",
-    "cancel":"Cancel",
-        "name" : "Name",
-          "passwordChangeNote": "After successfully changing your password, you will be logged out from all devices and redirected to the login page."
-
-
+    "cancel": "Cancel",
+    "name": "Name",
+    "passwordChangeNote": "After successfully changing your password, you will be logged out from all devices and redirected to the login page.",
+    "fetchDataError": "Failed to load profile data",
+    "redirectToLogin": "You will be redirected to the login page"
   },
    "about" : {
     "about" : "About Us"
@@ -908,8 +910,8 @@
 
   "email_invalid": "Invalid email address",
 
-  "mobile_format": "Mobile number must start with 05 and be 10 digits long",
-
+  "mobile_format": "Enter a valid phone number without the country code",
+  "country_required": "Country is required",
   "city_required": "Please select a city",
 
   "commercial_register_alt": "Checkmark icon",

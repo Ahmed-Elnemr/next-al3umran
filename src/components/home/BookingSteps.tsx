@@ -3,33 +3,41 @@
 import { useLocale } from "next-intl";
 import { ClipboardCheck, Phone, Search } from "lucide-react";
 
-const BookingSteps = () => {
+const BookingSteps = ({ items = [] }: { items?: any[] }) => {
   const locale = useLocale();
   const isAr = locale === "ar";
 
-  const steps = [
+  const steps = (items.length ? items : [
     {
-      icon: Search,
+      icon: "search",
       title: isAr ? "ابحث وفلتر" : "Search & Filter",
-      desc: isAr
+      description: isAr
         ? "حدد المدينة، نوع العقار، السعر، المساحة وعدد الغرف."
         : "Choose city, type, price, area and bedrooms.",
     },
     {
-      icon: ClipboardCheck,
+      icon: "clipboard",
       title: isAr ? "قارن التفاصيل" : "Compare Details",
-      desc: isAr
+      description: isAr
         ? "راجع الصور، السعر، الموقع، المميزات وبيانات التواصل."
         : "Review photos, price, location, features and contact details.",
     },
     {
-      icon: Phone,
+      icon: "phone",
       title: isAr ? "تواصل واحجز" : "Contact & Book",
-      desc: isAr
+      description: isAr
         ? "تواصل مباشرة مع المالك أو الشركة واحجز معاينة."
         : "Contact the owner or company and book a visit.",
     },
-  ];
+  ]).map((step) => ({
+    ...step,
+    Icon:
+      step.icon === "phone"
+        ? Phone
+        : step.icon === "clipboard"
+          ? ClipboardCheck
+          : Search,
+  }));
 
   return (
     <section dir={isAr ? "rtl" : "ltr"} className="py-16 lg:py-24 bg-white">
@@ -52,7 +60,7 @@ const BookingSteps = () => {
 
             <div className="mt-8 space-y-4">
               {steps.map((step, index) => {
-                const Icon = step.icon;
+                const Icon = step.Icon;
 
                 return (
                   <div
@@ -73,7 +81,7 @@ const BookingSteps = () => {
                       </h3>
 
                       <p className="text-sm text-[#63756F] mt-2">
-                        {step.desc}
+                        {step.description || step.desc}
                       </p>
                     </div>
                   </div>

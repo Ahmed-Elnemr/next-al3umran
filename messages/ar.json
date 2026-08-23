@@ -287,7 +287,7 @@
   },
   "Login": {
     "mobile_placeholder": "رقم الجوال",
-    "mobile_invalid": "يجب أن يبدأ رقم الجوال بـ 05 ويكون رقمًا إماراتيًا صحيحًا",
+    "mobile_invalid": "أدخل رقم هاتف صحيح بدون مفتاح الدولة",
     "otp_sent": "تم إرسال كود التحقق إلى هاتفك المحمول",
     "login_error": "حدث خطأ أثناء تسجيل الدخول",
     "logging_in": "جاري تسجيل الدخول...",
@@ -309,7 +309,7 @@
   "LoginPage": {
     "login_image_alt": "رسم توضيحي لتسجيل الدخول",
     "login_title": "تسجيل الدخول",
-    "login_subtitle": "قم بإدخال بيانات حسابك لتسجيل الدخول",
+    "login_subtitle": "أدخل رقم هاتفك لاستلام رمز التحقق",
     "no_account": "ليس لديك حساب على العمران ؟",
     "create_account": "إنشاء حساب جديد"
   },
@@ -326,7 +326,8 @@
     "name_min_length": "يجب أن يكون اسم المستخدم 3 أحرف على الأقل",
     "mobile_placeholder": "رقم الجوال",
     "mobile_icon_alt": "أيقونة الهاتف",
-    "mobile_format": "يجب أن يبدأ رقم الجوال بـ 05 ويكون رقمًا إماراتيًا صحيحًا",
+    "mobile_format": "أدخل رقم هاتف صحيح بدون مفتاح الدولة",
+    "country_required": "يجب اختيار الدولة",
     "email_placeholder": "البريد الإلكتروني",
     "email_icon_alt": "أيقونة البريد",
     "invalid_email": "بريد إلكتروني غير صالح",
@@ -749,8 +750,11 @@
     "passwordRequirement3": "تحتوي على رقم واحد على الأقل",
     "changing": "جاري التغيير...",
     "clickToChangeImage": "انقر لتغيير الصورة",
+    "uploadImage": "رفع صورة",
     "recommendedSize": "الحجم الموصى به: 500×500 بكسل",
-    "cancel": "إلغاء"
+    "cancel": "إلغاء",
+    "fetchDataError": "فشل في جلب البيانات",
+    "redirectToLogin": "سيتم توجيهك إلى صفحة تسجيل الدخول"
   },
   "i_accept": "أوافق على",
   "terms_and_conditions": "الشروط والأحكام",
@@ -789,7 +793,8 @@
   "company_name_placeholder": "اسم الشركة",
   "company_name_required": "اسم الشركة مطلوب",
   "email_invalid": "البريد الإلكتروني غير صالح",
-  "mobile_format": "يجب أن يبدأ رقم الجوال بـ 05 ويتكون من 10 أرقام",
+  "mobile_format": "أدخل رقم هاتف صحيح بدون مفتاح الدولة",
+  "country_required": "يجب اختيار الدولة",
   "city_required": "يرجى اختيار المدينة",
   "commercial_register_alt": "أيقونة التأكيد",
   "commercial_register_required": "رقم السجل التجاري مطلوب",

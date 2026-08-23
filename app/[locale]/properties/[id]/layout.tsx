@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { properties } from "../../../../src/lib/mockData";
+import { getProperty } from "../../../../src/lib/api/client";
 
 type Props = {
   params: Promise<{ id: string; locale: string }>;
@@ -7,39 +7,31 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  // read route params
   const { id, locale } = await params;
   const isAr = locale === "ar";
-  
-  // fetch data
-  const property = properties.find((item) => item.id === Number(id));
-  
+  const res = await getProperty(locale, id).catch(() => null);
+  const property = res?.data;
+
   if (!property) {
     return {
       title: isAr ? "العقار غير موجود | العمران" : "Property Not Found | Al3umran",
     };
   }
 
-  const title = isAr ? property.titleAr : property.titleEn;
-  const location = isAr ? property.locationAr : property.locationEn;
-  const description = isAr 
+  const title = property.title;
+  const location = property.location || property.city?.name || "";
+  const description = isAr
     ? `احجز عقارك الآن: ${title} في ${location}. أفضل عروض العقارات مع العمران للعقارات.`
     : `Book your property now: ${title} in ${location}. Best real estate deals with Al3umran.`;
 
   return {
     title: `${title} | العمران للعقارات`,
-    description: description,
+    description,
     openGraph: {
       title: `${title} | Al3umran`,
-      description: description,
-      images: [property.image],
+      description,
+      images: property.image ? [property.image] : [],
       type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: title,
-      description: description,
-      images: [property.image],
     },
   };
 }

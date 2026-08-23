@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, Building2, Home } from "lucide-react";
 import PropertyFilters from "../../../src/components/properties/PropertyFilters";
 import PropertiesList from "../../../src/components/properties/PropertiesList";
+import { getProperties, mapApiProperty } from "../../../src/lib/api/client";
 
 export type PropertyType =
   | "villa"
@@ -69,296 +70,26 @@ const PropertiesPage = () => {
     sort: "newest",
   });
 
-  const properties: PropertyItem[] = [
-    {
-      id: 1,
-      image:
-        "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1400&q=90",
-      titleAr: "فيلا فاخرة بحديقة خاصة",
-      titleEn: "Luxury Villa With Private Garden",
-      countryAr: "الإمارات",
-      countryEn: "UAE",
-      cityAr: "دبي",
-      cityEn: "Dubai",
-      locationAr: "دبي هيلز، دبي",
-      locationEn: "Dubai Hills, Dubai",
-      price: 12500000,
-      currencyAr: "درهم",
-      currencyEn: "AED",
-      status: "sale",
-      type: "villa",
-      companyAr: "العمران للتسويق العقاري",
-      companyEn: "Al Omran Real Estate",
-      beds: 6,
-      baths: 5,
-      area: 520,
-      createdAt: "2026-06-10",
-    },
-    {
-      id: 2,
-      image:
-        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=90",
-      titleAr: "منزل عائلي بتصميم حديث",
-      titleEn: "Modern Family House",
-      countryAr: "سوريا",
-      countryEn: "Syria",
-      cityAr: "دمشق",
-      cityEn: "Damascus",
-      locationAr: "يعفور، دمشق",
-      locationEn: "Yaafour, Damascus",
-      price: 890000,
-      currencyAr: "دولار",
-      currencyEn: "USD",
-      status: "sale",
-      type: "house",
-      companyAr: "الصفوة العقارية",
-      companyEn: "Elite Real Estate",
-      beds: 5,
-      baths: 4,
-      area: 430,
-      createdAt: "2026-06-08",
-    },
-    {
-      id: 3,
-      image:
-        "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1400&q=90",
-      titleAr: "فيلا مستقلة بتشطيب فاخر",
-      titleEn: "Standalone Villa With Luxury Finish",
-      countryAr: "العراق",
-      countryEn: "Iraq",
-      cityAr: "بغداد",
-      cityEn: "Baghdad",
-      locationAr: "المنصور، بغداد",
-      locationEn: "Al Mansour, Baghdad",
-      price: 4200,
-      currencyAr: "دولار / شهر",
-      currencyEn: "USD / Month",
-      status: "rent",
-      type: "villa",
-      companyAr: "رويال هومز",
-      companyEn: "Royal Homes",
-      beds: 7,
-      baths: 6,
-      area: 610,
-      createdAt: "2026-06-06",
-    },
-    {
-      id: 4,
-      image:
-        "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1400&q=90",
-      titleAr: "شقة فاخرة كاملة التشطيب",
-      titleEn: "Fully Finished Luxury Apartment",
-      countryAr: "الإمارات",
-      countryEn: "UAE",
-      cityAr: "أبوظبي",
-      cityEn: "Abu Dhabi",
-      locationAr: "جزيرة الريم، أبوظبي",
-      locationEn: "Al Reem Island, Abu Dhabi",
-      price: 2100000,
-      currencyAr: "درهم",
-      currencyEn: "AED",
-      status: "sale",
-      type: "apartment",
-      companyAr: "نيو كابيتال بروبرتي",
-      companyEn: "New Capital Property",
-      beds: 3,
-      baths: 2,
-      area: 185,
-      createdAt: "2026-06-04",
-    },
-    {
-      id: 5,
-      image:
-        "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&w=1400&q=90",
-      titleAr: "تاون هاوس داخل كمبوند راقي",
-      titleEn: "Townhouse In Premium Compound",
-      countryAr: "سوريا",
-      countryEn: "Syria",
-      cityAr: "اللاذقية",
-      cityEn: "Latakia",
-      locationAr: "كورنيش اللاذقية",
-      locationEn: "Latakia Corniche",
-      price: 2500,
-      currencyAr: "دولار / شهر",
-      currencyEn: "USD / Month",
-      status: "rent",
-      type: "house",
-      companyAr: "سي فيو العقارية",
-      companyEn: "Sea View Realty",
-      beds: 4,
-      baths: 3,
-      area: 295,
-      createdAt: "2026-06-02",
-    },
-    {
-      id: 6,
-      image:
-        "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1400&q=90",
-      titleAr: "أرض سكنية فرصة استثمارية",
-      titleEn: "Residential Land Investment Opportunity",
-      countryAr: "العراق",
-      countryEn: "Iraq",
-      cityAr: "أربيل",
-      cityEn: "Erbil",
-      locationAr: "طريق مصيف صلاح الدين، أربيل",
-      locationEn: "Salahaddin Road, Erbil",
-      price: 320000,
-      currencyAr: "دولار",
-      currencyEn: "USD",
-      status: "sale",
-      type: "land",
-      companyAr: "أفق للاستثمار العقاري",
-      companyEn: "Ofuq Real Estate Investment",
-      beds: 0,
-      baths: 0,
-      area: 750,
-      createdAt: "2026-06-01",
-    },
-    {
-      id: 7,
-      image:
-        "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1400&q=90",
-      titleAr: "بيت مستقل بموقع هادئ",
-      titleEn: "Standalone House In Quiet Location",
-      countryAr: "سوريا",
-      countryEn: "Syria",
-      cityAr: "حلب",
-      cityEn: "Aleppo",
-      locationAr: "حلب الجديدة",
-      locationEn: "New Aleppo",
-      price: 450000,
-      currencyAr: "دولار",
-      currencyEn: "USD",
-      status: "sale",
-      type: "house",
-      companyAr: "دارك العقارية",
-      companyEn: "Darak Properties",
-      beds: 5,
-      baths: 4,
-      area: 390,
-      createdAt: "2026-05-28",
-    },
-    {
-      id: 8,
-      image:
-        "https://images.unsplash.com/photo-1600573472592-401b489a3cdc?auto=format&fit=crop&w=1400&q=90",
-      titleAr: "دوبلكس فاخر بإطلالة مفتوحة",
-      titleEn: "Luxury Duplex With Open View",
-      countryAr: "العراق",
-      countryEn: "Iraq",
-      cityAr: "البصرة",
-      cityEn: "Basra",
-      locationAr: "الجزائر، البصرة",
-      locationEn: "Al Jazaer, Basra",
-      price: 1800,
-      currencyAr: "دولار / شهر",
-      currencyEn: "USD / Month",
-      status: "rent",
-      type: "apartment",
-      companyAr: "هوم لاين العقارية",
-      companyEn: "Home Line Realty",
-      beds: 4,
-      baths: 3,
-      area: 320,
-      createdAt: "2026-05-26",
-    },
-    {
-      id: 9,
-      image:
-        "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1400&q=90",
-      titleAr: "فيلا عصرية مع مسبح",
-      titleEn: "Modern Villa With Pool",
-      countryAr: "الإمارات",
-      countryEn: "UAE",
-      cityAr: "الشارقة",
-      cityEn: "Sharjah",
-      locationAr: "الجادة، الشارقة",
-      locationEn: "Aljada, Sharjah",
-      price: 4800000,
-      currencyAr: "درهم",
-      currencyEn: "AED",
-      status: "sale",
-      type: "villa",
-      companyAr: "إعمار الخليج",
-      companyEn: "Emaar Gulf",
-      beds: 5,
-      baths: 5,
-      area: 470,
-      createdAt: "2026-05-23",
-    },
-    {
-      id: 10,
-      image:
-        "https://images.unsplash.com/photo-1592595896551-12b371d546d5?auto=format&fit=crop&w=1400&q=90",
-      titleAr: "شاليه بإطلالة بحرية",
-      titleEn: "Sea View Chalet",
-      countryAr: "سوريا",
-      countryEn: "Syria",
-      cityAr: "طرطوس",
-      cityEn: "Tartus",
-      locationAr: "جزيرة أرواد، طرطوس",
-      locationEn: "Arwad Island, Tartus",
-      price: 900,
-      currencyAr: "دولار / شهر",
-      currencyEn: "USD / Month",
-      status: "rent",
-      type: "chalet",
-      companyAr: "البحر المتوسط العقارية",
-      companyEn: "Mediterranean Realty",
-      beds: 2,
-      baths: 2,
-      area: 130,
-      createdAt: "2026-05-20",
-    },
-    {
-      id: 11,
-      image:
-        "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1400&q=90",
-      titleAr: "مكتب تجاري في موقع رئيسي",
-      titleEn: "Commercial Office In Prime Location",
-      countryAr: "الإمارات",
-      countryEn: "UAE",
-      cityAr: "دبي",
-      cityEn: "Dubai",
-      locationAr: "الخليج التجاري، دبي",
-      locationEn: "Business Bay, Dubai",
-      price: 120000,
-      currencyAr: "درهم / سنة",
-      currencyEn: "AED / Year",
-      status: "rent",
-      type: "office",
-      companyAr: "بزنس باي العقارية",
-      companyEn: "Business Bay Realty",
-      beds: 0,
-      baths: 2,
-      area: 210,
-      createdAt: "2026-05-18",
-    },
-    {
-      id: 12,
-      image:
-        "https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=1400&q=90",
-      titleAr: "شقة مفروشة للإيجار",
-      titleEn: "Furnished Apartment For Rent",
-      countryAr: "العراق",
-      countryEn: "Iraq",
-      cityAr: "النجف",
-      cityEn: "Najaf",
-      locationAr: "حي الجامعة، النجف",
-      locationEn: "University District, Najaf",
-      price: 850,
-      currencyAr: "دولار / شهر",
-      currencyEn: "USD / Month",
-      status: "rent",
-      type: "apartment",
-      companyAr: "رافدين العقارية",
-      companyEn: "Rafidain Realty",
-      beds: 3,
-      baths: 2,
-      area: 170,
-      createdAt: "2026-05-15",
-    },
-  ];
+  const [properties, setProperties] = useState<PropertyItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const query = new URLSearchParams();
+    if (filters.keyword.trim()) query.set("keyword", filters.keyword.trim());
+    if (filters.status !== "all") query.set("listing_type", filters.status);
+    if (filters.minBeds !== "all") query.set("min_beds", filters.minBeds);
+    if (filters.sort) query.set("sort", filters.sort);
+    query.set("per_page", "50");
+    setLoading(true);
+    getProperties(locale, query.toString())
+      .then((res) => {
+        const rows = res?.data?.data || res?.data || [];
+        const list = Array.isArray(rows) ? rows : [];
+        setProperties(list.map((item: any) => mapApiProperty(item, locale)));
+      })
+      .catch(() => setProperties([]))
+      .finally(() => setLoading(false));
+  }, [locale, filters.keyword, filters.status, filters.minBeds, filters.sort]);
 
   const countries = useMemo(() => {
     const map = new Map<string, string>();
@@ -366,7 +97,7 @@ const PropertiesPage = () => {
       map.set(item.countryEn, isAr ? item.countryAr : item.countryEn);
     });
     return Array.from(map, ([value, label]) => ({ value, label }));
-  }, [isAr]);
+  }, [isAr, properties]);
 
   const cities = useMemo(() => {
     const filtered =
@@ -380,7 +111,7 @@ const PropertiesPage = () => {
     });
 
     return Array.from(map, ([value, label]) => ({ value, label }));
-  }, [filters.country, isAr]);
+  }, [filters.country, isAr, properties]);
 
   const filteredProperties = useMemo(() => {
     let result = [...properties];
@@ -461,7 +192,7 @@ const PropertiesPage = () => {
     }
 
     return result;
-  }, [filters]);
+  }, [filters, properties]);
 
   const resetFilters = () => {
     setFilters({
@@ -549,6 +280,7 @@ const PropertiesPage = () => {
               locale={locale}
               properties={filteredProperties}
               resetFilters={resetFilters}
+              loading={loading}
             />
           </div>
         </div>

@@ -10,7 +10,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Token is missing" }, { status: 400 });
   }
 
-  cookies().set({
+  const cookieStore = await cookies();
+
+  cookieStore.set({
     name: "token",
     value: token,
     httpOnly: true,
@@ -19,7 +21,7 @@ export async function POST(req: Request) {
     path: "/",
     maxAge: 60 * 60 * 24 * 2,
   });
-  cookies().set({
+  cookieStore.set({
     name: "userId",
     value: userId,
     httpOnly: true,
@@ -28,7 +30,7 @@ export async function POST(req: Request) {
     path: "/",
     maxAge: 60 * 60 * 24 * 2,
   });
-  cookies().set({
+  cookieStore.set({
     name: "userDataInfo",
     value: JSON.stringify(userDataInfo),
     httpOnly: false, // Allow client-side JS to read user profile details (name, avatar)
@@ -37,7 +39,7 @@ export async function POST(req: Request) {
     path: "/",
     maxAge: 60 * 60 * 24 * 2,
   });
-  cookies().set({
+  cookieStore.set({
     name: "client_type",
     value: type,
     httpOnly: false, // Allow client-side layout and scripts to detect role dynamically

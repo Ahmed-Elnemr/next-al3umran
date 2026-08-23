@@ -1,0 +1,14 @@
+---
+description: Git isolation for the Next.js frontend repository
+alwaysApply: true
+---
+
+# Git — frontend repo only
+
+This folder is its own git repository.
+
+- Remote: `https://github.com/Ahmed-Elnemr/next-al3umran.git`
+- Working branch for this work: `feature/api-integration`
+- Run git **only** after `cd` into `al3umran/`. Never from the parent `last/` folder.
+- Never stage files from `../backend`. That project is `https://github.com/Ahmed-Elnemr/free_al3umran_backend.git`.
+- Do not commit unless the user asks. Do not push unless the user asks.

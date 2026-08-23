@@ -12,12 +12,22 @@ import {
   Sparkles,
 } from "lucide-react";
 
-const Hero = () => {
+function toEmbedUrl(url?: string | null) {
+  if (!url) return null;
+  const match = url.match(/(?:youtu\.be\/|v=|embed\/)([A-Za-z0-9_-]{6,})/);
+  const id = match?.[1];
+  if (!id) return url.includes("embed/") ? url : null;
+  return `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&disablekb=1&iv_load_policy=3&fs=0&start=2&vq=hd1080`;
+}
+
+const Hero = ({ hero }: { hero?: any }) => {
   const locale = useLocale();
   const isAr = locale === "ar";
   const ArrowIcon = isAr ? ArrowLeft : ArrowRight;
 
   const [showVideo, setShowVideo] = useState(false);
+  const videoSrc = toEmbedUrl(hero?.video_url) ||
+    "https://www.youtube.com/embed/WBvuvR4vz58?autoplay=1&mute=1&loop=1&playlist=WBvuvR4vz58&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&disablekb=1&iv_load_policy=3&fs=0&start=2&vq=hd1080";
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -26,6 +36,21 @@ const Hero = () => {
 
     return () => clearTimeout(timer);
   }, []);
+
+  const highlights = hero?.highlights?.length
+    ? hero.highlights
+    : [
+        {
+          title: isAr ? "عقارات موثقة" : "Verified Properties",
+          description: isAr ? "بيانات واضحة وتواصل مباشر" : "Clear details and direct contact",
+          icon: "shield",
+        },
+        {
+          title: isAr ? "مواقع مميزة" : "Prime Locations",
+          description: isAr ? "اختيارات مناسبة للسكن والاستثمار" : "Perfect for living and investment",
+          icon: "map",
+        },
+      ];
 
   return (
     <section
@@ -45,7 +70,7 @@ const Hero = () => {
             transition-opacity duration-700
             ${showVideo ? "opacity-100" : "opacity-0"}
           `}
-          src="https://www.youtube.com/embed/WBvuvR4vz58?autoplay=1&mute=1&loop=1&playlist=WBvuvR4vz58&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&disablekb=1&iv_load_policy=3&fs=0&start=2&vq=hd1080"
+          src={videoSrc}
           title="Al Omran Real Estate Video Background"
           frameBorder="0"
           allow="autoplay; encrypted-media; picture-in-picture"
@@ -62,22 +87,22 @@ const Hero = () => {
           <div className="mb-6 inline-flex items-center justify-center gap-2 rounded-full border border-white/25 bg-black/25 px-5 py-2.5 backdrop-blur-[2px]">
             <Sparkles size={16} className="text-[#C89B3C]" />
             <span className="text-xs font-black md:text-sm">
-              {isAr
-                ? "منصة العمران للتطوير العقاري"
-                : "Al Omran Real Estate Platform"}
+              {hero?.badge || (isAr ? "منصة العمران للتطوير العقاري" : "Al Omran Real Estate Platform")}
             </span>
           </div>
 
           <h1 className="max-w-5xl text-center text-4xl font-black leading-[1.18] tracking-[-0.04em] drop-shadow-[0_8px_25px_rgba(0,0,0,0.65)] md:text-6xl lg:text-7xl">
-            {isAr
-              ? "اكتشف عقارات فاخرة بمواقع استثنائية وإطلالات لا تُنسى"
-              : "Discover luxury properties in exceptional locations with unforgettable views"}
+            {hero?.title ||
+              (isAr
+                ? "اكتشف عقارات فاخرة بمواقع استثنائية وإطلالات لا تُنسى"
+                : "Discover luxury properties in exceptional locations with unforgettable views")}
           </h1>
 
           <p className="mt-6 max-w-3xl text-center text-base leading-8 text-white/90 drop-shadow-[0_5px_18px_rgba(0,0,0,0.65)] md:text-xl md:leading-9">
-            {isAr
-              ? "العمران يساعدك على الوصول لأفضل فرص السكن والاستثمار، من الفلل والمنازل الفاخرة إلى الشقق والأراضي والمشاريع الجديدة، بتجربة واضحة وسريعة."
-              : "Al Omran helps you find premium living and investment opportunities, from luxury villas and homes to apartments, lands and new developments."}
+            {hero?.subtitle ||
+              (isAr
+                ? "العمران يساعدك على الوصول لأفضل فرص السكن والاستثمار، من الفلل والمنازل الفاخرة إلى الشقق والأراضي والمشاريع الجديدة، بتجربة واضحة وسريعة."
+                : "Al Omran helps you find premium living and investment opportunities, from luxury villas and homes to apartments, lands and new developments.")}
           </p>
 
           <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
@@ -102,39 +127,20 @@ const Hero = () => {
           </div>
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-            <div className="flex items-center gap-3 rounded-2xl border border-white/20 bg-black/25 px-4 py-3 backdrop-blur-[2px]">
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#C89B3C] text-[#101820]">
-                <ShieldCheck size={22} />
-              </span>
-
-              <div className="">
-                <h3 className="text-sm font-black">
-                  {isAr ? "عقارات موثقة" : "Verified Properties"}
-                </h3>
-                <p className="text-xs text-white/75">
-                  {isAr
-                    ? "بيانات واضحة وتواصل مباشر"
-                    : "Clear details and direct contact"}
-                </p>
+            {highlights.map((item: any, index: number) => (
+              <div
+                key={item.title || index}
+                className="flex items-center gap-3 rounded-2xl border border-white/20 bg-black/25 px-4 py-3 backdrop-blur-[2px]"
+              >
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#C89B3C] text-[#101820]">
+                  {item.icon === "map" ? <MapPin size={22} /> : <ShieldCheck size={22} />}
+                </span>
+                <div>
+                  <h3 className="text-sm font-black">{item.title}</h3>
+                  <p className="text-xs text-white/75">{item.description}</p>
+                </div>
               </div>
-            </div>
-
-            <div className="flex items-center gap-3 rounded-2xl border border-white/20 bg-black/25 px-4 py-3 backdrop-blur-[2px]">
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/20 text-white">
-                <MapPin size={22} />
-              </span>
-
-              <div className="">
-                <h3 className="text-sm font-black">
-                  {isAr ? "مواقع مميزة" : "Prime Locations"}
-                </h3>
-                <p className="text-xs text-white/75">
-                  {isAr
-                    ? "اختيارات مناسبة للسكن والاستثمار"
-                    : "Perfect for living and investment"}
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>

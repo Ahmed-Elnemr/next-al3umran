@@ -18,10 +18,21 @@ type Props = {
   isAr: boolean;
   locale: string;
   properties: PropertyItem[];
-  resetFilters: () => void;
+  resetFilters?: () => void;
+  loading?: boolean;
 };
 
-const PropertiesList = ({ isAr, locale, properties, resetFilters }: Props) => {
+const PropertiesList = ({ isAr, locale, properties, resetFilters, loading }: Props) => {
+  if (loading) {
+    return (
+      <div className="flex min-h-[320px] items-center justify-center rounded-[34px] border border-white/70 bg-white/80 p-8 text-center shadow-[0_25px_80px_rgba(16,24,32,0.10)] backdrop-blur-xl">
+        <p className="text-sm font-black text-[#71807B]">
+          {isAr ? "جاري تحميل العقارات..." : "Loading properties..."}
+        </p>
+      </div>
+    );
+  }
+
   if (properties.length === 0) {
     return (
       <div className="flex min-h-[520px] items-center justify-center rounded-[34px] border border-white/70 bg-white/80 p-8 text-center shadow-[0_25px_80px_rgba(16,24,32,0.10)] backdrop-blur-xl">
@@ -40,12 +51,14 @@ const PropertiesList = ({ isAr, locale, properties, resetFilters }: Props) => {
               : "Try changing the filters or reset the search to view more results."}
           </p>
 
-          <button
-            onClick={resetFilters}
-            className="mt-6 h-12 rounded-full bg-[#101820] px-7 font-black text-white transition hover:bg-[#0E6B58]"
-          >
-            {isAr ? "إعادة ضبط الفلترة" : "Reset Filters"}
-          </button>
+          {resetFilters ? (
+            <button
+              onClick={resetFilters}
+              className="mt-6 h-12 rounded-full bg-[#101820] px-7 font-black text-white transition hover:bg-[#0E6B58]"
+            >
+              {isAr ? "إعادة ضبط الفلترة" : "Reset Filters"}
+            </button>
+          ) : null}
         </div>
       </div>
     );
@@ -91,7 +104,6 @@ const PropertyCard = ({
   const country = isAr ? property.countryAr : property.countryEn;
   const city = isAr ? property.cityAr : property.cityEn;
   const company = isAr ? property.companyAr : property.companyEn;
-  const currency = isAr ? property.currencyAr : property.currencyEn;
   const isSale = property.status === "sale";
 
   const { isFavorite, toggleFavorite } = useFavorites();
@@ -167,9 +179,7 @@ const PropertyCard = ({
         </h3>
 
         <p className="mt-3 text-2xl font-black text-[#0E6B58]">
-          {property.price !== undefined 
-            ? `${property.price.toLocaleString(isAr ? "ar-EG" : "en-US")} ${currency || ''}`
-            : (isAr ? property.priceAr : property.priceEn)}
+          {isAr ? property.priceAr : property.priceEn}
         </p>
 
         <Link

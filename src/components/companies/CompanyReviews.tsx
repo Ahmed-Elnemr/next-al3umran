@@ -13,40 +13,37 @@ type Review = {
   date: string;
 };
 
-const MOCK_REVIEWS: Review[] = [
-  {
-    id: 1,
-    author: "أحمد بن محمد",
-    rating: 5,
-    commentAr: "شركة ممتازة وتعاملهم احترافي جداً، ساعدوني في العثور على العقار المناسب في وقت قياسي.",
-    commentEn: "Excellent company with very professional service. They helped me find the right property in record time.",
-    date: "2024-03-15",
-  },
-  {
-    id: 2,
-    author: "سارة عبدالله",
-    rating: 4,
-    commentAr: "تجربة جيدة بشكل عام، الموظفين متعاونين والأسعار كانت منطقية.",
-    commentEn: "Good overall experience, the staff were cooperative and the prices were reasonable.",
-    date: "2024-02-28",
-  },
-  {
-    id: 3,
-    author: "John Smith",
-    rating: 5,
-    commentAr: "خدمة عملاء رائعة وشفافية عالية في التعامل المادي. أنصح بالتعامل معهم.",
-    commentEn: "Great customer service and high transparency in financial dealings. Highly recommended.",
-    date: "2024-01-10",
-  }
-];
+type ApiReview = {
+  id: number;
+  author?: string;
+  rating: number;
+  comment?: string;
+  created_at?: string;
+};
 
 type Props = {
   isAr: boolean;
   locale?: string;
+  companyId?: number | string;
+  reviews?: ApiReview[];
 };
 
-export default function CompanyReviews({ isAr, locale = "ar" }: Props) {
-  const [reviews, setReviews] = useState<Review[]>(MOCK_REVIEWS);
+export default function CompanyReviews({
+  isAr,
+  locale = "ar",
+  companyId,
+  reviews: incomingReviews,
+}: Props) {
+  const [reviews, setReviews] = useState<Review[]>(
+    (incomingReviews || []).map((review) => ({
+      id: review.id,
+      author: review.author || (isAr ? "مستخدم" : "User"),
+      rating: review.rating,
+      commentAr: review.comment || "",
+      commentEn: review.comment || "",
+      date: review.created_at || "",
+    }))
+  );
   const [newRating, setNewRating] = useState(0);
   const [newComment, setNewComment] = useState("");
   
@@ -86,25 +83,44 @@ export default function CompanyReviews({ isAr, locale = "ar" }: Props) {
     }
   }, [isAr]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newRating === 0 || !newComment.trim() || !isAuthenticated) return;
+    if (newRating === 0 || !newComment.trim() || !isAuthenticated || !companyId) return;
 
-    const newReview: Review = {
-      id: Date.now(),
-      author: userName,
-      rating: newRating,
-      commentAr: newComment,
-      commentEn: newComment,
-      date: new Date().toISOString().split("T")[0],
-    };
+    const token = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("token="))
+      ?.split("=")[1];
 
-    setReviews([newReview, ...reviews]);
-    setNewRating(0);
-    setNewComment("");
+    try {
+      const { postCompanyReview } = await import("../../lib/api/client");
+      await postCompanyReview(
+        locale,
+        companyId,
+        { rating: newRating, comment: newComment },
+        token || ""
+      );
+      setReviews([
+        {
+          id: Date.now(),
+          author: userName,
+          rating: newRating,
+          commentAr: newComment,
+          commentEn: newComment,
+          date: new Date().toISOString().split("T")[0],
+        },
+        ...reviews,
+      ]);
+      setNewRating(0);
+      setNewComment("");
+    } catch {
+      // keep the form so the user can retry
+    }
   };
 
-  const averageRating = reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length;
+  const averageRating = reviews.length
+    ? reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length
+    : 0;
 
   if (!mounted) return null;
 

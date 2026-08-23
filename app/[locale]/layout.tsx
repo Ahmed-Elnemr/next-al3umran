@@ -5,11 +5,28 @@ import { notFound } from "next/navigation";
 import { locales } from "../../navigation";
 import { cookies } from "next/headers";
 import React from "react";
+import type { Metadata } from "next";
 
 import "react-photo-view/dist/react-photo-view.css";
 import Navbar from "../../src/components/navbar";
-import { getSettingsData } from "../../src/lib/serverActions";
+import { getContactData, getGeneralSettings, getPublicCategories, getNotificaionsCount } from "../../src/lib/serverActions";
 import Footer from "../../src/components/home/Footer";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const generalData = await getGeneralSettings(locale);
+  const favicon = generalData?.data?.favicon;
+
+  return {
+    icons: favicon
+      ? { icon: favicon, apple: favicon, shortcut: favicon }
+      : { icon: "/images/logo.png", apple: "/images/logo.png" },
+  };
+}
 
 
 export default async function RootLayout({
@@ -32,8 +49,16 @@ export default async function RootLayout({
     notFound();
   }
 
-  const settingsData = await getSettingsData(currentLocale);
-  const settings = settingsData?.data || [];
+  const settingsData = await getContactData(currentLocale);
+  const settings = settingsData?.data || {};
+  const generalData = await getGeneralSettings(currentLocale);
+  const general = generalData?.data || {};
+  const categoriesData = await getPublicCategories(currentLocale);
+  const categories = Array.isArray(categoriesData?.data)
+    ? categoriesData.data
+    : Array.isArray(categoriesData?.data?.data)
+      ? categoriesData.data.data
+      : [];
 
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
@@ -47,7 +72,12 @@ export default async function RootLayout({
       console.error("Failed to parse userDataInfo cookie in layout", e);
     }
   }
-  const isAr = currentLocale === "ar";
+  const notificationsCountData = token
+    ? await getNotificaionsCount(currentLocale)
+    : { data: { unread_count: 0 } };
+  const notificationsUnReadCount = Number(
+    notificationsCountData?.data?.unread_count ?? notificationsCountData?.unread_count ?? 0
+  );
 
   // const logoAr = settings.find((item: any) => item.key === "logo_ar")?.value;
   // const logoEn = settings.find((item: any) => item.key === "logo_en")?.value;
@@ -70,15 +100,19 @@ export default async function RootLayout({
           className="min-h-screen bg-white"
         >
           <Navbar
-            bank_account={settings?.find((item: any) => item.key === "bankAccount")}
+            bank_account={null}
             token={token}
             role={role}
             userData={userData}
-            notificationsUnReadCount={0}
+            notificationsUnReadCount={notificationsUnReadCount}
+            logo={general.header_logo || general.logo}
+            favicon={general.favicon}
+            siteName={general.site_name}
+            tagline={general.site_tagline}
           />
           {/* <WhatsApp locale={currentLocale}/> */}
           <div>{children}</div>
-          <Footer />
+          <Footer contact={settings} general={general} categories={categories} />
           {/* <Footer settings={settings} locale={currentLocale} token={token} /> */}
         </div>
       </Providers>

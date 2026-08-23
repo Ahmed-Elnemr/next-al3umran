@@ -12,7 +12,7 @@ import {
   Maximize2,
 } from "lucide-react";
 import Image from "next/image";
-import { properties } from "../../lib/mockData";
+import { mapApiProperty } from "../../lib/api/client";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
@@ -20,9 +20,10 @@ import { Autoplay, Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 
-const AvailableProperties = () => {
+const AvailableProperties = ({ items = [] }: { items?: any[] }) => {
   const locale = useLocale();
   const isAr = locale === "ar";
+  const properties = items.map((item) => mapApiProperty(item, locale));
 
   return (
     <section

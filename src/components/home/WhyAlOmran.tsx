@@ -3,33 +3,41 @@
 import { useLocale } from "next-intl";
 import { BadgeCheck, ShieldCheck, Sparkles } from "lucide-react";
 
-const WhyAlOmran = () => {
+const WhyAlOmran = ({ items = [] }: { items?: any[] }) => {
   const locale = useLocale();
   const isAr = locale === "ar";
 
-  const features = [
+  const features = (items.length ? items : [
     {
-      icon: ShieldCheck,
+      icon: "shield",
       title: isAr ? "عقارات موثقة" : "Verified Listings",
-      desc: isAr
+      description: isAr
         ? "عرض بيانات واضحة وصور حقيقية وتواصل مباشر مع المالك أو الوسيط."
         : "Clear data, real visuals and direct communication with owners or agents.",
     },
     {
-      icon: Sparkles,
+      icon: "sparkles",
       title: isAr ? "بحث ذكي وسريع" : "Smart Search",
-      desc: isAr
+      description: isAr
         ? "فلترة حسب الموقع، السعر، النوع، عدد الغرف، المساحة وحالة العقار."
         : "Filter by location, price, type, bedrooms, area and property status.",
     },
     {
-      icon: BadgeCheck,
+      icon: "badge",
       title: isAr ? "واجهة احترافية" : "Premium Interface",
-      desc: isAr
+      description: isAr
         ? "تصميم حديث يمنح العميل ثقة وراحة أثناء تصفح العقارات."
         : "A modern interface that builds trust while browsing properties.",
     },
-  ];
+  ]).map((feature) => ({
+    ...feature,
+    Icon:
+      feature.icon === "sparkles"
+        ? Sparkles
+        : feature.icon === "badge"
+          ? BadgeCheck
+          : ShieldCheck,
+  }));
 
   return (
     <section dir={isAr ? "rtl" : "ltr"} className="py-16 lg:py-24 bg-[#F6F4EE]">
@@ -52,7 +60,7 @@ const WhyAlOmran = () => {
 
         <div className="grid lg:grid-cols-3 gap-6">
           {features.map((feature) => {
-            const Icon = feature.icon;
+            const Icon = feature.Icon;
 
             return (
               <div
@@ -68,7 +76,7 @@ const WhyAlOmran = () => {
                 </h3>
 
                 <p className="text-[#63756F] leading-7 mt-3">
-                  {feature.desc}
+                  {feature.description || feature.desc}
                 </p>
               </div>
             );

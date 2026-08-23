@@ -1,0 +1,17 @@
+---
+description: Wire Next.js pages to Laravel client APIs using Postman mapping
+alwaysApply: true
+---
+
+# Next.js API wiring
+
+- Base URL: `process.env.NEXT_PUBLIC_API_URL` → `http://127.0.0.1:8000/api/v1/client/`
+- Client: `src/lib/apiServiceCall.tsx`. Always send `Accept-Language` (`ar`|`en`) **and** `X-Locale` (`ar`|`en`) and Bearer from `token` cookie when present.
+- Canonical paths live in `../backend/postman/FRONTEND-MAPPING.md`. Read it before adding or changing a fetch.
+- Do not add new mock/localStorage fallbacks for properties, packages, wallet, categories, FAQ, or auth.
+- Envelope: `{ message, status_code, data, errors }`. Use `data`.
+- Translatable fields arrive **already localized**. Render `item.name` / `item.title`. Do not expect `name_ar` / `titleEn` on GET payloads.
+- Public pages that list CMS data (`home`, `categories`, `packages`, `faq`) must refetch from the API (no long ISR) so Filament edits at `http://127.0.0.1:8000/admin` show on `http://localhost:3000/{locale}` after refresh.
+- Public pages may ISR. Auth pages (`wallet`, `add-your-property`, `edit-data`, `notifications`, `my-services`) are `no-store`.
+- If the backend adds/removes a field, update the TypeScript type, the form, and confirm Postman was updated. Admin UI is Filament on the Laravel app, not this repo.
+- Prefer typed helpers under `src/lib/api/` over scattering raw URLs in pages.

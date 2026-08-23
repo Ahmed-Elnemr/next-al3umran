@@ -28,6 +28,10 @@ interface NavbarProps {
   token?: string;
   bank_account?: any;
   logo?: string;
+  favicon?: string;
+  siteName?: string;
+  siteName?: string;
+  tagline?: string;
   role?: string;
   userData?: any;
   notificationsUnReadCount: number;
@@ -36,6 +40,9 @@ interface NavbarProps {
 const Navbar = ({
   token,
   logo,
+  favicon,
+  siteName,
+  tagline,
   role,
   userData,
   notificationsUnReadCount,
@@ -47,8 +54,12 @@ const Navbar = ({
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
-  const [name, setName] = useState<string | undefined>(userData?.name || userData?.company_name || "");
-  const [profileImage, setProfileImage] = useState<string>(userData?.profile_image_url || "");
+  const [name, setName] = useState<string | undefined>(
+    userData?.name || (typeof userData?.company_name === "string" ? userData.company_name : "")
+  );
+  const [profileImage, setProfileImage] = useState<string>(
+    userData?.avatar || userData?.profile_image_url || ""
+  );
 
   const t = useTranslations("navbar");
   const isAuthenticated = !!token;
@@ -114,15 +125,16 @@ const Navbar = ({
       try {
         const response = await apiServiceCall({
           method: "GET",
-          url: "auth/me",
+          url: "profile",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         });
 
-        setName(response?.data?.user?.name || "");
-        setProfileImage(response?.data?.user?.profile_image_url || "");
+        const user = response?.data?.user ?? response?.data;
+        setName(user?.name || user?.company_name || "");
+        setProfileImage(user?.avatar || user?.profile_image_url || "");
       } catch (error) {
         console.warn("Failed to fetch user profile from API, trying cookie fallback...");
         const getCookie = (cname: string) => {
@@ -144,7 +156,7 @@ const Navbar = ({
             const decoded = decodeURIComponent(cachedUserStr);
             const cachedUser = JSON.parse(decoded);
             setName(cachedUser?.name || cachedUser?.company_name || "");
-            setProfileImage(cachedUser?.profile_image_url || "");
+            setProfileImage(cachedUser?.avatar || cachedUser?.profile_image_url || "");
           } catch (e) {
             console.error("Failed to parse cached user cookie", e);
           }
@@ -156,7 +168,8 @@ const Navbar = ({
   }, [token]);
 
   useEffect(() => {
-    if (!logo) return;
+    const iconHref = favicon || logo;
+    if (!iconHref) return;
 
     let link: HTMLLinkElement | null =
       document.querySelector("link[rel~='icon']");
@@ -167,8 +180,8 @@ const Navbar = ({
       document.head.appendChild(link);
     }
 
-    link.href = logo;
-  }, [logo]);
+    link.href = iconHref;
+  }, [favicon, logo]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -301,26 +314,27 @@ const Navbar = ({
               onClick={() => setMenuOpen(false)}
               className="flex shrink-0 items-center gap-3"
             >
-              <div className="h-[52px] w-[52px] rounded-2xl bg-gradient-to-br from-[#0E6B58] to-[#101820] p-2 shadow-[0_16px_35px_rgba(14,107,88,0.25)] lg:h-[60px] lg:w-[60px]">
-                {logo ? (
-                  <Image
+              {logo ? (
+                <span className="flex h-[52px] max-w-[200px] items-center lg:h-[60px]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
                     src={logo}
-                    alt="العمران"
-                    width={60}
-                    height={60}
-                    className="h-full w-full object-contain"
+                    alt={siteName || (isAr ? "العمران" : "Al Omran")}
+                    className="h-full w-auto max-w-[200px] object-contain"
                   />
-                ) : (
+                </span>
+              ) : (
+                <div className="h-[52px] w-[52px] rounded-2xl bg-gradient-to-br from-[#0E6B58] to-[#101820] p-2 shadow-[0_16px_35px_rgba(14,107,88,0.25)] lg:h-[60px] lg:w-[60px]">
                   <Building2 className="h-full w-full text-white" />
-                )}
-              </div>
+                </div>
+              )}
 
               <div className="hidden sm:block">
                 <h1 className="text-lg font-black leading-none text-[#101820]">
-                  العمران
+                  {siteName || (isAr ? "العمران" : "Al Omran")}
                 </h1>
                 <p className="mt-1 text-[11px] text-[#7B8B86]">
-                  منصة العقارات الذكية
+                  {tagline || (isAr ? "منصة العقارات الذكية" : "Smart Real Estate Platform")}
                 </p>
               </div>
             </Link>

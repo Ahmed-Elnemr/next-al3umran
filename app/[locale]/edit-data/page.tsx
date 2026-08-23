@@ -7,13 +7,22 @@ import { getTranslations } from "next-intl/server";
 const page = async () => {
   const t = await getTranslations("profile");
 
-  const cookieStore = cookies();
-  const token = cookieStore.get("token")?.value;
-const userDataString = cookieStore.get("userDataInfo")?.value;
-const userData = userDataString
-  ? JSON.parse(userDataString)
-  : null;
-const role = userData?.client_type
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value ?? "";
+  const clientType = cookieStore.get("client_type")?.value;
+  const userDataString = cookieStore.get("userDataInfo")?.value;
+
+  let userData: { client_type?: string } | null = null;
+  if (userDataString) {
+    try {
+      userData = JSON.parse(userDataString);
+    } catch {
+      userData = null;
+    }
+  }
+
+  const role = clientType || userData?.client_type || "customer";
+
   return (
     <Container className="mt-10 min-h-screen">
       <div className="flex flex-col gap-5 items-center justify-center">
@@ -27,7 +36,7 @@ const role = userData?.client_type
           </h4>
         </div>
 
-        <EditDataForm token={token} role = {role} />
+        <EditDataForm token={token} role={role} />
       </div>
     </Container>
   );

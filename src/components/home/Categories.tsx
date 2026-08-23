@@ -2,39 +2,36 @@
 
 import Link from "next/link";
 import { useLocale } from "next-intl";
-import { Home, Castle, Trees, Building2, ArrowLeft, ArrowRight } from "lucide-react";
+import { Home, Castle, Trees, Building2, Warehouse, Hotel, ArrowLeft, ArrowRight } from "lucide-react";
 
-const Categories = () => {
+const ICON_MAP: Record<string, typeof Home> = {
+  apartments: Home,
+  villas: Castle,
+  lands: Trees,
+  "new-projects": Building2,
+  chalets: Warehouse,
+  offices: Hotel,
+};
+
+const COLORS = [
+  "from-[#0E6B58] to-[#101820]",
+  "from-[#8A5A2B] to-[#C89B3C]",
+  "from-[#315C3F] to-[#89A86B]",
+  "from-[#101820] to-[#0E6B58]",
+];
+
+type CategoryItem = {
+  id: number;
+  name: string;
+  slug: string;
+  listings_count?: number;
+};
+
+const Categories = ({ items = [] }: { items?: CategoryItem[] }) => {
   const locale = useLocale();
   const isAr = locale === "ar";
   const ArrowIcon = isAr ? ArrowLeft : ArrowRight;
-
-  const categories = [
-    {
-      icon: Home,
-      title: isAr ? "شقق" : "Apartments",
-      count: isAr ? "4,250 عقار" : "4,250 listings",
-      color: "from-[#0E6B58] to-[#101820]",
-    },
-    {
-      icon: Castle,
-      title: isAr ? "فلل" : "Villas",
-      count: isAr ? "1,190 عقار" : "1,190 listings",
-      color: "from-[#8A5A2B] to-[#C89B3C]",
-    },
-    {
-      icon: Trees,
-      title: isAr ? "أراضي" : "Lands",
-      count: isAr ? "780 قطعة" : "780 lands",
-      color: "from-[#315C3F] to-[#89A86B]",
-    },
-    {
-      icon: Building2,
-      title: isAr ? "مشاريع جديدة" : "New Projects",
-      count: isAr ? "320 مشروع" : "320 projects",
-      color: "from-[#101820] to-[#0E6B58]",
-    },
-  ];
+  const categories = items.slice(0, 4);
 
   return (
     <section dir={isAr ? "rtl" : "ltr"} className="py-16 lg:py-24 bg-[#F6F4EE]">
@@ -66,17 +63,18 @@ const Categories = () => {
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {categories.map((item) => {
-            const Icon = item.icon;
+          {categories.map((item, index) => {
+            const Icon = ICON_MAP[item.slug] || Building2;
+            const count = item.listings_count ?? 0;
 
             return (
               <Link
-                href={`/${locale}/categories`}
-                key={item.title}
+                href={`/${locale}/category/${item.id}`}
+                key={item.id}
                 className="group rounded-[32px] bg-white border border-[#E7E1D6] p-5 shadow-sm hover:shadow-[0_24px_70px_rgba(16,24,32,0.12)] hover:-translate-y-1 transition"
               >
                 <div
-                  className={`w-16 h-16 rounded-[24px] bg-gradient-to-br ${item.color} text-white flex items-center justify-center mb-8`}
+                  className={`w-16 h-16 rounded-[24px] bg-gradient-to-br ${COLORS[index % COLORS.length]} text-white flex items-center justify-center mb-8`}
                 >
                   <Icon size={30} />
                 </div>
@@ -84,9 +82,11 @@ const Categories = () => {
                 <div className="flex items-end justify-between gap-3">
                   <div>
                     <h3 className="text-xl font-black text-[#101820]">
-                      {item.title}
+                      {item.name}
                     </h3>
-                    <p className="text-sm text-[#63756F] mt-2">{item.count}</p>
+                    <p className="text-sm text-[#63756F] mt-2">
+                      {isAr ? `${count} عقار` : `${count} listings`}
+                    </p>
                   </div>
 
                   <span className="w-10 h-10 rounded-full bg-[#EEF6F3] text-[#0E6B58] flex items-center justify-center group-hover:bg-[#0E6B58] group-hover:text-white transition">

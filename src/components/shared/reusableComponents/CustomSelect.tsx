@@ -56,7 +56,7 @@ export default function CustomSelect({
               </div>
             )}
 
-            <Select onValueChange={field.onChange} value={field.value}>
+            <Select onValueChange={field.onChange} value={field.value || undefined}>
               <SelectTrigger
                 className={`
                   btn-select bg-[#f5f5f5] outline-none w-full md:h-[64px] h-[50px]  ${icon ? 'pr-12' : 'pr-5' }  pl-4 border rounded-xl
@@ -69,7 +69,7 @@ export default function CustomSelect({
 
               <SelectContent>
                 <SelectGroup>
-                  {options?.map((option) => (
+                  {options?.filter((option) => option.value).map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>

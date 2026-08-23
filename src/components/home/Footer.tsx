@@ -12,11 +12,39 @@ import {
   Phone,
   Send,
   Twitter,
+  Youtube,
 } from "lucide-react";
 
-const Footer = () => {
+const Footer = ({
+  contact,
+  general,
+  categories = [],
+}: {
+  contact?: any;
+  general?: any;
+  categories?: any[];
+}) => {
   const locale = useLocale();
   const isAr = locale === "ar";
+  const siteName = general?.site_name || (isAr ? "العمران" : "Al Omran");
+  const tagline = general?.site_tagline || (isAr ? "للتطوير العقاري" : "Real Estate Platform");
+  const logo = general?.footer_logo || general?.header_logo || general?.logo;
+
+  const socials = [
+    { href: contact?.facebook_link, icon: <Facebook size={18} /> },
+    { href: contact?.instagram_link, icon: <Instagram size={18} /> },
+    { href: contact?.x_link, icon: <Twitter size={18} /> },
+    { href: contact?.telegram_link, icon: <Send size={18} /> },
+    { href: contact?.youtube_link, icon: <Youtube size={18} /> },
+  ].filter((item) => Boolean(item.href));
+
+  const propertyTypes = (Array.isArray(categories) ? categories : [])
+    .slice(0, 6)
+    .map((category: any) => ({
+      id: category.id,
+      label: category.name,
+      href: `/${locale}/category/${category.id}`,
+    }));
 
   const quickLinks = [
     {
@@ -39,14 +67,6 @@ const Footer = () => {
       label: isAr ? "تواصل معنا" : "Contact Us",
       href: `/${locale}/contact`,
     },
-  ];
-
-  const propertyTypes = [
-    isAr ? "شقق للبيع" : "Apartments For Sale",
-    isAr ? "فلل فاخرة" : "Luxury Villas",
-    isAr ? "أراضي سكنية" : "Residential Lands",
-    isAr ? "شاليهات" : "Chalets",
-    isAr ? "عقارات للإيجار" : "Properties For Rent",
   ];
 
   return (
@@ -103,32 +123,36 @@ const Footer = () => {
         <div className="grid gap-10 pb-12 md:grid-cols-2 lg:grid-cols-[1.25fr_0.8fr_0.8fr_1fr]">
           <div>
             <Link href={`/${locale}`} className="mb-5 flex items-center gap-3">
-              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#C89B3C] text-[#101820]">
-                <Building2 size={29} />
+              <span className="relative flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl bg-[#C89B3C] text-[#101820]">
+                {logo ? (
+                  <img src={logo} alt={siteName} className="h-full w-full object-contain" />
+                ) : (
+                  <Building2 size={29} />
+                )}
               </span>
 
               <div>
-                <h3 className="text-2xl font-black">
-                  {isAr ? "العمران" : "Al Omran"}
-                </h3>
-                <p className="text-xs font-bold text-white/55">
-                  {isAr ? "للتطوير العقاري" : "Real Estate Platform"}
-                </p>
+                <h3 className="text-2xl font-black">{siteName}</h3>
+                {tagline ? (
+                  <p className="text-xs font-bold text-white/55">{tagline}</p>
+                ) : null}
               </div>
             </Link>
 
             <p className="max-w-md text-sm leading-8 text-white/62">
-              {isAr
-                ? "منصة عقارية حديثة تساعدك على البحث عن أفضل فرص البيع والإيجار والاستثمار العقاري، مع تجربة سهلة وتصميم واضح يناسب جميع المستخدمين."
-                : "A modern real estate platform helping users discover sale, rent and investment opportunities through a clear and easy browsing experience."}
+              {contact?.footer_text ||
+                (isAr
+                  ? "منصة عقارية حديثة تساعدك على البحث عن أفضل فرص البيع والإيجار والاستثمار العقاري، مع تجربة سهلة وتصميم واضح يناسب جميع المستخدمين."
+                  : "A modern real estate platform helping users discover sale, rent and investment opportunities through a clear and easy browsing experience.")}
             </p>
 
-            <div className="mt-6 flex items-center gap-3">
-              <SocialIcon icon={<Facebook size={18} />} />
-              <SocialIcon icon={<Instagram size={18} />} />
-              <SocialIcon icon={<Twitter size={18} />} />
-              <SocialIcon icon={<Send size={18} />} />
-            </div>
+            {socials.length > 0 ? (
+              <div className="mt-6 flex items-center gap-3">
+                {socials.map((social) => (
+                  <SocialIcon key={social.href} icon={social.icon} href={social.href} />
+                ))}
+              </div>
+            ) : null}
           </div>
 
           <div>
@@ -152,13 +176,18 @@ const Footer = () => {
             <FooterTitle title={isAr ? "أنواع العقارات" : "Property Types"} />
 
             <ul className="mt-5 space-y-3">
-              {propertyTypes.map((item) => (
-                <li key={item}>
+              {(propertyTypes.length
+                ? propertyTypes
+                : [
+                    { id: "all", label: isAr ? "كل العقارات" : "All Properties", href: `/${locale}/categories` },
+                  ]
+              ).map((item) => (
+                <li key={item.id}>
                   <Link
-                    href={`/${locale}/categories`}
+                    href={item.href}
                     className="text-sm font-bold text-white/62 transition hover:text-[#C89B3C]"
                   >
-                    {item}
+                    {item.label}
                   </Link>
                 </li>
               ))}
@@ -171,17 +200,17 @@ const Footer = () => {
             <div className="mt-5 space-y-4">
               <ContactItem
                 icon={<Phone size={18} />}
-                text={isAr ? "+20 100 000 0000" : "+20 100 000 0000"}
+                text={contact?.contact_numbers?.[0] || contact?.whatsapp_number || "+20 100 000 0000"}
               />
 
               <ContactItem
                 icon={<Mail size={18} />}
-                text="info@alomran.com"
+                text={contact?.email || "info@alomran.com"}
               />
 
               <ContactItem
                 icon={<MapPin size={18} />}
-                text={isAr ? "القاهرة، مصر" : "Cairo, Egypt"}
+                text={contact?.address || (isAr ? "القاهرة، مصر" : "Cairo, Egypt")}
               />
             </div>
 
@@ -207,9 +236,10 @@ const Footer = () => {
 
         <div className="flex flex-col items-center justify-between gap-6 border-t border-white/10 py-6 text-center lg:flex-row">
           <p className="text-sm font-bold text-white/50">
-            {isAr
-              ? "© جميع الحقوق محفوظة لمنصة العمران"
-              : "© All rights reserved for Al Omran"}
+            {contact?.copyright ||
+              (isAr
+                ? "© جميع الحقوق محفوظة لمنصة العمران"
+                : "© All rights reserved for Al Omran")}
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3 bg-white/5 px-4 py-2.5 rounded-2xl border border-white/5">
@@ -255,10 +285,12 @@ const FooterTitle = ({ title }: { title: string }) => {
   );
 };
 
-const SocialIcon = ({ icon }: { icon: React.ReactNode }) => {
+const SocialIcon = ({ icon, href }: { icon: React.ReactNode; href: string }) => {
   return (
     <Link
-      href="#"
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
       className="flex h-11 w-11 items-center justify-center rounded-full border border-white/12 bg-white/8 text-white transition hover:-translate-y-1 hover:border-[#C89B3C] hover:bg-[#C89B3C] hover:text-[#101820]"
     >
       {icon}

@@ -21,7 +21,13 @@ import {
   AtSign,
 } from "lucide-react";
 
-const TechnicalSupport = () => {
+const TechnicalSupport = ({
+  faqs = [],
+  contact = {},
+}: {
+  faqs?: Array<{ id: number; question: string; answer: string }>;
+  contact?: any;
+}) => {
   const locale = useLocale();
   const isAr = locale === "ar";
   const ArrowIcon = isAr ? ArrowLeft : ArrowRight;
@@ -31,13 +37,15 @@ const TechnicalSupport = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
     subject: "",
     message: "",
   });
+  const [submitError, setSubmitError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const faqs = [
+  const fallbackFaqs = [
     {
       id: 1,
       question: isAr
@@ -103,6 +111,14 @@ const TechnicalSupport = () => {
     },
   ];
 
+  const faqItems = faqs.length
+    ? faqs.map((item) => ({
+        id: item.id,
+        question: item.question,
+        answer: item.answer,
+      }))
+    : fallbackFaqs;
+
   const supportChannels = [
     {
       icon: MessageSquare,
@@ -119,7 +135,7 @@ const TechnicalSupport = () => {
       desc: isAr
         ? "أرسل استفسارك وسنرد عليك خلال 24 ساعة"
         : "Send your inquiry and we'll reply within 24 hours",
-      action: "support@alomran.com",
+      action: contact.email || "info@alomran.com",
       color: "from-[#8A5A2B] to-[#C89B3C]",
     },
     {
@@ -128,7 +144,7 @@ const TechnicalSupport = () => {
       desc: isAr
         ? "اتصل بنا خلال أوقات العمل الرسمية"
         : "Call us during official working hours",
-      action: "+20 123 456 789",
+      action: contact.contact_numbers?.[0] || contact.whatsapp_number || "+971 50 000 0000",
       color: "from-[#315C3F] to-[#89A86B]",
     },
   ];
@@ -142,21 +158,34 @@ const TechnicalSupport = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitError("");
 
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsSubmitted(true);
-      setFormData({
-        name: "",
-        email: "",
-        subject: "",
-        message: "",
+    try {
+      const { postContactMessage } = await import("../../lib/api/client");
+      const phone = formData.phone.replace(/^0+/, "");
+      await postContactMessage(locale, {
+        name: formData.name,
+        email: formData.email,
+        country_code: "+971",
+        phone,
+        message_type: "inquiry",
+        message: formData.subject
+          ? `${formData.subject}\n\n${formData.message}`
+          : formData.message,
       });
+      setIsSubmitted(true);
+      setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
       setTimeout(() => setIsSubmitted(false), 5000);
-    }, 1500);
+    } catch {
+      setSubmitError(
+        isAr ? "تعذر إرسال الرسالة. تأكد من البيانات وحاول مرة أخرى." : "Could not send the message. Please check the details and try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // دالة لتبديل حالة السؤال - كل سؤال له id مميز
@@ -237,7 +266,7 @@ const TechnicalSupport = () => {
           </div>
 
           <div className="grid gap-4">
-            {faqs.map((faq) => {
+            {faqItems.map((faq) => {
               // كل سؤال له حالة مستقلة بناءً على id الخاص بيه
               const isOpen = activeFaqId === faq.id;
               
@@ -392,9 +421,36 @@ const TechnicalSupport = () => {
                             isAr ? "pr-10 pl-4 text-right" : "pl-10 pr-4 text-left"
                           }`}
                         />
-                      </div>
+                          </div>
                     </div>
                   </div>
+
+                  <div>
+                    <label
+                      htmlFor="phone"
+                      className={`text-sm font-bold text-[#101820] block mb-1.5 ${
+                        isAr ? "text-right" : "text-left"
+                      }`}
+                    >
+                      {isAr ? "رقم الهاتف" : "Phone"}
+                    </label>
+                    <input
+                      type="tel"
+                      id="phone"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      placeholder={isAr ? "501234567" : "501234567"}
+                      required
+                      className={`w-full rounded-xl border border-[#E7E1D6] bg-[#F9F8F6] px-4 py-3 text-[#101820] placeholder:text-[#B0AEA6] focus:border-[#0E6B58] focus:outline-none focus:ring-2 focus:ring-[#0E6B58]/20 ${
+                        isAr ? "text-right" : "text-left"
+                      }`}
+                    />
+                  </div>
+
+                  {submitError ? (
+                    <p className="text-sm font-bold text-red-600">{submitError}</p>
+                  ) : null}
 
                   <div>
                     <label

@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { use, useRef, useState } from "react";
-import { properties } from "../../../../src/lib/mockData";
+import { use, useEffect, useRef, useState } from "react";
+import { getProperty, mapApiProperty } from "../../../../src/lib/api/client";
 import {
   ArrowLeft,
   ArrowRight,
@@ -33,17 +33,34 @@ export default function PropertyDetailsPage({ params }: PageProps) {
   const BackIcon = isAr ? ArrowRight : ArrowLeft;
 
   const [mainImage, setMainImage] = useState<string | null>(null);
+  const [property, setProperty] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   const sliderRef = useRef<HTMLDivElement | null>(null);
   const isDragging = useRef(false);
   const startX = useRef(0);
   const scrollLeft = useRef(0);
 
-
-
-  const property = properties.find((item) => item.id === Number(id));
+  useEffect(() => {
+    getProperty(locale, id)
+      .then((res) => {
+        if (res?.data) {
+          setProperty(mapApiProperty(res.data, locale));
+        }
+      })
+      .catch(() => setProperty(null))
+      .finally(() => setLoading(false));
+  }, [locale, id]);
   const { isFavorite, toggleFavorite } = useFavorites();
   const favorited = property ? isFavorite(property.id) : false;
+
+  if (loading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#EEF2EC]">
+        <p className="font-bold text-[#5E6D68]">{isAr ? "جاري التحميل..." : "Loading..."}</p>
+      </main>
+    );
+  }
 
   if (!property) {
     return (
@@ -75,7 +92,7 @@ export default function PropertyDetailsPage({ params }: PageProps) {
   const company = isAr ? property.companyAr : property.companyEn;
   const description = isAr ? property.descriptionAr : property.descriptionEn;
   const isSale = property.status === "sale";
-  const visibleGallery = property.gallery.slice(0, 5);
+  const visibleGallery = (property.gallery || [property.image]).filter(Boolean).slice(0, 5);
 
   const whatsappText = encodeURIComponent(
     isAr

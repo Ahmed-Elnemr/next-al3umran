@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useLocale } from "next-intl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -28,6 +28,7 @@ import {
   Eye,
   Clock,
 } from "lucide-react";
+import { envelopeList, getCategories, getProperties, mapApiProperty } from "../../../src/lib/api/client";
 
 const CategoriesPage = () => {
   const locale = useLocale();
@@ -37,175 +38,51 @@ const CategoriesPage = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [activeCategory, setActiveCategory] = useState<string>("all");
 
-  const categories = [
-    {
-      id: "apartments",
-      icon: Home,
-      title: isAr ? "شقق" : "Apartments",
-      count: "4,250",
-      desc: isAr
-        ? "شقق متنوعة بمساحات وتشطيبات مختلفة تناسب جميع الاحتياجات"
-        : "Various apartments with different sizes and finishes to suit all needs",
-      color: "from-[#0E6B58] to-[#101820]",
-      bg: "bg-[#EEF6F3]",
-    },
-    {
-      id: "villas",
-      icon: Castle,
-      title: isAr ? "فلل" : "Villas",
-      count: "1,190",
-      desc: isAr
-        ? "فلل فاخرة مع حدائق خاصة ومساحات واسعة للعائلات"
-        : "Luxury villas with private gardens and spacious areas for families",
-      color: "from-[#8A5A2B] to-[#C89B3C]",
-      bg: "bg-[#F8F3EA]",
-    },
-    {
-      id: "lands",
-      icon: Trees,
-      title: isAr ? "أراضي" : "Lands",
-      count: "780",
-      desc: isAr
-        ? "أراضي سكنية وتجارية بمساحات متنوعة في مواقع استراتيجية"
-        : "Residential and commercial lands of various sizes in strategic locations",
-      color: "from-[#315C3F] to-[#89A86B]",
-      bg: "bg-[#EEF5EC]",
-    },
-    {
-      id: "new-projects",
-      icon: Building2,
-      title: isAr ? "مشاريع جديدة" : "New Projects",
-      count: "320",
-      desc: isAr
-        ? "أحدث المشاريع العقارية بأسعار مميزة وتشطيبات فاخرة"
-        : "The latest real estate projects at competitive prices with luxury finishes",
-      color: "from-[#101820] to-[#0E6B58]",
-      bg: "bg-[#EEF2F0]",
-    },
-    {
-      id: "townhouses",
-      icon: Warehouse,
-      title: isAr ? "تاون هاوس" : "Townhouses",
-      count: "450",
-      desc: isAr
-        ? "تاون هاوس بتصاميم حديثة في كمبوندات راقية"
-        : "Modern townhouse designs in upscale compounds",
-      color: "from-[#4A3728] to-[#8B7355]",
-      bg: "bg-[#F5F1EC]",
-    },
-    {
-      id: "residential-complexes",
-      icon: Hotel,
-      title: isAr ? "مجمعات سكنية" : "Residential Complexes",
-      count: "280",
-      desc: isAr
-        ? "مجمعات سكنية متكاملة الخدمات بأسعار تنافسية"
-        : "Integrated residential complexes with competitive prices",
-      color: "from-[#1A3A4A] to-[#4A7A8A]",
-      bg: "bg-[#EDF3F5]",
-    },
-    {
-      id: "commercial",
-      icon: Store,
-      title: isAr ? "محلات تجارية" : "Commercial Shops",
-      count: "190",
-      desc: isAr
-        ? "محلات ومساحات تجارية في أفضل المواقع للاستثمار"
-        : "Shops and commercial spaces in prime locations for investment",
-      color: "from-[#6B3A2A] to-[#B86A3A]",
-      bg: "bg-[#F5F0EC]",
-    },
-    {
-      id: "industrial",
-      icon: Factory,
-      title: isAr ? "أراضي صناعية" : "Industrial Lands",
-      count: "95",
-      desc: isAr
-        ? "أراضي ومصانع في المناطق الصناعية بأسعار مناسبة"
-        : "Lands and factories in industrial zones at affordable prices",
-      color: "from-[#2A3A3A] to-[#5A7A7A]",
-      bg: "bg-[#EDF2F2]",
-    },
-    {
-      id: "agricultural",
-      icon: LandPlot,
-      title: isAr ? "أراضي زراعية" : "Agricultural Lands",
-      count: "130",
-      desc: isAr
-        ? "أراضي زراعية خصبة في مناطق متميزة للاستثمار الزراعي"
-        : "Fertile agricultural lands in distinguished areas for agricultural investment",
-      color: "from-[#2A5A3A] to-[#6A9A5A]",
-      bg: "bg-[#EEF5EC]",
-    },
-  ];
+  const [categories, setCategories] = useState<any[]>([]);
+  const [featuredProperties, setFeaturedProperties] = useState<any[]>([]);
 
-  const featuredProperties = [
-    {
-      id: 1,
-      image:
-        "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=800&q=90",
-      titleAr: "فيلا فاخرة بحديقة خاصة",
-      titleEn: "Luxury Villa With Private Garden",
-      locationAr: "القاهرة الجديدة",
-      locationEn: "New Cairo",
-      priceAr: "12,500,000 درهم",
-      priceEn: "EGP 12,500,000",
-      category: "villas",
-      beds: 6,
-      baths: 5,
-      area: 520,
-    },
-    {
-      id: 2,
-      image:
-        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=90",
-      titleAr: "شقة فاخرة كاملة التشطيب",
-      titleEn: "Luxury Fully Finished Apartment",
-      locationAr: "العاصمة الإدارية",
-      locationEn: "New Capital",
-      priceAr: "4,200,000 درهم",
-      priceEn: "EGP 4,200,000",
-      category: "apartments",
-      beds: 3,
-      baths: 2,
-      area: 185,
-    },
-    {
-      id: 3,
-      image:
-        "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=800&q=90",
-      titleAr: "تاون هاوس داخل كمبوند راقي",
-      titleEn: "Townhouse In Premium Compound",
-      locationAr: "الساحل الشمالي",
-      locationEn: "North Coast",
-      priceAr: "38,000 درهم / شهر",
-      priceEn: "EGP 38,000 / Month",
-      category: "townhouses",
-      beds: 4,
-      baths: 3,
-      area: 295,
-    },
-    {
-      id: 4,
-      image:
-        "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=90",
-      titleAr: "أرض سكنية فرصة استثمارية",
-      titleEn: "Residential Land Investment Opportunity",
-      locationAr: "العين السخنة",
-      locationEn: "Ain Sokhna",
-      priceAr: "2,900,000 درهم",
-      priceEn: "EGP 2,900,000",
-      category: "lands",
-      beds: 0,
-      baths: 0,
-      area: 750,
-    },
-  ];
+  useEffect(() => {
+    const icons: Record<string, any> = {
+      apartments: Home,
+      villas: Castle,
+      lands: Trees,
+      "new-projects": Building2,
+      chalets: Warehouse,
+      offices: Hotel,
+    };
+    const colors = [
+      { color: "from-[#0E6B58] to-[#101820]", bg: "bg-[#EEF6F3]" },
+      { color: "from-[#8A5A2B] to-[#C89B3C]", bg: "bg-[#F8F3EA]" },
+      { color: "from-[#315C3F] to-[#89A86B]", bg: "bg-[#EEF5EC]" },
+      { color: "from-[#101820] to-[#0E6B58]", bg: "bg-[#EEF2F0]" },
+    ];
+    getCategories(locale)
+      .then((res) => {
+        setCategories(
+          envelopeList(res).map((item: any, index: number) => ({
+            id: String(item.id),
+            slug: item.slug,
+            icon: icons[item.slug] || Building2,
+            title: item.name,
+            count: String(item.listings_count ?? item.listings_count ?? 0),
+            desc: item.description || "",
+            color: colors[index % colors.length].color,
+            bg: colors[index % colors.length].bg,
+          }))
+        );
+      })
+      .catch(() => setCategories([]));
+    getProperties(locale, "per_page=12")
+      .then((res) => setFeaturedProperties(envelopeList(res).map((item: any) => mapApiProperty(item, locale))))
+      .catch(() => setFeaturedProperties([]));
+  }, [locale]);
 
   const filteredProperties =
     activeCategory === "all"
       ? featuredProperties
-      : featuredProperties.filter((p) => p.category === activeCategory);
+      : featuredProperties.filter(
+          (p) => String(p.categoryId) === activeCategory || p.category === activeCategory
+        );
 
   return (
     <section dir={isAr ? "rtl" : "ltr"} className="py-16 lg:py-24 bg-[#F6F4EE]">

@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useForm, useWatch } from "react-hook-form";
-import { MdLockOutline } from "react-icons/md";
+import { useForm } from "react-hook-form";
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { toast, ToastContainer } from 'react-toastify';
@@ -10,36 +9,32 @@ import Image from 'next/image';
 import CustomSelect from '@/components/shared/reusableComponents/CustomSelect';
 import InputComponent from '@/components/shared/reusableComponents/InputComponent';
 import CountryPhoneInput from '@/components/shared/reusableComponents/CountryPhoneInput';
-import apiServiceCall from '@/lib/apiServiceCall';
+import apiServiceCall, { apiErrorMessage, apiFieldErrors, translateOrRaw } from '@/lib/apiServiceCall';
 import { z } from 'zod';
 import { useTranslations, useLocale } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import OtpCode from '../login/OtpCode';
 
 import emailIcon from '@/public/images/register-email.png';
 import userIcon from '@/public/images/register-user.png';
 import locationIcon from '@/public/images/register-location.png';
 
-// -------------------- SCHEMA ------------------------
 const registerSchema = z.object({
   name: z.string().min(3, 'name_min_length'),
   phone: z.string().min(5, 'mobile_format'),
   email: z.string().email('invalid_email'),
-  country: z.string({ required_error: 'country_required' }),
-  city: z.string({ required_error: 'city_required' }),
-  password: z.string().min(6, 'password_min'),
-  password_confirmation: z.string().min(6, 'password_confirm_min'),
+  country: z.string().min(1, 'country_required'),
+  city: z.string().min(1, 'city_required'),
   terms_accepted: z.literal(true, { errorMap: () => ({ message: 'terms_required' }) }),
   profile_image: z.any().optional(),
-}).refine((data) => data.password === data.password_confirmation, {
-  message: "passwords_not_match",
-  path: ["password_confirmation"],
 });
 
 const RegisterForm: React.FC = () => {
   const t = useTranslations('RegisterPage');
   const locale = useLocale();
-  const router = useRouter();
   const isAr = locale === 'ar';
+  const [otpOpen, setOtpOpen] = useState(false);
+  const [otpPhone, setOtpPhone] = useState('');
+  const [otpCountryCode, setOtpCountryCode] = useState('+971');
 
   const countries = [
     { code: 'uae', label: isAr ? 'الإمارات 🇦🇪' : 'UAE 🇦🇪', prefix: '+971', flag: '🇦🇪' },
@@ -87,7 +82,7 @@ const RegisterForm: React.FC = () => {
     }
   };
 
-  const { register, handleSubmit, control, watch, formState: { errors }, setValue } =
+  const { register, handleSubmit, control, watch, formState: { errors }, setValue, setError } =
     useForm({
       resolver: zodResolver(registerSchema),
       defaultValues: {
@@ -96,8 +91,6 @@ const RegisterForm: React.FC = () => {
         email: '',
         country: 'uae',
         city: '',
-        password: '',
-        password_confirmation: '',
         terms_accepted: false,
         profile_image: '',
       },
@@ -107,6 +100,8 @@ const RegisterForm: React.FC = () => {
 
   useEffect(() => {
     setValue('city', '');
+    const match = countries.find((country) => country.code === selectedFormCountry);
+    if (match) setSelectedCountry(match);
   }, [selectedFormCountry, setValue]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -121,74 +116,41 @@ const RegisterForm: React.FC = () => {
 
   const registerMutation = useMutation({
     mutationFn: async (formData: FormData) => {
-      try {
-        const response = await apiServiceCall({
-          url: 'auth/register',
-          method: 'POST',
-          body: formData,
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            'Accept-Language': locale,
-          },
-        });
-        return response;
-      } catch (err) {
-        console.warn("API register failed, falling back to mock registration...");
-        
-        // Save user to localStorage
-        if (typeof window !== 'undefined') {
-          const newUser = {
-            id: Date.now(),
-            name: formData.get("name") as string,
-            phone: formData.get("phone") as string,
-            email: formData.get("email") as string,
-            city: formData.get("city") as string,
-            country: formData.get("country") as string,
-            client_type: "customer",
-            password: formData.get("password") as string,
-            profile_image_url: imagePreview || "/images/register-user.png"
-          };
-          const existing = localStorage.getItem("alomran_users");
-          const usersList = existing ? JSON.parse(existing) : [];
-          
-          // Remove duplicate if already exists
-          const filtered = usersList.filter((u: any) => u.phone !== newUser.phone);
-          filtered.push(newUser);
-          
-          localStorage.setItem("alomran_users", JSON.stringify(filtered));
-        }
-
-        return {
-          status: 200,
-          message: isAr ? "تم التسجيل بنجاح (تجريبي)" : "Registered successfully (Mock)"
-        };
-      }
+      return apiServiceCall({
+        url: 'auth/register',
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Accept-Language': locale,
+          'X-Locale': locale,
+        },
+      });
     },
-
-    onSuccess: (res) => {
-      toast.success(res.message || t('register_success'));
-      setTimeout(() => {
-        router.push(`/${locale}/login`);
-      }, 1500);
+    onSuccess: (_res, formData) => {
+      setOtpPhone(String(formData.get('phone') || ''));
+      setOtpCountryCode(String(formData.get('country_code') || selectedCountry.prefix));
+      setOtpOpen(true);
+      toast.success(t('otp_sent'));
     },
-
     onError: (err: any) => {
-      toast.error(err.data?.message || t('register_error'));
+      Object.entries(apiFieldErrors(err)).forEach(([key, message]) => {
+        setError(key as any, { type: 'server', message });
+      });
+      toast.error(apiErrorMessage(err, t('register_error')));
     },
   });
 
   const onSubmit = (data: any) => {
     const formData = new FormData();
-    const fullPhone = `${selectedCountry.prefix}${data.phone.replace(/^0+/, '')}`;
+    const localPhone = data.phone.replace(/\D/g, '').replace(/^0+/, '');
 
     formData.append("client_type", "customer");
     formData.append("name", data.name);
     formData.append("email", data.email);
-    formData.append("phone", fullPhone);
+    formData.append("phone", localPhone);
+    formData.append("country_code", selectedCountry.prefix);
     formData.append("country", data.country);
     formData.append("city", data.city);
-    formData.append("password", data.password);
-    formData.append("password_confirmation", data.password_confirmation);
     formData.append("terms_accepted", data.terms_accepted ? "1" : "0");
 
     if (data.profile_image instanceof File) {
@@ -196,6 +158,24 @@ const RegisterForm: React.FC = () => {
     }
 
     registerMutation.mutate(formData);
+  };
+
+  const resendOtp = async () => {
+    try {
+      await apiServiceCall({
+        url: 'auth/resend-otp',
+        method: 'POST',
+        body: {
+          phone: otpPhone,
+          country_code: otpCountryCode,
+          purpose: 'register',
+        },
+        headers: { 'Accept-Language': locale, 'X-Locale': locale },
+      });
+      toast.success(t('otp_sent'));
+    } catch (err: any) {
+      toast.error(apiErrorMessage(err, isAr ? 'تعذر إعادة الإرسال' : 'Could not resend code'));
+    }
   };
 
   return (
@@ -218,7 +198,7 @@ const RegisterForm: React.FC = () => {
             placeholder={t('name_placeholder')}
             icon={<Image src={userIcon} alt="" width={24} height={24} />}
           />
-          {errors.name && <p className="text-sm text-red-600 mt-1">{t(errors.name.message)}</p>}
+          {errors.name && <p className="text-sm text-red-600 mt-1">{translateOrRaw(t, errors.name.message)}</p>}
         </div>
 
         {/* الموبايل والدولة */}
@@ -235,11 +215,12 @@ const RegisterForm: React.FC = () => {
             selectedCountry={selectedCountry}
             onCountryChange={(country) => {
               setSelectedCountry(country);
+              setValue('country', country.code);
             }}
             locale={locale}
           />
           
-          {errors.phone && <p className="text-sm text-red-600 mt-1">{t(errors.phone.message)}</p>}
+          {errors.phone && <p className="text-sm text-red-600 mt-1">{translateOrRaw(t, errors.phone.message)}</p>}
         </div>
 
         {/* البلد */}
@@ -258,7 +239,7 @@ const RegisterForm: React.FC = () => {
             placeholder={isAr ? 'اختر البلد' : 'Select Country'}
             icon={<Image src={locationIcon} alt="" width={24} height={24} />}
           />
-          {errors.country && <p className="text-sm text-red-600 mt-1">{t(errors.country.message)}</p>}
+          {errors.country && <p className="text-sm text-red-600 mt-1">{translateOrRaw(t, errors.country.message)}</p>}
         </div>
 
         {/* الايميل */}
@@ -273,7 +254,7 @@ const RegisterForm: React.FC = () => {
             placeholder={t('email_placeholder')}
             icon={<Image src={emailIcon} alt="" width={24} height={24} />}
           />
-          {errors.email && <p className="text-sm text-red-600 mt-1">{t(errors.email.message)}</p>}
+          {errors.email && <p className="text-sm text-red-600 mt-1">{translateOrRaw(t, errors.email.message)}</p>}
         </div>
 
         {/* المدينة */}
@@ -288,39 +269,7 @@ const RegisterForm: React.FC = () => {
             placeholder={t('city_placeholder')}
             icon={<Image src={locationIcon} alt="" width={24} height={24} />}
           />
-          {errors.city && <p className="text-sm text-red-600 mt-1">{t(errors.city.message)}</p>}
-        </div>
-
-        {/* كلمة المرور */}
-        <div>
-          <label className={`block text-sm font-bold text-gray-700 mb-2 ${isAr ? 'text-right' : 'text-left'}`}>
-            {isAr ? 'كلمة المرور' : 'Password'}
-          </label>
-          <InputComponent
-            register={register}
-            name="password"
-            type="password"
-            placeholder={t('enter_password_placeholder')}
-            icon={<MdLockOutline className="text-3xl" />}
-          />
-          {errors.password && <p className="text-sm text-red-600 mt-1">{t(errors.password.message)}</p>}
-        </div>
-
-        {/* تأكيد كلمة المرور */}
-        <div>
-          <label className={`block text-sm font-bold text-gray-700 mb-2 ${isAr ? 'text-right' : 'text-left'}`}>
-            {isAr ? 'تأكيد كلمة المرور' : 'Confirm Password'}
-          </label>
-          <InputComponent
-            register={register}
-            name="password_confirmation"
-            type="password"
-            placeholder={t('confirm_password_placeholder')}
-            icon={<MdLockOutline className="text-3xl" />}
-          />
-          {errors.password_confirmation && (
-            <p className="text-sm text-red-600 mt-1">{t(errors.password_confirmation.message)}</p>
-          )}
+          {errors.city && <p className="text-sm text-red-600 mt-1">{translateOrRaw(t, errors.city.message)}</p>}
         </div>
 
         {/* رفع الصورة */}
@@ -351,7 +300,7 @@ const RegisterForm: React.FC = () => {
             />
           </label>
           {errors.profile_image && (
-            <p className="text-sm text-red-600 mt-1">{t(errors.profile_image.message)}</p>
+            <p className="text-sm text-red-600 mt-1">{translateOrRaw(t, errors.profile_image.message)}</p>
           )}
         </div>
 
@@ -370,7 +319,7 @@ const RegisterForm: React.FC = () => {
 
         {errors.terms_accepted && (
           <p className="text-sm text-red-600 lg:col-span-2 mt-1">
-            {t(errors.terms_accepted.message)}
+            {translateOrRaw(t, errors.terms_accepted.message)}
           </p>
         )}
 
@@ -381,10 +330,21 @@ const RegisterForm: React.FC = () => {
             disabled={registerMutation.isPending}
             className="bg-primary w-full text-white py-4 rounded-xl font-bold transition duration-300 hover:bg-primary/90 disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            {registerMutation.isPending ? t('creating_account') : t('create_account')}
+            {registerMutation.isPending
+              ? (isAr ? 'جاري إرسال الرمز...' : 'Sending code...')
+              : (isAr ? 'إرسال رمز التحقق' : 'Send verification code')}
           </button>
         </div>
       </form>
+
+      <OtpCode
+        isOpen={otpOpen}
+        onClose={() => setOtpOpen(false)}
+        phone={otpPhone}
+        countryCode={otpCountryCode}
+        purpose="register"
+        onResendCode={resendOtp}
+      />
     </>
   );
 };

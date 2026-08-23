@@ -41,7 +41,7 @@ export const getSingleService = async (lang: string, id: string) => {
 
 export const getProfile = async (lang: string) => {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value; 
 
     const data = await apiServiceCall({
@@ -60,7 +60,7 @@ export const getProfile = async (lang: string) => {
 };
 export const getMyServices = async (lang: string) => {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value; 
 
     const data = await apiServiceCall({
@@ -82,7 +82,7 @@ export const getHomeData = async (lang: string) => {
   try {
     const data = await apiServiceCall({
       url: "home",
-      headers: { "Accept-Language": lang },
+      headers: { "Accept-Language": lang, "X-Locale": lang },
     });
     return data;
   } catch (error) {
@@ -90,50 +90,133 @@ export const getHomeData = async (lang: string) => {
   }
 };
 
-export const getEventsData = async (lang: string, keyword?: string) => {
+export const getGeneralSettings = async (lang: string) => {
   try {
-    const data = await apiServiceCall({
-      url:"services",
-      headers: { "Accept-Language": lang },
+    return await apiServiceCall({
+      url: "general-settings",
+      headers: { "Accept-Language": lang, "X-Locale": lang },
     });
-    return data;
   } catch (error) {
-    errorsHandling(error, lang);
+    console.warn("Failed to load general settings", error);
+    return { data: {} };
+  }
+};
+
+export const getPublicCategories = async (lang: string) => {
+  try {
+    return await apiServiceCall({
+      url: "categories",
+      headers: { "Accept-Language": lang, "X-Locale": lang },
+    });
+  } catch (error) {
+    console.warn("Failed to load categories", error);
+    return { data: [] };
+  }
+};
+
+export const getContactData = async (lang: string) => {
+  try {
+    return await apiServiceCall({
+      url: "contact",
+      headers: { "Accept-Language": lang, "X-Locale": lang },
+    });
+  } catch (error) {
+    console.warn("Failed to load contact settings", error);
+    return { data: {} };
+  }
+};
+
+export const getAboutUs = async (lang: string) => {
+  try {
+    return await apiServiceCall({
+      url: "about-us",
+      headers: { "Accept-Language": lang, "X-Locale": lang },
+    });
+  } catch (error) {
+    console.warn("Failed to load about us", error);
+    return { data: {} };
+  }
+};
+
+export const getPrivacy = async (lang: string) => {
+  try {
+    return await apiServiceCall({
+      url: "privacy",
+      headers: { "Accept-Language": lang, "X-Locale": lang },
+    });
+  } catch (error) {
+    console.warn("Failed to load privacy", error);
+    return { data: {} };
+  }
+};
+
+export const getTerms = async (lang: string) => {
+  try {
+    return await apiServiceCall({
+      url: "terms",
+      headers: { "Accept-Language": lang, "X-Locale": lang },
+    });
+  } catch (error) {
+    console.warn("Failed to load terms", error);
+    return { data: {} };
+  }
+};
+
+export const getSiteServices = async (lang: string) => {
+  try {
+    return await apiServiceCall({
+      url: "services",
+      headers: { "Accept-Language": lang, "X-Locale": lang },
+    });
+  } catch (error) {
+    console.warn("Failed to load services", error);
+    return { data: [] };
   }
 };
 
 export const getSettingsData = async (lang: string) => {
-  const cookieStore = cookies();
+  return getContactData(lang);
+};
+
+export const getNotifications = async (lang: string) => {
+  const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
+  if (!token) {
+    return { data: [] };
+  }
 
   try {
-    const data = await apiServiceCall({
-      url: "all-settings",
+    return await apiServiceCall({
+      url: "notifications",
       headers: {
         "Accept-Language": lang,
+        "X-Locale": lang,
         Authorization: `Bearer ${token}`,
       },
     });
-    return data;
-  } catch (error) {
-    errorsHandling(error, lang);
+  } catch {
+    return { data: [] };
   }
 };
+
 export const getNotificaionsCount = async (lang: string) => {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
+  if (!token) {
+    return { data: { unread_count: 0 } };
+  }
 
   try {
-    const data = await apiServiceCall({
+    return await apiServiceCall({
       url: "notifications/unread-count",
       headers: {
         "Accept-Language": lang,
+        "X-Locale": lang,
         Authorization: `Bearer ${token}`,
       },
     });
-    return data;
-  } catch (error) {
-    errorsHandling(error, lang);
+  } catch {
+    return { data: { unread_count: 0 } };
   }
 };
 

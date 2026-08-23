@@ -1,251 +1,192 @@
-'use client';
+"use client";
 
-import React, { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import otpCode from '@/public/images/otp-code.png';
-import { useForm } from 'react-hook-form';
-import { useMutation } from '@tanstack/react-query';
-import apiServiceCall from '@/lib/apiServiceCall';
-import { toast } from 'react-toastify';
-import { v4 as uuidv4 } from 'uuid';
-import {useLocale} from 'next-intl'
-import { useTranslations } from 'next-intl';
+import React, { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import otpCodeImg from "@/public/images/otp-code.png";
+import { useForm } from "react-hook-form";
+import { useMutation } from "@tanstack/react-query";
+import apiServiceCall, { apiErrorMessage } from "@/lib/apiServiceCall";
+import { toast } from "react-toastify";
+import { useLocale, useTranslations } from "next-intl";
+
+const OTP_LENGTH = 4;
 
 interface OtpModalProps {
   isOpen: boolean;
   onClose: () => void;
+  phone: string;
+  countryCode: string;
+  purpose: "login" | "register";
   onResendCode?: () => void;
-  mobileNumber : string
 }
 
+const persistSession = async (locale: string, payload: any, mobile: string) => {
+  const tokenResponse = await fetch("/api/auth/set-token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept-Language": locale,
+    },
+    body: JSON.stringify({
+      token: payload.token,
+      userId: payload.user?.id,
+      userDataInfo: payload.user,
+      mobile,
+      userType: payload.user?.client_type || "customer",
+    }),
+  });
 
-const OtpCode: React.FC<OtpModalProps> = ({ isOpen, onClose, onResendCode , mobileNumber }) => {
-  const [mobile, setMobile] = useState('');
-  const [uuid, setUuid] = useState('');
-  const [deviceToken, setDeviceToken] = useState('');
-  const [countdown, setCountdown] = useState(105); 
-  const [canResend, setCanResend] = useState(false);
-  const router = useRouter();
-  const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
-  const { handleSubmit, setValue, getValues } = useForm();
-  const locale = useLocale()
-    const t = useTranslations("otpCode"); 
-  const number =  JSON.parse(localStorage.getItem('mobile_number'));
-  useEffect(() => {
-
-   const initDeviceIdentifiers = () => {
-  let storedUuid = localStorage.getItem('uuid');
-  let storedDeviceToken = localStorage.getItem('device_token');
-
-  if (!storedUuid) {
-    storedUuid = uuidv4();
-    localStorage.setItem('uuid', storedUuid); 
-  } else {
-    storedUuid = storedUuid.startsWith('"') ? JSON.parse(storedUuid) : storedUuid;
+  if (!tokenResponse.ok) {
+    throw new Error("Failed to store token");
   }
-
-  if (!storedDeviceToken) {
-    storedDeviceToken = uuidv4();
-    localStorage.setItem('device_token', storedDeviceToken); 
-  } else {
-    storedDeviceToken = storedDeviceToken.startsWith('"') ? JSON.parse(storedDeviceToken) : storedDeviceToken;
-  }
-
-  setUuid(storedUuid);
-  setDeviceToken(storedDeviceToken);
 };
 
-    initDeviceIdentifiers();
-  }, []);
+const OtpCode: React.FC<OtpModalProps> = ({
+  isOpen,
+  onClose,
+  phone,
+  countryCode,
+  purpose,
+  onResendCode,
+}) => {
+  const [countdown, setCountdown] = useState(60);
+  const [canResend, setCanResend] = useState(false);
+  const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
+  const { handleSubmit, setValue, getValues } = useForm();
+  const locale = useLocale();
+  const t = useTranslations("otpCode");
+  const isAr = locale === "ar";
+  const displayPhone = `${countryCode}${phone}`;
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    
-    if (countdown > 0 && isOpen) {
-      timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-    } else if (countdown === 0) {
-      setCanResend(true);
-    }
+    if (!isOpen) return;
+    setCountdown(60);
+    setCanResend(false);
+  }, [isOpen]);
 
+  useEffect(() => {
+    if (!isOpen || countdown <= 0) {
+      if (countdown === 0) setCanResend(true);
+      return;
+    }
+    const timer = setTimeout(() => setCountdown((value) => value - 1), 1000);
     return () => clearTimeout(timer);
   }, [countdown, isOpen]);
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
   const verifyMutation = useMutation({
-    mutationFn: async (data: {
-      mobile: number;
-      code: string;
-      uuid: string;
-      device_token: string;
-      device_type: string;
-    }) => {
-      const formattedMobile = data.mobile;
-      
-      const response = await apiServiceCall({
-        url: 'activate',
-        method: 'POST',
+    mutationFn: async (code: string) => {
+      return apiServiceCall({
+        url: "auth/verify-otp",
+        method: "POST",
         body: {
-          ...data,
-          mobile: formattedMobile
+          phone,
+          country_code: countryCode,
+          code,
+          purpose,
+          device_type: "web",
         },
-        headers: {
-    'Accept-Language': locale,
-    'Content-Type': 'application/json',
-  },
+        headers: { "Accept-Language": locale, "X-Locale": locale },
       });
-
-      if (!response) {
-        throw new Error('No response from server');
-      }
-
-      return response;
     },
     onSuccess: async (res) => {
-      if (res?.status) {
-        toast.success(res.message || 'تم التحقق بنجاح');
-        
-        if (res.data?.access_token) {
-          try {
-            const tokenResponse = await fetch('/api/auth/set-token', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                token: res.data.access_token,
-                userId: res.data.user?.id,
-                userDataInfo: res.data.user,
-                mobile: number,
-                userType: res.data.user?.type || 'client'
-              }),
-            });
-            
-            if (!tokenResponse.ok) {
-              throw new Error('Failed to store token');
-            }
-
-            localStorage.removeItem('code');
-              window.location.href = '/'
-          } catch (error) {
-            toast.error('فشل في حفظ بيانات الجلسة');
-          }
-        }
-      } else {
-        toast.error(res?.message || 'حدث خطأ أثناء التحقق');
+      const payload = res?.data || res;
+      const user = payload?.user?.data ?? payload?.user;
+      if (!payload?.token) {
+        toast.error(res?.message || (isAr ? "فشل التحقق" : "Verification failed"));
+        return;
       }
+
+      await persistSession(locale, { ...payload, user }, displayPhone);
+      toast.success(isAr ? "تم التحقق بنجاح" : "Verified successfully");
+      window.location.href = `/${locale}`;
     },
     onError: (error: any) => {
-      console.error('Verification error:', error);
-      toast.error(error?.data?.message || 'فشل التحقق، يرجى المحاولة مرة أخرى');
+      toast.error(apiErrorMessage(error, isAr ? "كود التحقق غير صحيح" : "Invalid verification code"));
     },
   });
 
-  const handleResendCode = () => {
-    if (!canResend) return;
-    
-    if (onResendCode) {
-      onResendCode();
-    } else {
-      toast.info('تم إرسال كود جديد إلى هاتفك');
-    }
-    
-    setCountdown(105); 
-    setCanResend(false);
-  };
-
   const onSubmit = () => {
-    const code = Array.from({ length: 6 }, (_, i) => getValues(`digit${i}`)).join('');
-    
-    if (code.length !== 6) {
-      toast.error('الرجاء إدخال كود التحقق المكون من 6 أرقام');
+    const code = Array.from({ length: OTP_LENGTH }, (_, i) => getValues(`digit${i}`) || "").join("");
+    if (code.length !== OTP_LENGTH) {
+      toast.error(isAr ? "أدخل كود التحقق المكون من 4 أرقام" : "Enter the 4-digit verification code");
       return;
     }
-
-  
-    verifyMutation.mutate({
-      mobile : mobileNumber,
-      code,
-      uuid,
-      device_token: deviceToken,
-      device_type: 'web',
-    });
+    verifyMutation.mutate(code);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-    const value = e.target.value.replace(/\D/g, ''); // Only allow digits
-    if (!value && e.target.value !== '') return;
-
+    const value = e.target.value.replace(/\D/g, "").slice(-1);
     setValue(`digit${index}`, value);
-    
-    if (value && index < 5 && inputsRef.current[index + 1]) {
+    if (value && index < OTP_LENGTH - 1) {
       inputsRef.current[index + 1]?.focus();
     }
-    
-    if (index === 5 && value) {
+    if (index === OTP_LENGTH - 1 && value) {
       handleSubmit(onSubmit)();
     }
   };
-//
+
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
-    const pasteData = e.clipboardData.getData('text').replace(/\D/g, '');
-    
-    if (pasteData.length === 6) {
-      pasteData.split('').forEach((char, i) => {
-        if (i < 6) {
-          setValue(`digit${i}`, char);
-          if (inputsRef.current[i]) {
-            inputsRef.current[i]!.value = char;
-          }
-        }
-      });
-      inputsRef.current[5]?.focus();
+    const pasteData = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, OTP_LENGTH);
+    pasteData.split("").forEach((char, i) => {
+      setValue(`digit${i}`, char);
+      if (inputsRef.current[i]) {
+        inputsRef.current[i]!.value = char;
+      }
+    });
+    if (pasteData.length === OTP_LENGTH) {
+      handleSubmit(onSubmit)();
     }
   };
 
+  const handleResendCode = () => {
+    if (!canResend) return;
+    if (onResendCode) {
+      onResendCode();
+    }
+    setCountdown(60);
+    setCanResend(false);
+  };
+
   if (!isOpen) return null;
-  
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="relative bg-white lg:w-[477px] w-[95%] lg:h-[580px] rounded-lg shadow-lg max-w-md p-2 lg:p-6 animate-fadeIn">
+      <div className="relative w-[95%] max-w-md rounded-lg bg-white p-6 shadow-lg">
         <button
           onClick={onClose}
-          className="absolute top-2 right-4 w-[26px] h-[26px] rounded-full flex items-center justify-center border border-gray-200 text-gray-500 hover:text-gray-700 text-lg font-bold"
+          className="absolute top-3 end-4 flex h-7 w-7 items-center justify-center rounded-full border text-lg text-gray-500"
           aria-label="Close modal"
         >
           &times;
         </button>
 
-        <div className='flex flex-col gap-5 items-center justify-center mt-10'>
-          <Image src={otpCode} alt='OTP Code' width={91} height={188} priority />
-          <h2 className='text-primary  font-bold text-[22px]'>{t('title')}</h2>
-          <p className='text-[#989898] text-base text-center'>
-            {t('desc')}
+        <div className="mt-6 flex flex-col items-center gap-4">
+          <Image src={otpCodeImg} alt="OTP Code" width={91} height={188} priority />
+          <h2 className="text-[22px] font-bold text-primary">{t("title")}</h2>
+          <p className="text-center text-base text-[#989898]">{t("desc")}</p>
+          <h5 className="text-sm font-medium text-[#080C22]">{displayPhone}</h5>
+          <p className="text-xs font-bold text-[#0E6B58]">
+            {isAr ? "الكود التجريبي حالياً: 1111" : "Temporary test code: 1111"}
           </p>
-          <h5 className='text-sm font-medium text-[#080C22]'>{mobileNumber}</h5>
 
           <form onSubmit={handleSubmit(onSubmit)} dir="ltr" className="w-full">
-            <div 
-              className='flex items-center justify-center gap-2 mt-5 flex-wrap'
-              onPaste={handlePaste}
-            >
-              {Array.from({ length: 6 }).map((_, i) => (
+            <div className="mt-4 flex items-center justify-center gap-3" onPaste={handlePaste}>
+              {Array.from({ length: OTP_LENGTH }).map((_, i) => (
                 <input
                   key={i}
                   type="text"
                   inputMode="numeric"
                   maxLength={1}
                   autoComplete="one-time-code"
-                  {...(i === 0 && { autoFocus: true })}
-                  className='md:w-[53px] w-[40px] text-center text-2xl h-[55px] bg-[#f5f5f5] outline-none rounded-[15px] focus:ring-2 focus:ring-primary '
-                  ref={(el) => (inputsRef.current[i] = el)}
+                  autoFocus={i === 0}
+                  className="h-14 w-12 rounded-2xl bg-[#f5f5f5] text-center text-2xl outline-none focus:ring-2 focus:ring-primary"
+                  ref={(el) => {
+                    inputsRef.current[i] = el;
+                  }}
                   onChange={(e) => handleChange(e, i)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Backspace' && !e.currentTarget.value && i > 0) {
+                    if (e.key === "Backspace" && !e.currentTarget.value && i > 0) {
                       inputsRef.current[i - 1]?.focus();
                     }
                   }}
@@ -255,25 +196,27 @@ const OtpCode: React.FC<OtpModalProps> = ({ isOpen, onClose, onResendCode , mobi
             <button
               type="submit"
               disabled={verifyMutation.isPending}
-              className='w-full h-[65px] mt-5 rounded-[15px] text-lg text-white cursor-pointer bg-primary  hover:bg-[#d02c00] disabled:opacity-70 disabled:cursor-not-allowed'
+              className="mt-5 h-14 w-full rounded-2xl bg-primary text-lg text-white disabled:opacity-70"
             >
-              {verifyMutation.isPending ? 'جاري التحقق...' : 'تحقق'}
+              {verifyMutation.isPending
+                ? isAr
+                  ? "جاري التحقق..."
+                  : "Verifying..."
+                : isAr
+                  ? "تحقق"
+                  : "Verify"}
             </button>
           </form>
 
-          <div className='flex flex-col gap-1 mt-4 text-center'>
+          <div className="mt-2 text-center">
             {canResend ? (
-              <button 
-                onClick={handleResendCode}
-                className="text-primary  font-medium text-sm hover:underline"
-              >
-                إعادة إرسال الكود
+              <button onClick={handleResendCode} className="text-sm font-medium text-primary hover:underline">
+                {isAr ? "إعادة إرسال الكود" : "Resend code"}
               </button>
             ) : (
-              <>
-                <span className='text-[#989898] text-sm'>يمكنك طلب كود آخر بعد</span>
-                <span className='text-sm font-medium text-primary '>{formatTime(countdown)}</span>
-              </>
+              <span className="text-sm text-[#989898]">
+                {isAr ? `يمكنك طلب كود آخر بعد ${countdown}` : `You can request another code in ${countdown}s`}
+              </span>
             )}
           </div>
         </div>

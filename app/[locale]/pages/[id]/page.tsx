@@ -13,13 +13,14 @@ interface PageData {
 const PageDetails = async ({
   params,
 }: {
-  params: { id: string; locale?: string };
+  params: Promise<{ id: string; locale?: string }>;
 }) => {
-  const locale = params.locale || "ar";
+  const { id, locale: paramLocale } = await params;
+  const locale = paramLocale || "ar";
 
   const response = await apiServiceCall({
     method: "get",
-    url: `pages/${params.id}`,
+    url: `pages/${id}`,
     headers: {
       "Accept-Language": locale,
     },

@@ -10,6 +10,7 @@ interface PreviewPackage {
   nameAr: string;
   nameEn: string;
   price: number;
+  currency?: string;
   featuresAr: string[];
   featuresEn: string[];
   icon: React.ReactNode;
@@ -19,7 +20,7 @@ interface PreviewPackage {
   bgGradient: string;
 }
 
-const PackagesSection = () => {
+const PackagesSection = ({ items = [] }: { items?: any[] }) => {
   const locale = useLocale();
   const isAr = locale === 'ar';
 
@@ -39,85 +40,28 @@ const PackagesSection = () => {
     setRole(getCookie('client_type'));
   }, []);
 
-  const previewPackages: PreviewPackage[] = [
-    {
-      id: 'basic',
-      nameAr: 'الباقة البرونزية',
-      nameEn: 'Bronze Package',
-      price: 150,
-      color: '#B45309',
-      icon: <ShieldCheck size={26} className="text-[#B45309]" />,
-      bgGradient: 'from-[#ffffff] to-[#fcfaf4]',
-      featuresAr: [
-        'نشر حتى 5 عقارات نشطة',
-        'ظهور العقارات في محركات البحث',
-        'لوحة تحكم أساسية لإدارة الإعلانات',
-        'دعم فني عبر واتساب خلال أوقات العمل',
-        'شعار شركتك في صفحة العقار',
-      ],
-      featuresEn: [
-        'List up to 5 active properties',
-        'SEO index listing',
-        'Basic dashboard for listing management',
-        'WhatsApp support during working hours',
-        'Company logo on property page',
-      ],
-    },
-    {
-      id: 'silver',
-      nameAr: 'الباقة الفضية الأكثر طلباً',
-      nameEn: 'Silver Package (Most Popular)',
-      price: 350,
-      color: '#0E6B58',
-      icon: <Zap size={26} className="text-[#0E6B58]" />,
-      badgeAr: 'الأكثر شعبية',
-      badgeEn: 'Most Popular',
-      bgGradient: 'from-[#f0f9f6] to-[#ffffff]',
-      featuresAr: [
-        'نشر حتى 15 عقار نشط',
-        'تميز 3 عقارات في الصفحة الأولى للموقع',
-        'إحصائيات متقدمة وحصرية للمشاهدات',
-        'علامة "حساب موثق" لزيادة الموثوقية',
-        'إرسال إشعارات للمشترين المهتمين',
-        'دعم فني مخصص وسريع 24/7',
-      ],
-      featuresEn: [
-        'List up to 15 active properties',
-        'Feature 3 properties on home page',
-        'Advanced traffic & lead analytics',
-        '"Verified Account" badge for higher trust',
-        'Push notifications to interested buyers',
-        'Priority 24/7 technical support',
-      ],
-    },
-    {
-      id: 'gold',
-      nameAr: 'الباقة الذهبية الملكية',
-      nameEn: 'Gold Royal Package',
-      price: 600,
-      color: '#C89B3C',
-      icon: <Sparkles size={26} className="text-[#C89B3C]" />,
-      badgeAr: 'خيار النخبة',
-      badgeEn: 'Elite Choice',
-      bgGradient: 'from-[#fbf7ee] to-[#ffffff]',
-      featuresAr: [
-        'نشر عدد غير محدود من العقارات',
-        'تميز 10 عقارات في قمة نتائج البحث',
-        'دعم فني وتوجيه استشاري عقاري خاص',
-        'لوحة تحكم احترافية كاملة وتكامل مع CRM',
-        'مدير حساب شخصي مخصص لشركتك',
-        'تصوير فوتوغرافي احترافي مجاني لعقار شهرياً',
-      ],
-      featuresEn: [
-        'List unlimited properties',
-        'Feature 10 properties at search tops',
-        'Premium consultancy & advisor support',
-        'Full professional dashboard & CRM API access',
-        'Dedicated personal account manager',
-        'Free professional photoshoot monthly',
-      ],
-    },
-  ];
+  const apiPackages = items.map((pkg, index) => {
+    const palettes = [
+      { id: 'basic', color: '#B45309', icon: <ShieldCheck size={26} className="text-[#B45309]" />, bgGradient: 'from-[#ffffff] to-[#fcfaf4]' },
+      { id: 'silver', color: '#0E6B58', icon: <Zap size={26} className="text-[#0E6B58]" />, bgGradient: 'from-[#f0f9f6] to-[#ffffff]' },
+      { id: 'gold', color: '#C89B3C', icon: <Sparkles size={26} className="text-[#C89B3C]" />, bgGradient: 'from-[#fbf7ee] to-[#ffffff]' },
+    ];
+    const theme = palettes[index % palettes.length];
+    return {
+      ...theme,
+      id: String(pkg.id),
+      nameAr: pkg.name,
+      nameEn: pkg.name,
+      price: pkg.price,
+      currency: pkg.currency_label || (isAr ? (pkg.currency === 'USD' ? 'دولار' : 'درهم') : (pkg.currency || 'AED')),
+      badgeAr: pkg.badge,
+      badgeEn: pkg.badge,
+      featuresAr: pkg.features || [],
+      featuresEn: pkg.features || [],
+    };
+  });
+
+  const previewPackages: PreviewPackage[] = apiPackages.length ? apiPackages : [];
 
   // If role is loaded and user is NOT a seller (is buyer), hide this section entirely since buyers don't buy packages.
   if (role && role !== 'company') {
@@ -184,9 +128,11 @@ const PackagesSection = () => {
 
                 {/* Price */}
                 <div className="my-5 flex items-baseline">
-                  <span className="text-3xl font-black text-gray-900">{pkg.price}</span>
+                  <span className="text-3xl font-black text-gray-900">
+                    {Number(pkg.price || 0).toLocaleString(isAr ? 'ar-EG' : 'en-US')}
+                  </span>
                   <span className="text-gray-400 text-xs font-bold mx-2">
-                    {isAr ? 'درهم / شهرياً' : 'AED / month'}
+                    {pkg.currency || (isAr ? 'درهم' : 'AED')} {isAr ? '/ شهرياً' : '/ month'}
                   </span>
                 </div>
 

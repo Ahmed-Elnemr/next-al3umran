@@ -21,6 +21,7 @@ interface Notification {
 
 interface NotificationsDataProps {
   data: Notification[];
+  token?: string;
 }
 
 const NotificationsData = ({ data: initialData , token }: NotificationsDataProps) => {
@@ -35,7 +36,11 @@ const NotificationsData = ({ data: initialData , token }: NotificationsDataProps
       setIsLoading(true);
       await apiServiceCall({
         method: 'post',
-        url: `notifications/${id}/read`,
+        url: `notifications/${id}/mark-as-read`,
+        headers: {
+          'Accept-Language': locale,
+          Authorization: `Bearer ${token}`,
+        },
       });
       
       setNotifications(prev => 
@@ -55,7 +60,7 @@ const NotificationsData = ({ data: initialData , token }: NotificationsDataProps
       setIsLoading(true);
       await apiServiceCall({
         method: 'post',
-        url: 'notifications/mark-all-read',
+        url: 'notifications/mark-as-read',
        headers: {
   "Accept-Language": locale,
   "Authorization": `Bearer ${token}`,

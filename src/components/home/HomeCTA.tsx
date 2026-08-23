@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useLocale } from "next-intl";
 import { ArrowUpRight, Building2, MessageCircle } from "lucide-react";
 
-const HomeCTA = () => {
+const HomeCTA = ({ cta }: { cta?: { title?: string; subtitle?: string } }) => {
   const locale = useLocale();
   const isAr = locale === "ar";
   
@@ -55,15 +55,17 @@ const HomeCTA = () => {
               </div>
 
               <h2 className="text-3xl lg:text-5xl font-black leading-tight">
-                {isAr
-                  ? "هل تبحث عن عقار أو ترغب في عرضه؟"
-                  : "Are you looking for a property or wanting to list one?"}
+                {cta?.title ||
+                  (isAr
+                    ? "هل تبحث عن عقار أو ترغب في عرضه؟"
+                    : "Are you looking for a property or wanting to list one?")}
               </h2>
 
               <p className="mt-4 text-white/75 leading-8 max-w-2xl">
-                {isAr
-                  ? "انشر عقارك الآن للوصول لعملاء جادين، أو تواصل معنا مباشرة لتلبية طلباتك العقارية فوراً."
-                  : "List your property now to reach serious clients, or contact us directly to fulfill your real estate requests instantly."}
+                {cta?.subtitle ||
+                  (isAr
+                    ? "انشر عقارك الآن للوصول لعملاء جادين، أو تواصل معنا مباشرة لتلبية طلباتك العقارية فوراً."
+                    : "List your property now to reach serious clients, or contact us directly to fulfill your real estate requests instantly.")}
               </p>
             </div>
 

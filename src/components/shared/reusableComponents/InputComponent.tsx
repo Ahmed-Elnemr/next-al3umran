@@ -9,7 +9,7 @@ interface InputComponentProps {
   type?: string;
   placeholder?: string;
   icon?: React.ReactNode;
-  error:string;
+  error?: string;
   className?: string;
 }
 
