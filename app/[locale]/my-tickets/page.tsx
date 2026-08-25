@@ -16,18 +16,17 @@ const OrdersResalePage = async ({ params }: LayoutProps) => {
  const cookieStore = await cookies();
   const token =    cookieStore.get("token")?.value
 let tickets;
-    const response = await apiServiceCall({
-      url: "orders/resale",
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${token}`, 
-        "Accept-Language": locale
-      },
-    });
-     tickets = response.data;
+  const response = await apiServiceCall({
+    url: "orders/resale",
+    method: "GET",
+    headers: {
+      "Authorization": `Bearer ${token}`, 
+      "Accept-Language": locale
+    },
+  });
+  tickets = response?.data || [];
 
-
-    if (tickets.length === 0) {
+  if (!Array.isArray(tickets) || tickets.length === 0) {
   return (
     <div className="text-center py-20">
       <p className="text-red-500 text-xl font-semibold">

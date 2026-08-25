@@ -2,14 +2,14 @@ import { getSingleBlogPost } from "../../../../src/lib/serverActions";
 import Image from "next/image";
 
 interface PageProps {
-  params: {
+  params: Promise<{
     locale: string;
     slug: string;
-  };
+  }>;
 }
 
 export default async function BlogDetailsPage({ params }: PageProps) {
-  const { locale, slug } = params;
+  const { locale, slug } = await params;
 
   const response = await getSingleBlogPost(locale, slug);
   const blog = response?.data;

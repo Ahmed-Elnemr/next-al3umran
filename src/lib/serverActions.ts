@@ -13,6 +13,7 @@ export const getSingleCourse = async (lang: string, id: string) => {
     return data;
   } catch (error) {
     errorsHandling(error, lang);
+    return { data: null };
   }
 };
 export const getSingleCategory = async (lang: string, id: string) => {
@@ -24,6 +25,7 @@ export const getSingleCategory = async (lang: string, id: string) => {
     return data;
   } catch (error) {
     errorsHandling(error, lang);
+    return { data: null };
   }
 };
 
@@ -36,6 +38,7 @@ export const getSingleService = async (lang: string, id: string) => {
     return data;
   } catch (error) {
     errorsHandling(error, lang);
+    return { data: null };
   }
 };
 
@@ -56,6 +59,7 @@ export const getProfile = async (lang: string) => {
     return data;
   } catch (error) {
     errorsHandling(error, lang);
+    return { data: null };
   }
 };
 export const getMyServices = async (lang: string) => {
@@ -75,6 +79,7 @@ export const getMyServices = async (lang: string) => {
     return data;
   } catch (error) {
     errorsHandling(error, lang);
+    return { data: [] };
   }
 };
 
@@ -87,6 +92,7 @@ export const getHomeData = async (lang: string) => {
     return data;
   } catch (error) {
     errorsHandling(error, lang);
+    return { data: {} };
   }
 };
 
@@ -235,6 +241,7 @@ export const getBlogPosts = async (lang: string, page: number = 1, perPage?: num
     return data;
   } catch (error) {
     errorsHandling(error, lang);
+    return { data: { data: [], meta: null } };
   }
 };
 
@@ -247,5 +254,6 @@ export const getSingleBlogPost = async (lang: string, slug: string) => {
     return data;
   } catch (error) {
     errorsHandling(error, lang);
+    return { data: null };
   }
 };

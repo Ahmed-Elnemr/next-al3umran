@@ -35,14 +35,14 @@ export const errorsHandling = (
   // -------------------------
   if (client) {
     if (
-      error.message === "الرجاء تسجيل الدخول أولاً" ||
-      error.message === "please login first"
+      error?.message === "الرجاء تسجيل الدخول أولاً" ||
+      error?.message === "please login first"
     ) {
       window.location.href = `/${lang}`;
     } else {
-      toast.error(error?.message || error?.data?.message);
+      toast.error(error?.message || error?.data?.message || "An error occurred");
     }
   } else {
-    throw error;
+    console.error("Server-side error in errorsHandling:", error);
   }
 };

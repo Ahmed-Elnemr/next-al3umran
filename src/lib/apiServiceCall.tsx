@@ -76,9 +76,14 @@ const apiServiceCall = async ({
     return response?.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      throw { data: error.response?.data, status: error.response?.status };
+      throw {
+        data: error.response?.data,
+        status: error.response?.status || 500,
+        message: error.message,
+      };
     }
-    console.log(error);
+    console.error("apiServiceCall error:", error);
+    throw { data: null, status: 500, message: String(error) };
   }
 };
 

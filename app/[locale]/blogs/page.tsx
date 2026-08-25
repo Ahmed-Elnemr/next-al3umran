@@ -24,16 +24,17 @@ interface PaginationMeta {
 }
 
 interface BlogPageProps {
-  params: {
+  params: Promise<{
     locale: string
-  }
-  searchParams: { page?: string }
+  }>
+  searchParams: Promise<{ page?: string }>
 }
 
 const BlogPage = async ({ params, searchParams }: BlogPageProps) => {
   const { locale } = await params
+  const sParams = await searchParams
   // تحديد الصفحة الحالية
-  const currentPage = Number(searchParams.page) || 1
+  const currentPage = Number(sParams?.page) || 1
   const postsPerPage = 6
   const t = await getTranslations('blogs')
   

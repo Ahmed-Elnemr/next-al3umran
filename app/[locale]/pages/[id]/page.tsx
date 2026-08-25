@@ -26,7 +26,17 @@ const PageDetails = async ({
     },
   });
 
-  const data: PageData = response?.data;
+  const data: PageData | undefined = response?.data;
+
+  if (!data) {
+    return (
+      <Container>
+        <div className="py-20 text-center text-gray-500">
+          Page not found.
+        </div>
+      </Container>
+    );
+  }
 
   return (
     <Container>
