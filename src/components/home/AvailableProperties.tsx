@@ -10,9 +10,11 @@ import {
   Building2,
   MapPin,
   Maximize2,
+  Heart
 } from "lucide-react";
 import Image from "next/image";
 import { mapApiProperty } from "../../lib/api/client";
+import { useFavorites } from "../../hooks/useFavorites";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
@@ -135,16 +137,42 @@ const PropertyCard = ({
   const price = isAr ? property.priceAr : property.priceEn;
   const company = isAr ? property.companyAr : property.companyEn;
   const isSale = property.status === "sale";
+  
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const favorited = isFavorite(property.id);
 
   return (
     <article className="group flex h-full min-h-[545px] flex-col overflow-hidden rounded-[30px] border border-[#E4DED1] bg-white shadow-[0_18px_55px_rgba(16,24,32,0.08)] transition duration-300 hover:-translate-y-2 hover:shadow-[0_30px_90px_rgba(16,24,32,0.16)]">
-      <div className="relative h-[250px] overflow-hidden">
-        <img
-          src={property.image}
-          alt={title}
-          loading="lazy"
-          className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
-        />
+      <div className="relative h-[250px] overflow-hidden bg-gray-100 flex items-center justify-center">
+        {property.image ? (
+          <img
+            src={property.image}
+            alt={title}
+            loading="lazy"
+            className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
+          />
+        ) : (
+          <svg className="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        )}
+
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+
+        <div className="absolute top-4 left-4 z-20">
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              toggleFavorite(property.id, isAr);
+            }}
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-lg backdrop-blur transition-all hover:scale-110"
+          >
+            <Heart 
+              size={18} 
+              className={favorited ? "fill-red-500 text-red-500" : "text-gray-600"} 
+            />
+          </button>
+        </div>
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 

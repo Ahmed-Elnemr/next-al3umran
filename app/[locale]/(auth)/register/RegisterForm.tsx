@@ -10,6 +10,7 @@ import CustomSelect from '@/components/shared/reusableComponents/CustomSelect';
 import InputComponent from '@/components/shared/reusableComponents/InputComponent';
 import CountryPhoneInput from '@/components/shared/reusableComponents/CountryPhoneInput';
 import apiServiceCall, { apiErrorMessage, apiFieldErrors, translateOrRaw } from '@/lib/apiServiceCall';
+import { getCountries, getCities } from '@/lib/api/client';
 import { z } from 'zod';
 import { useTranslations, useLocale } from 'next-intl';
 import OtpCode from '../login/OtpCode';
@@ -22,11 +23,43 @@ const registerSchema = z.object({
   name: z.string().min(3, 'name_min_length'),
   phone: z.string().min(5, 'mobile_format'),
   email: z.string().email('invalid_email'),
-  country: z.string().min(1, 'country_required'),
-  city: z.string().min(1, 'city_required'),
+  country_id: z.string().min(1, 'country_required'),
+  city_id: z.string().min(1, 'city_required'),
   terms_accepted: z.literal(true, { errorMap: () => ({ message: 'terms_required' }) }),
   profile_image: z.any().optional(),
 });
+
+const getCountryPrefix = (item: any): string => {
+  const raw = item?.phone_code ?? item?.calling_code ?? item?.dial_code ?? item?.country_code ?? item?.prefix;
+  if (raw !== undefined && raw !== null && String(raw).trim() !== "") {
+    const str = String(raw).trim();
+    if (/^\+?\d+$/.test(str)) {
+      return str.startsWith("+") ? str : `+${str}`;
+    }
+  }
+  if (item?.code && /^\+?\d+$/.test(String(item.code).trim())) {
+    const str = String(item.code).trim();
+    return str.startsWith("+") ? str : `+${str}`;
+  }
+  const name = String(item?.name || item?.title || item?.code || "").toLowerCase();
+  const idStr = String(item?.id || "");
+  if (name.includes("سوريا") || name.includes("syria") || idStr === "2") return "+963";
+  if (name.includes("عراق") || name.includes("iraq") || idStr === "3") return "+964";
+  if (name.includes("إمارات") || name.includes("امارات") || name.includes("uae") || idStr === "1") return "+971";
+  if (name.includes("سعودية") || name.includes("saudi")) return "+966";
+  if (name.includes("مصر") || name.includes("egypt")) return "+20";
+  return "+971";
+};
+
+const getCountryFlag = (item: any): string => {
+  if (item?.flag && typeof item.flag === "string" && item.flag.trim()) return item.flag;
+  const name = String(item?.name || item?.title || item?.code || "").toLowerCase();
+  const idStr = String(item?.id || "");
+  if (name.includes("سوريا") || name.includes("syria") || idStr === "2") return "🇸🇾";
+  if (name.includes("عراق") || name.includes("iraq") || idStr === "3") return "🇮🇶";
+  if (name.includes("إمارات") || name.includes("امارات") || name.includes("uae") || idStr === "1") return "🇦🇪";
+  return "🚩";
+};
 
 const RegisterForm: React.FC = () => {
   const t = useTranslations('RegisterPage');
@@ -36,51 +69,80 @@ const RegisterForm: React.FC = () => {
   const [otpPhone, setOtpPhone] = useState('');
   const [otpCountryCode, setOtpCountryCode] = useState('+971');
 
-  const countries = [
-    { code: 'uae', label: isAr ? 'الإمارات 🇦🇪' : 'UAE 🇦🇪', prefix: '+971', flag: '🇦🇪' },
-    { code: 'syria', label: isAr ? 'سوريا 🇸🇾' : 'Syria 🇸🇾', prefix: '+963', flag: '🇸🇾' },
-    { code: 'iraq', label: isAr ? 'العراق 🇮🇶' : 'Iraq 🇮🇶', prefix: '+964', flag: '🇮🇶' }
+  const defaultCountries = [
+    { id: '1', code: 'uae', label: isAr ? 'الإمارات 🇦🇪' : 'UAE 🇦🇪', prefix: '+971', flag: '🇦🇪' },
+    { id: '2', code: 'syria', label: isAr ? 'سوريا 🇸🇾' : 'Syria 🇸🇾', prefix: '+963', flag: '🇸🇾' },
+    { id: '3', code: 'iraq', label: isAr ? 'العراق 🇮🇶' : 'Iraq 🇮🇶', prefix: '+964', flag: '🇮🇶' }
   ];
 
-  const [selectedCountry, setSelectedCountry] = useState(countries[0]);
+  const [countriesList, setCountriesList] = useState<any[]>(defaultCountries);
+  const [citiesList, setCitiesList] = useState<{ value: string; label: string }[]>([]);
+  const [selectedCountryObj, setSelectedCountryObj] = useState(defaultCountries[0]);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  const getCityOptions = (countryCode: string) => {
-    switch (countryCode) {
-      case 'uae':
-        return [
-          { value: 'dubai', label: isAr ? 'دبي' : 'Dubai' },
-          { value: 'abu_dhabi', label: isAr ? 'أبوظبي' : 'Abu Dhabi' },
-          { value: 'sharjah', label: isAr ? 'الشارقة' : 'Sharjah' },
-          { value: 'ajman', label: isAr ? 'عجمان' : 'Ajman' },
-          { value: 'ras_al_khaimah', label: isAr ? 'رأس الخيمة' : 'Ras Al Khaimah' },
-          { value: 'umm_al_quwain', label: isAr ? 'أم القيوين' : 'Umm Al Quwain' },
-          { value: 'fujairah', label: isAr ? 'الفجيرة' : 'Fujairah' },
-        ];
-      case 'iraq':
-        return [
-          { value: 'baghdad', label: isAr ? 'بغداد' : 'Baghdad' },
-          { value: 'basra', label: isAr ? 'البصرة' : 'Basra' },
-          { value: 'erbil', label: isAr ? 'أربيل' : 'Erbil' },
-          { value: 'mosul', label: isAr ? 'الموصل' : 'Mosul' },
-          { value: 'sulaymaniyah', label: isAr ? 'السليمانية' : 'Sulaymaniyah' },
-          { value: 'karbala', label: isAr ? 'كربلاء' : 'Karbala' },
-          { value: 'najaf', label: isAr ? 'النجف' : 'Najaf' },
-        ];
-      case 'syria':
-        return [
-          { value: 'damascus', label: isAr ? 'دمشق' : 'Damascus' },
-          { value: 'aleppo', label: isAr ? 'حلب' : 'Aleppo' },
-          { value: 'homs', label: isAr ? 'حمص' : 'Homs' },
-          { value: 'hama', label: isAr ? 'حماة' : 'Hama' },
-          { value: 'latakia', label: isAr ? 'اللاذقية' : 'Latakia' },
-          { value: 'tartus', label: isAr ? 'طرطوس' : 'Tartus' },
-          { value: 'daraa', label: isAr ? 'درعا' : 'Daraa' },
-        ];
-      default:
-        return [];
+  const renderErrorMessage = (errKey?: string) => {
+    if (!errKey) return "";
+    const translationsMap: Record<string, { ar: string; en: string }> = {
+      name_min_length: {
+        ar: "الاسم يجب أن يكون 3 أحرف على الأقل",
+        en: "Name must be at least 3 characters",
+      },
+      invalid_email: {
+        ar: "بريد إلكتروني غير صالح",
+        en: "Invalid email address",
+      },
+      mobile_format: {
+        ar: "أدخل رقم هاتف صحيح من 5 أرقام على الأقل",
+        en: "Enter a valid phone number (at least 5 digits)",
+      },
+      country_required: {
+        ar: "يجب اختيار الدولة",
+        en: "Country selection is required",
+      },
+      city_required: {
+        ar: "يجب اختيار المدينة",
+        en: "City selection is required",
+      },
+      terms_required: {
+        ar: "يجب الموافقة على الشروط والأحكام",
+        en: "You must accept the terms and conditions",
+      },
+    };
+
+    if (translationsMap[errKey]) {
+      return isAr ? translationsMap[errKey].ar : translationsMap[errKey].en;
     }
+
+    try {
+      const translated = t(errKey);
+      if (translated && !translated.includes("RegisterPage.")) return translated;
+    } catch {}
+
+    return translateOrRaw(t, errKey);
   };
+
+  useEffect(() => {
+    getCountries(locale)
+      .then((res: any) => {
+        const data = Array.isArray(res?.data) ? res.data : Array.isArray(res?.data?.data) ? res.data.data : [];
+        if (data.length > 0) {
+          const mapped = data.map((item: any) => {
+            const prefix = getCountryPrefix(item);
+            const flag = getCountryFlag(item);
+            return {
+              id: String(item.id),
+              code: item.code || String(item.id),
+              label: `${item.name || item.title} ${flag}`.trim(),
+              prefix,
+              flag,
+            };
+          });
+          setCountriesList(mapped);
+          setSelectedCountryObj(mapped[0]);
+        }
+      })
+      .catch(() => {});
+  }, [locale]);
 
   const { register, handleSubmit, control, watch, formState: { errors }, setValue, setError } =
     useForm({
@@ -89,20 +151,69 @@ const RegisterForm: React.FC = () => {
         name: '',
         phone: '',
         email: '',
-        country: 'uae',
-        city: '',
+        country_id: '1',
+        city_id: '',
         terms_accepted: false,
         profile_image: '',
       },
     });
 
-  const selectedFormCountry = watch("country");
+  const selectedFormCountryId = watch("country_id");
 
   useEffect(() => {
-    setValue('city', '');
-    const match = countries.find((country) => country.code === selectedFormCountry);
-    if (match) setSelectedCountry(match);
-  }, [selectedFormCountry, setValue]);
+    setValue('city_id', '');
+    if (!selectedFormCountryId) return;
+
+    const match = countriesList.find(
+      (c) =>
+        String(c.id) === String(selectedFormCountryId) ||
+        String(c.code).toLowerCase() === String(selectedFormCountryId).toLowerCase()
+    );
+    if (match) setSelectedCountryObj(match);
+
+    getCities(locale, selectedFormCountryId)
+      .then((res: any) => {
+        const data = Array.isArray(res?.data) ? res.data : Array.isArray(res?.data?.data) ? res.data.data : [];
+        if (data.length > 0) {
+          setCitiesList(
+            data.map((city: any) => ({
+              value: String(city.id),
+              label: city.name || city.title,
+            }))
+          );
+        } else {
+          setFallbackCities(selectedFormCountryId);
+        }
+      })
+      .catch(() => {
+        setFallbackCities(selectedFormCountryId);
+      });
+  }, [selectedFormCountryId, locale, setValue, countriesList]);
+
+  const setFallbackCities = (countryId: string) => {
+    if (countryId === '1' || countryId === 'uae') {
+      setCitiesList([
+        { value: '1', label: isAr ? 'دبي' : 'Dubai' },
+        { value: '2', label: isAr ? 'أبوظبي' : 'Abu Dhabi' },
+        { value: '3', label: isAr ? 'الشارقة' : 'Sharjah' },
+        { value: '4', label: isAr ? 'عجمان' : 'Ajman' },
+      ]);
+    } else if (countryId === '2' || countryId === 'syria') {
+      setCitiesList([
+        { value: '10', label: isAr ? 'دمشق' : 'Damascus' },
+        { value: '11', label: isAr ? 'حلب' : 'Aleppo' },
+        { value: '12', label: isAr ? 'حمص' : 'Homs' },
+      ]);
+    } else if (countryId === '3' || countryId === 'iraq') {
+      setCitiesList([
+        { value: '20', label: isAr ? 'بغداد' : 'Baghdad' },
+        { value: '21', label: isAr ? 'أربيل' : 'Erbil' },
+        { value: '22', label: isAr ? 'البصرة' : 'Basra' },
+      ]);
+    } else {
+      setCitiesList([]);
+    }
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -117,7 +228,7 @@ const RegisterForm: React.FC = () => {
   const registerMutation = useMutation({
     mutationFn: async (formData: FormData) => {
       return apiServiceCall({
-        url: 'auth/register',
+        url: 'client/auth/register',
         method: 'POST',
         body: formData,
         headers: {
@@ -126,31 +237,32 @@ const RegisterForm: React.FC = () => {
         },
       });
     },
-    onSuccess: (_res, formData) => {
+    onSuccess: (res, formData) => {
+      const responseMessage = res?.message || (isAr ? 'تم إرسال رمز التحقق بنجاح' : 'Verification code sent successfully');
+      toast.success(responseMessage);
       setOtpPhone(String(formData.get('phone') || ''));
-      setOtpCountryCode(String(formData.get('country_code') || selectedCountry.prefix));
+      setOtpCountryCode(String(formData.get('country_code') || selectedCountryObj.prefix));
       setOtpOpen(true);
-      toast.success(t('otp_sent'));
     },
     onError: (err: any) => {
       Object.entries(apiFieldErrors(err)).forEach(([key, message]) => {
         setError(key as any, { type: 'server', message });
       });
-      toast.error(apiErrorMessage(err, t('register_error')));
+      toast.error(apiErrorMessage(err, t('register_error') || (isAr ? 'تعذر إنشاء الحساب' : 'Could not create account')));
     },
   });
 
   const onSubmit = (data: any) => {
     const formData = new FormData();
-    const localPhone = data.phone.replace(/\D/g, '').replace(/^0+/, '');
+    const localPhone = data.phone.trim().replace(/\D/g, '');
 
     formData.append("client_type", "customer");
     formData.append("name", data.name);
     formData.append("email", data.email);
+    formData.append("country_code", selectedCountryObj.prefix);
     formData.append("phone", localPhone);
-    formData.append("country_code", selectedCountry.prefix);
-    formData.append("country", data.country);
-    formData.append("city", data.city);
+    formData.append("country_id", String(data.country_id));
+    formData.append("city_id", String(data.city_id));
     formData.append("terms_accepted", data.terms_accepted ? "1" : "0");
 
     if (data.profile_image instanceof File) {
@@ -162,17 +274,17 @@ const RegisterForm: React.FC = () => {
 
   const resendOtp = async () => {
     try {
-      await apiServiceCall({
-        url: 'auth/resend-otp',
+      const res = await apiServiceCall({
+        url: 'client/auth/resend-otp',
         method: 'POST',
         body: {
-          phone: otpPhone,
           country_code: otpCountryCode,
+          phone: otpPhone,
           purpose: 'register',
         },
         headers: { 'Accept-Language': locale, 'X-Locale': locale },
       });
-      toast.success(t('otp_sent'));
+      toast.success(res?.message || (isAr ? 'تم إعادة إرسال الرمز' : 'Verification code resent'));
     } catch (err: any) {
       toast.error(apiErrorMessage(err, isAr ? 'تعذر إعادة الإرسال' : 'Could not resend code'));
     }
@@ -180,8 +292,6 @@ const RegisterForm: React.FC = () => {
 
   return (
     <>
-      <ToastContainer />
-
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="max-w-4xl mx-auto rounded-2xl grid lg:gap-6 gap-4 lg:grid-cols-2 grid-cols-1 mt-7 lg:mt-0"
@@ -198,7 +308,7 @@ const RegisterForm: React.FC = () => {
             placeholder={t('name_placeholder')}
             icon={<Image src={userIcon} alt="" width={24} height={24} />}
           />
-          {errors.name && <p className="text-sm text-red-600 mt-1">{translateOrRaw(t, errors.name.message)}</p>}
+          {errors.name && <p className="text-sm text-red-600 mt-1 font-medium">{renderErrorMessage(errors.name.message)}</p>}
         </div>
 
         {/* الموبايل والدولة */}
@@ -211,16 +321,16 @@ const RegisterForm: React.FC = () => {
             register={register}
             name="phone"
             placeholder={isAr ? 'رقم الهاتف (مثال: 501234567)' : 'Phone number (e.g. 501234567)'}
-            countries={countries}
-            selectedCountry={selectedCountry}
+            countries={countriesList}
+            selectedCountry={selectedCountryObj}
             onCountryChange={(country) => {
-              setSelectedCountry(country);
-              setValue('country', country.code);
+              setSelectedCountryObj(country);
+              setValue('country_id', String(country.id));
             }}
             locale={locale}
           />
           
-          {errors.phone && <p className="text-sm text-red-600 mt-1">{translateOrRaw(t, errors.phone.message)}</p>}
+          {errors.phone && <p className="text-sm text-red-600 mt-1 font-medium">{renderErrorMessage(errors.phone.message)}</p>}
         </div>
 
         {/* البلد */}
@@ -229,17 +339,13 @@ const RegisterForm: React.FC = () => {
             {isAr ? 'البلد' : 'Country'}
           </label>
           <CustomSelect
-            name="country"
+            name="country_id"
             control={control}
-            options={[
-              { value: 'uae', label: isAr ? 'الإمارات' : 'UAE' },
-              { value: 'syria', label: isAr ? 'سوريا' : 'Syria' },
-              { value: 'iraq', label: isAr ? 'العراق' : 'Iraq' },
-            ]}
+            options={countriesList.map((c) => ({ value: String(c.id), label: c.label }))}
             placeholder={isAr ? 'اختر البلد' : 'Select Country'}
             icon={<Image src={locationIcon} alt="" width={24} height={24} />}
           />
-          {errors.country && <p className="text-sm text-red-600 mt-1">{translateOrRaw(t, errors.country.message)}</p>}
+          {errors.country_id && <p className="text-sm text-red-600 mt-1 font-medium">{renderErrorMessage(errors.country_id.message)}</p>}
         </div>
 
         {/* الايميل */}
@@ -254,7 +360,7 @@ const RegisterForm: React.FC = () => {
             placeholder={t('email_placeholder')}
             icon={<Image src={emailIcon} alt="" width={24} height={24} />}
           />
-          {errors.email && <p className="text-sm text-red-600 mt-1">{translateOrRaw(t, errors.email.message)}</p>}
+          {errors.email && <p className="text-sm text-red-600 mt-1 font-medium">{renderErrorMessage(errors.email.message)}</p>}
         </div>
 
         {/* المدينة */}
@@ -263,13 +369,13 @@ const RegisterForm: React.FC = () => {
             {isAr ? 'المدينة' : 'City'}
           </label>
           <CustomSelect
-            name="city"
+            name="city_id"
             control={control}
-            options={getCityOptions(selectedFormCountry || selectedCountry.code)}
+            options={citiesList}
             placeholder={t('city_placeholder')}
             icon={<Image src={locationIcon} alt="" width={24} height={24} />}
           />
-          {errors.city && <p className="text-sm text-red-600 mt-1">{translateOrRaw(t, errors.city.message)}</p>}
+          {errors.city_id && <p className="text-sm text-red-600 mt-1 font-medium">{renderErrorMessage(errors.city_id.message)}</p>}
         </div>
 
         {/* رفع الصورة */}
@@ -300,7 +406,7 @@ const RegisterForm: React.FC = () => {
             />
           </label>
           {errors.profile_image && (
-            <p className="text-sm text-red-600 mt-1">{translateOrRaw(t, errors.profile_image.message)}</p>
+            <p className="text-sm text-red-600 mt-1 font-medium">{renderErrorMessage(errors.profile_image.message)}</p>
           )}
         </div>
 
@@ -318,8 +424,8 @@ const RegisterForm: React.FC = () => {
         </div>
 
         {errors.terms_accepted && (
-          <p className="text-sm text-red-600 lg:col-span-2 mt-1">
-            {translateOrRaw(t, errors.terms_accepted.message)}
+          <p className="text-sm text-red-600 lg:col-span-2 mt-1 font-medium">
+            {renderErrorMessage(errors.terms_accepted.message)}
           </p>
         )}
 

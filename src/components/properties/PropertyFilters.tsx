@@ -24,6 +24,7 @@ type Props = {
   resetFilters: () => void;
   countries: { value: string; label: string }[];
   cities: { value: string; label: string }[];
+  categories?: { value: string; label: string }[];
 };
 
 const PropertyFilters = ({
@@ -31,14 +32,16 @@ const PropertyFilters = ({
   filters,
   setFilters,
   resetFilters,
-  countries,
-  cities,
+  countries = [],
+  cities = [],
+  categories = [],
 }: Props) => {
-  const updateFilter = (key: keyof PropertyFiltersState, value: string) => {
+  const updateFilter = (key: keyof PropertyFiltersState, value: any) => {
     setFilters((prev) => ({
       ...prev,
       [key]: value,
-      ...(key === "country" ? { city: "all" } : {}),
+      ...(key === "country_id" ? { city_id: "all" } : {}),
+      page: 1, // Reset to first page whenever filter changes
     }));
   };
 
@@ -83,8 +86,8 @@ const PropertyFilters = ({
               onChange={(value) => updateFilter("keyword", value)}
               placeholder={
                 isAr
-                  ? "ابحث بالمدينة، الدولة، الشركة..."
-                  : "Search city, country, company..."
+                  ? "ابحث باسم العقار، المنطقة..."
+                  : "Search property title, location..."
               }
               type="text"
             />
@@ -92,8 +95,8 @@ const PropertyFilters = ({
             <FilterSelect
               icon={<MapPin size={18} />}
               label={isAr ? "الدولة" : "Country"}
-              value={filters.country}
-              onChange={(value) => updateFilter("country", value)}
+              value={filters.country_id}
+              onChange={(value) => updateFilter("country_id", value)}
               options={[
                 { value: "all", label: isAr ? "كل الدول" : "All Countries" },
                 ...countries,
@@ -103,8 +106,8 @@ const PropertyFilters = ({
             <FilterSelect
               icon={<Building2 size={18} />}
               label={isAr ? "المدينة" : "City"}
-              value={filters.city}
-              onChange={(value) => updateFilter("city", value)}
+              value={filters.city_id}
+              onChange={(value) => updateFilter("city_id", value)}
               options={[
                 { value: "all", label: isAr ? "كل المدن" : "All Cities" },
                 ...cities,
@@ -113,25 +116,20 @@ const PropertyFilters = ({
 
             <FilterSelect
               icon={<Home size={18} />}
-              label={isAr ? "نوع العقار" : "Property Type"}
-              value={filters.type}
-              onChange={(value) => updateFilter("type", value)}
+              label={isAr ? "الفئة / النوع" : "Category / Type"}
+              value={filters.category_id}
+              onChange={(value) => updateFilter("category_id", value)}
               options={[
-                { value: "all", label: isAr ? "كل الأنواع" : "All Types" },
-                { value: "villa", label: isAr ? "فيلا" : "Villa" },
-                { value: "house", label: isAr ? "بيت" : "House" },
-                { value: "apartment", label: isAr ? "شقة" : "Apartment" },
-                { value: "land", label: isAr ? "أرض" : "Land" },
-                { value: "chalet", label: isAr ? "شاليه" : "Chalet" },
-                { value: "office", label: isAr ? "مكتب" : "Office" },
+                { value: "all", label: isAr ? "كل الفئات" : "All Categories" },
+                ...categories,
               ]}
             />
 
             <FilterSelect
               icon={<Tag size={18} />}
               label={isAr ? "نوع الإعلان" : "Listing Type"}
-              value={filters.status}
-              onChange={(value) => updateFilter("status", value)}
+              value={filters.listing_type}
+              onChange={(value) => updateFilter("listing_type", value)}
               options={[
                 { value: "all", label: isAr ? "بيع وإيجار" : "Sale & Rent" },
                 { value: "sale", label: isAr ? "للبيع" : "For Sale" },
@@ -198,15 +196,6 @@ const PropertyFilters = ({
                 },
               ]}
             />
-
-            <button
-              type="button"
-              onClick={resetFilters}
-              className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl border border-[#D9D1C3] bg-[#101820] text-sm font-black text-white shadow-[0_14px_40px_rgba(16,24,32,0.18)] transition hover:-translate-y-1 hover:bg-[#0E6B58]"
-            >
-              <RotateCcw size={18} />
-              {isAr ? "إعادة ضبط الفلترة" : "Reset Filters"}
-            </button>
           </div>
         </div>
       </div>
@@ -232,7 +221,7 @@ const FilterSelect = ({
   const params = useParams();
   const isAr = String(params?.locale || "ar") === "ar";
 
-  const selectedOption = options.find((opt) => opt.value === value) || options[0];
+  const selectedOption = options.find((opt) => String(opt.value) === String(value)) || options[0];
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -270,7 +259,7 @@ const FilterSelect = ({
 
         {isOpen && (
           <div className="absolute z-50 mt-2 w-full origin-top rounded-[20px] border border-[#E2DBCE] bg-white p-2 shadow-[0_20px_60px_rgba(16,24,32,0.15)] animate-in fade-in zoom-in-95">
-            <div className={`${options.length > 10 ? "max-h-[400px] overflow-y-auto" : ""} pr-1`}>
+            <div className={`${options.length > 8 ? "max-h-[300px] overflow-y-auto" : ""} pr-1`}>
               {options.map((option) => (
                 <button
                   key={`${label}-${option.value}`}
@@ -279,7 +268,7 @@ const FilterSelect = ({
                     onChange(option.value);
                     setIsOpen(false);
                   }}
-                  className={`w-full rounded-xl px-4 py-3 ${isAr ? "text-right" : "text-left"} text-sm font-bold transition-colors ${value === option.value
+                  className={`w-full rounded-xl px-4 py-3 ${isAr ? "text-right" : "text-left"} text-sm font-bold transition-colors ${String(value) === String(option.value)
                       ? "bg-[#0E6B58] text-white"
                       : "text-[#101820] hover:bg-[#F6F4EE]"
                     }`}

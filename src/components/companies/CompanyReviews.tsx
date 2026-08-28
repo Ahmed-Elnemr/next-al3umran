@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { Star, MessageCircle, Send } from "lucide-react";
 import Link from "next/link";
 
+import { toast } from "react-toastify";
+
 type Review = {
   id: number;
   author: string;
@@ -26,6 +28,7 @@ type Props = {
   locale?: string;
   companyId?: number | string;
   reviews?: ApiReview[];
+  token?: string;
 };
 
 export default function CompanyReviews({
@@ -33,6 +36,7 @@ export default function CompanyReviews({
   locale = "ar",
   companyId,
   reviews: incomingReviews,
+  token = "",
 }: Props) {
   const [reviews, setReviews] = useState<Review[]>(
     (incomingReviews || []).map((review) => ({
@@ -87,11 +91,6 @@ export default function CompanyReviews({
     e.preventDefault();
     if (newRating === 0 || !newComment.trim() || !isAuthenticated || !companyId) return;
 
-    const token = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("token="))
-      ?.split("=")[1];
-
     try {
       const { postCompanyReview } = await import("../../lib/api/client");
       await postCompanyReview(
@@ -113,8 +112,10 @@ export default function CompanyReviews({
       ]);
       setNewRating(0);
       setNewComment("");
-    } catch {
-      // keep the form so the user can retry
+      toast.success(isAr ? "تم إرسال التقييم بنجاح!" : "Review submitted successfully!");
+    } catch (error: any) {
+      const message = error?.data?.message || (isAr ? "حدث خطأ أثناء إرسال التقييم، يرجى المحاولة لاحقاً." : "An error occurred while submitting the review, please try again.");
+      toast.error(message);
     }
   };
 

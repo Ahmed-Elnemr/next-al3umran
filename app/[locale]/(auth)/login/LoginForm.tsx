@@ -37,6 +37,12 @@ const LoginForm: React.FC = () => {
 
   const [selectedCountry, setSelectedCountry] = useState(countries[0]);
 
+  React.useEffect(() => {
+    if (typeof document !== "undefined" && document.cookie.includes("token=")) {
+      window.location.href = `/${locale}`;
+    }
+  }, [locale]);
+
   const {
     register,
     handleSubmit,
@@ -53,51 +59,50 @@ const LoginForm: React.FC = () => {
   });
 
   const sendOtp = async (data: LoginFormData) => {
-    const localPhone = data.phone.replace(/^0+/, "");
+    const localPhone = data.phone.trim().replace(/\D/g, "");
     const response = await apiServiceCall({
-      url: "auth/login",
+      url: "client/auth/login",
       method: "POST",
       body: {
-        phone: localPhone,
-        country_code: selectedCountry.prefix,
         client_type: data.client_type,
+        country_code: selectedCountry.prefix,
+        phone: localPhone,
       },
-        headers: { "Accept-Language": locale, "X-Locale": locale },
-      });
-    return { response, localPhone };
+      headers: { "Accept-Language": locale, "X-Locale": locale },
+    });
+    return { response, localPhone, message: response?.message };
   };
 
   const loginMutation = useMutation({
     mutationFn: sendOtp,
-    onSuccess: ({ localPhone }) => {
+    onSuccess: ({ localPhone, message }) => {
       setPhone(localPhone);
       setCountryCode(selectedCountry.prefix);
       setOtpOpen(true);
-      toast.success(isAr ? "تم إرسال رمز التحقق" : "Verification code sent");
+      toast.success(message || (isAr ? "تم إرسال رمز التحقق بنجاح" : "Verification code sent successfully"));
     },
     onError: (err: any) => {
       const fields = apiFieldErrors(err);
       Object.entries(fields).forEach(([key, message]) => {
         setError(key as keyof LoginFormData, { type: "server", message });
       });
-      toast.error(apiErrorMessage(err, t("login_error")));
+      toast.error(apiErrorMessage(err, t("login_error") || (isAr ? "تعذر إرسال الرمز" : "Could not send verification code")));
     },
   });
 
   const resendOtp = async () => {
-    const data = getValues();
     try {
-      await apiServiceCall({
-        url: "auth/resend-otp",
+      const res = await apiServiceCall({
+        url: "client/auth/resend-otp",
         method: "POST",
         body: {
-          phone,
           country_code: countryCode,
+          phone,
           purpose: "login",
         },
         headers: { "Accept-Language": locale, "X-Locale": locale },
       });
-      toast.success(t("otp_sent"));
+      toast.success(res?.message || (isAr ? "تم إعادة إرسال الرمز" : "Verification code resent"));
     } catch (err: any) {
       toast.error(apiErrorMessage(err, isAr ? "تعذر إعادة الإرسال" : "Could not resend code"));
     }
@@ -105,7 +110,6 @@ const LoginForm: React.FC = () => {
 
   return (
     <>
-      <ToastContainer />
       <form onSubmit={handleSubmit((data) => loginMutation.mutate(data))} className="flex w-full flex-col gap-4">
         <div>
           <label className={`mb-2 block text-sm font-bold text-gray-700 ${isAr ? "text-right" : "text-left"}`}>

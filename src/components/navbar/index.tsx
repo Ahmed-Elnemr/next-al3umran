@@ -17,6 +17,7 @@ import {
   Headphones,
   Newspaper,
   Heart,
+  Briefcase,
 } from "lucide-react";
 
 import LanguageSelector from "./LanguageSwitcher";
@@ -54,12 +55,43 @@ const Navbar = ({
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
+  const getAvatarUrl = (user: any): string => {
+    if (!user) return "";
+    return (
+      user.profile_image ||
+      user.profile_image_url ||
+      user.avatar ||
+      user.image ||
+      user.media?.[0]?.url ||
+      ""
+    );
+  };
+
   const [name, setName] = useState<string | undefined>(
     userData?.name || (typeof userData?.company_name === "string" ? userData.company_name : "")
   );
-  const [profileImage, setProfileImage] = useState<string>(
-    userData?.avatar || userData?.profile_image_url || ""
-  );
+  const [profileImage, setProfileImage] = useState<string>(getAvatarUrl(userData));
+
+  useEffect(() => {
+    if (userData) {
+      setName(userData.name || userData.company_name || "");
+      setProfileImage(getAvatarUrl(userData));
+    } else if (typeof window !== "undefined") {
+      try {
+        const cookieStr = document.cookie
+          .split("; ")
+          .find((row) => row.startsWith("userDataInfo="))
+          ?.split("=")[1];
+        if (cookieStr) {
+          const parsed = JSON.parse(decodeURIComponent(cookieStr));
+          if (parsed) {
+            setName(parsed.name || parsed.company_name || "");
+            setProfileImage(getAvatarUrl(parsed));
+          }
+        }
+      } catch (e) {}
+    }
+  }, [userData]);
 
   const t = useTranslations("navbar");
   const isAuthenticated = !!token;
@@ -91,6 +123,11 @@ const Navbar = ({
       href: `/${locale}/properties`,
       label: isAr ? "العقارات" : "Properties",
       icon: Building2,
+    },
+    {
+      href: `/${locale}/companies`,
+      label: isAr ? "الشركات" : "Companies",
+      icon: Briefcase,
     },
     {
       href: `/${locale}/services`,
@@ -125,7 +162,7 @@ const Navbar = ({
       try {
         const response = await apiServiceCall({
           method: "GET",
-          url: "profile",
+          url: "client/profile",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -329,19 +366,11 @@ const Navbar = ({
                 </div>
               )}
 
-              <div className="hidden sm:block">
-                <h1 className="text-lg font-black leading-none text-[#101820]">
-                  {siteName || (isAr ? "العمران" : "Al Omran")}
-                </h1>
-                <p className="mt-1 text-[11px] text-[#7B8B86]">
-                  {tagline || (isAr ? "منصة العقارات الذكية" : "Smart Real Estate Platform")}
-                </p>
-              </div>
             </Link>
 
             <nav className="hidden flex-1 items-center justify-center lg:flex">
               <ul className="flex items-center gap-1 rounded-full border border-[#E3ECE8] bg-[#F4F8F6] p-1">
-                {navLinks.map((item) => {
+                {navLinks.filter(item => !(role === 'company' && item.href === `/${locale}/companies`)).map((item) => {
                   const Icon = item.icon;
 
                   return (
@@ -421,7 +450,7 @@ const Navbar = ({
               className="mb-4 rounded-[24px] border border-[#E3ECE8] bg-[#F7FAF8] p-4 shadow-inner lg:hidden"
             >
               <ul className="flex flex-col gap-2">
-                {navLinks.map((item) => {
+                {navLinks.filter(item => !(role === 'company' && item.href === `/${locale}/companies`)).map((item) => {
                   const Icon = item.icon;
 
                   return (

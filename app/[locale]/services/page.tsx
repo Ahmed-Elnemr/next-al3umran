@@ -1,4 +1,4 @@
-import { getSiteServices } from "../../../src/lib/serverActions";
+import { getHomeData } from "../../../src/lib/serverActions";
 import ServicesPage from "./ServicesView";
 
 interface LayoutProps {
@@ -7,7 +7,8 @@ interface LayoutProps {
 
 export default async function Page({ params }: LayoutProps) {
   const { locale } = await params;
-  const services = await getSiteServices(locale);
+  const homeRes = await getHomeData(locale);
+  const services = homeRes?.data?.services || [];
 
-  return <ServicesPage cmsItems={services?.data || []} />;
+  return <ServicesPage cmsItems={services} />;
 }

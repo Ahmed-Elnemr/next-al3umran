@@ -90,27 +90,32 @@ const CountryPhoneInput: React.FC<CountryPhoneInputProps> = ({
             {isAr ? 'اختر الدولة' : 'Select Country'}
           </p>
           <div className="flex flex-col gap-1 mt-1">
-            {countries.map((c) => (
-              <button
-                key={c.code}
-                type="button"
-                onClick={() => {
-                  onCountryChange(c);
-                  setIsOpen(false);
-                }}
-                className={`flex items-center justify-between w-full px-3 py-2.5 rounded-xl text-sm font-bold transition-all duration-150 ${
-                  selectedCountry.code === c.code 
-                    ? 'bg-[#EEF6F3] text-[#0E6B58]' 
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">{c.flag}</span>
-                  <span>{c.label.split(' ')[0]}</span>
-                </div>
-                <span className="text-xs font-mono text-gray-400">{c.prefix}</span>
-              </button>
-            ))}
+            {countries.map((c, idx) => {
+              const isSelected = selectedCountry.id && c.id 
+                ? String(selectedCountry.id) === String(c.id) 
+                : selectedCountry.code === c.code;
+              return (
+                <button
+                  key={c.id || c.code || idx}
+                  type="button"
+                  onClick={() => {
+                    onCountryChange(c);
+                    setIsOpen(false);
+                  }}
+                  className={`flex items-center justify-between w-full px-3 py-2.5 rounded-xl text-sm font-bold transition-all duration-150 ${
+                    isSelected 
+                      ? 'bg-[#EEF6F3] text-[#0E6B58]' 
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">{c.flag}</span>
+                    <span>{c.label.split(' ')[0]}</span>
+                  </div>
+                  <span className="text-xs font-mono text-gray-400">{c.prefix}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}

@@ -1,7 +1,6 @@
 
 import React from 'react';
 import Image from 'next/image';
-import Container from '@/components/shared/container';
 import { getTranslations } from 'next-intl/server';
 import bgLeft from '@/public/images/bg-left.png';
 import bgRight from '@/public/images/bg-right.png';
@@ -12,11 +11,11 @@ import { useTranslations } from 'next-intl';
 import RegisterTabs from './RegisterTabs';
 
 interface LayoutProps {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }
 
 const Page = async ({ params }: LayoutProps) => {
-  const { locale } = params;
+  const { locale } = await params;
   const t = await getTranslations('RegisterPage');
   return <RegisterPage locale={locale} t={t} />;
 };

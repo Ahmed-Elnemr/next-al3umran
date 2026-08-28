@@ -364,7 +364,26 @@
   "accepted_file_formats": "Accepted file formats",
   "max_file_size": "Max file size",
   "register_as_client" : "Register as Client",
-  "register_as_company" : "Register as Company"
+  "register_as_company" : "Register as Company",
+  "company_name_label": "Seller / Company Name",
+  "company_name_placeholder": "Company name",
+  "company_name_required": "Company name is required (min 3 chars)",
+  "email_label": "Email Address",
+  "email_invalid": "Invalid email address",
+  "phone_label": "Phone Number",
+  "country_label": "Country",
+  "country_select_placeholder": "Select Country",
+  "city_label": "City",
+  "commercial_register_label": "Commercial Register Number",
+  "commercial_register_placeholder": "Commercial register number",
+  "commercial_register_required": "Commercial register number is required",
+  "company_bio_label": "Company Bio",
+  "company_bio_placeholder": "Brief description of company",
+  "company_bio_required": "Company bio is required (min 5 chars)",
+  "logo_image_label": "Logo or Identity Image",
+  "terms_accepted_required": "You must agree to the Terms and Privacy Policy",
+  "send_verification_code": "Send verification code",
+  "sending_verification_code": "Sending code..."
   },
 
   "sells": {
@@ -890,6 +909,7 @@
     "title": "Blog",
     "subtitle": "Discover the latest articles and tips about car care and maintenance",
     "readMore": "Read More",
+    "viewAll": "View All",
     "error": {
       "title": "Sorry!",
       "message": "An error occurred while loading articles"

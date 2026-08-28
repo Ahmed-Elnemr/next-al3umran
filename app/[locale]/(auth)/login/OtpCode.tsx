@@ -8,6 +8,7 @@ import { useMutation } from "@tanstack/react-query";
 import apiServiceCall, { apiErrorMessage } from "@/lib/apiServiceCall";
 import { toast } from "react-toastify";
 import { useLocale, useTranslations } from "next-intl";
+import { X, ShieldCheck, RefreshCw, Loader2 } from "lucide-react";
 
 const OTP_LENGTH = 4;
 
@@ -56,7 +57,7 @@ const OtpCode: React.FC<OtpModalProps> = ({
   const locale = useLocale();
   const t = useTranslations("otpCode");
   const isAr = locale === "ar";
-  const displayPhone = `${countryCode}${phone}`;
+  const displayPhone = `${countryCode} ${phone}`;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -76,11 +77,11 @@ const OtpCode: React.FC<OtpModalProps> = ({
   const verifyMutation = useMutation({
     mutationFn: async (code: string) => {
       return apiServiceCall({
-        url: "auth/verify-otp",
+        url: "client/auth/verify-otp",
         method: "POST",
         body: {
-          phone,
           country_code: countryCode,
+          phone,
           code,
           purpose,
           device_type: "web",
@@ -97,7 +98,7 @@ const OtpCode: React.FC<OtpModalProps> = ({
       }
 
       await persistSession(locale, { ...payload, user }, displayPhone);
-      toast.success(isAr ? "تم التحقق بنجاح" : "Verified successfully");
+      toast.success(res?.message || (isAr ? "تم التحقق بنجاح" : "Verified successfully"));
       window.location.href = `/${locale}`;
     },
     onError: (error: any) => {
@@ -151,27 +152,38 @@ const OtpCode: React.FC<OtpModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="relative w-[95%] max-w-md rounded-lg bg-white p-6 shadow-lg">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
+      <div className="relative w-full max-w-md rounded-3xl bg-white p-7 shadow-2xl border border-gray-100 transition-all">
+        {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-3 end-4 flex h-7 w-7 items-center justify-center rounded-full border text-lg text-gray-500"
+          className="absolute top-4 end-4 flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition-all duration-200"
           aria-label="Close modal"
         >
-          &times;
+          <X size={18} />
         </button>
 
-        <div className="mt-6 flex flex-col items-center gap-4">
-          <Image src={otpCodeImg} alt="OTP Code" width={91} height={188} priority />
-          <h2 className="text-[22px] font-bold text-primary">{t("title")}</h2>
-          <p className="text-center text-base text-[#989898]">{t("desc")}</p>
-          <h5 className="text-sm font-medium text-[#080C22]">{displayPhone}</h5>
-          <p className="text-xs font-bold text-[#0E6B58]">
-            {isAr ? "الكود التجريبي حالياً: 1111" : "Temporary test code: 1111"}
-          </p>
+        <div className="flex flex-col items-center gap-4 text-center mt-2">
+          {/* Visual Header Image Badge */}
+          <div className="relative flex h-20 w-20 items-center justify-center rounded-2xl bg-[#EEF6F3] text-primary shadow-inner">
+            <ShieldCheck size={42} className="text-primary animate-pulse" />
+          </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} dir="ltr" className="w-full">
-            <div className="mt-4 flex items-center justify-center gap-3" onPaste={handlePaste}>
+          <div>
+            <h2 className="text-2xl font-black text-[#080C22]">{t("title") || (isAr ? "رمز التحقق" : "Verification Code")}</h2>
+            <p className="mt-1 text-sm font-medium text-gray-500">
+              {t("desc") || (isAr ? "أدخل الرمز المكون من 4 أرقام المرسل إلى هاتفك" : "Enter the 4-digit code sent to your phone")}
+            </p>
+          </div>
+
+          {/* Phone Badge */}
+          <div className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-4 py-1.5 font-mono text-sm font-bold text-[#080C22]" dir="ltr">
+            <span>{displayPhone}</span>
+          </div>
+
+          {/* OTP Input Fields Form */}
+          <form onSubmit={handleSubmit(onSubmit)} className="w-full mt-3">
+            <div className="flex items-center justify-center gap-3" dir="ltr" onPaste={handlePaste}>
               {Array.from({ length: OTP_LENGTH }).map((_, i) => (
                 <input
                   key={i}
@@ -180,7 +192,7 @@ const OtpCode: React.FC<OtpModalProps> = ({
                   maxLength={1}
                   autoComplete="one-time-code"
                   autoFocus={i === 0}
-                  className="h-14 w-12 rounded-2xl bg-[#f5f5f5] text-center text-2xl outline-none focus:ring-2 focus:ring-primary"
+                  className="h-16 w-14 rounded-2xl bg-[#F8FAFC] border-2 border-gray-200 text-center text-2xl font-black text-[#080C22] transition-all duration-200 focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 outline-none shadow-sm"
                   ref={(el) => {
                     inputsRef.current[i] = el;
                   }}
@@ -193,30 +205,39 @@ const OtpCode: React.FC<OtpModalProps> = ({
                 />
               ))}
             </div>
+
+            {/* Submit Action Button */}
             <button
               type="submit"
               disabled={verifyMutation.isPending}
-              className="mt-5 h-14 w-full rounded-2xl bg-primary text-lg text-white disabled:opacity-70"
+              className="mt-6 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-primary text-lg font-bold text-white shadow-lg shadow-primary/25 transition-all duration-200 hover:bg-primary/90 active:scale-[0.99] disabled:opacity-70"
             >
-              {verifyMutation.isPending
-                ? isAr
-                  ? "جاري التحقق..."
-                  : "Verifying..."
-                : isAr
-                  ? "تحقق"
-                  : "Verify"}
+              {verifyMutation.isPending ? (
+                <>
+                  <Loader2 size={22} className="animate-spin" />
+                  <span>{isAr ? "جاري التحقق..." : "Verifying..."}</span>
+                </>
+              ) : (
+                <span>{isAr ? "تأكيد والتحقق" : "Verify Code"}</span>
+              )}
             </button>
           </form>
 
-          <div className="mt-2 text-center">
+          {/* Countdown / Resend Section */}
+          <div className="mt-1 text-center">
             {canResend ? (
-              <button onClick={handleResendCode} className="text-sm font-medium text-primary hover:underline">
-                {isAr ? "إعادة إرسال الكود" : "Resend code"}
+              <button
+                onClick={handleResendCode}
+                className="inline-flex items-center gap-1.5 text-sm font-bold text-primary hover:text-primary/80 transition-colors duration-150"
+              >
+                <RefreshCw size={15} />
+                <span>{isAr ? "إعادة إرسال الرمز الآن" : "Resend code now"}</span>
               </button>
             ) : (
-              <span className="text-sm text-[#989898]">
-                {isAr ? `يمكنك طلب كود آخر بعد ${countdown}` : `You can request another code in ${countdown}s`}
-              </span>
+              <p className="text-xs font-semibold text-gray-400">
+                {isAr ? `يمكنك طلب رمز جديد بعد ` : `You can request another code in `}
+                <span className="font-mono text-sm font-bold text-primary">{countdown}s</span>
+              </p>
             )}
           </div>
         </div>

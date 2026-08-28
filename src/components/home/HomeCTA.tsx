@@ -22,24 +22,26 @@ const HomeCTA = ({ cta }: { cta?: { title?: string; subtitle?: string } }) => {
     };
 
     setToken(getCookie('token'));
-    setRole(getCookie('client_type'));
+    let clientType = getCookie('client_type');
+    if (!clientType) {
+      const userStr = getCookie('userDataInfo');
+      if (userStr) {
+        try {
+          const parsed = JSON.parse(decodeURIComponent(userStr));
+          if (parsed?.client_type) clientType = parsed.client_type;
+        } catch (e) {}
+      }
+    }
+    setRole(clientType);
   }, []);
 
-  // Determine URL and text dynamically
-  let buttonHref = `/${locale}/add-your-property`;
-  let buttonText = isAr ? "ابدأ نشر عقارك" : "Start Listing";
-  let isWhatsApp = false;
-
-  if (!token) {
-    // If guest, send them to login to register as a seller
-    buttonHref = `/${locale}/login`;
-    buttonText = isAr ? "سجل دخول لنشر عقارك" : "Login to List Property";
-  } else if (role !== 'company') {
-    // If buyer, direct them to WhatsApp
-    buttonHref = "https://wa.me/971500000000?text=أريد الاستفسار عن العقارات المعروضة";
-    buttonText = isAr ? "تواصل معنا عبر واتساب" : "Contact us on WhatsApp";
-    isWhatsApp = true;
+  // Only companies can add/list properties. Hide this CTA section completely for customers.
+  if (role !== 'company') {
+    return null;
   }
+
+  const buttonHref = `/${locale}/add-your-property`;
+  const buttonText = isAr ? "ابدأ نشر عقارك" : "Start Listing";
 
   return (
     <section dir={isAr ? "rtl" : "ltr"} className="py-16 lg:py-24 bg-[#F6F4EE]">
@@ -69,25 +71,13 @@ const HomeCTA = ({ cta }: { cta?: { title?: string; subtitle?: string } }) => {
               </p>
             </div>
 
-            {isWhatsApp ? (
-              <a
-                href={buttonHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="h-14 rounded-full bg-[#25D366] text-white px-7 flex items-center justify-center gap-2 font-black shadow-[0_20px_60px_rgba(37,211,102,0.25)] hover:-translate-y-1 transition"
-              >
-                <MessageCircle size={20} />
-                {buttonText}
-              </a>
-            ) : (
-              <Link
-                href={buttonHref}
-                className="h-14 rounded-full bg-[#C89B3C] text-[#101820] px-7 flex items-center justify-center gap-2 font-black shadow-[0_20px_60px_rgba(200,155,60,0.35)] hover:-translate-y-1 transition"
-              >
-                {buttonText}
-                <ArrowUpRight size={20} />
-              </Link>
-            )}
+            <Link
+              href={buttonHref}
+              className="h-14 rounded-full bg-[#C89B3C] text-[#101820] px-7 flex items-center justify-center gap-2 font-black shadow-[0_20px_60px_rgba(200,155,60,0.35)] hover:-translate-y-1 transition"
+            >
+              {buttonText}
+              <ArrowUpRight size={20} />
+            </Link>
           </div>
         </div>
       </div>

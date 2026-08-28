@@ -174,7 +174,7 @@ const Footer: React.FC<Props> = ({ settings, locale, token }) => {
                   <li className="flex items-center gap-3">
                     <span className="w-2 h-2 bg-gray-400 rounded-full" />
                     <Link 
-                      href={`/${locale}/privacy-policy`}
+                      href={`/${locale}/privacy`}
                       className="text-xs md:text-sm hover:text-primary transition"
                     >
                       {t("privacy_policy")}

@@ -17,6 +17,7 @@ const page = async ({ params }: LayoutProps) => {
   const t = await getTranslations("services");
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
+  const role = cookieStore.get("client_type")?.value;
 
   const servicesResponse = await getMyServices(locale);
   const services = servicesResponse?.data || [];
@@ -30,15 +31,17 @@ const page = async ({ params }: LayoutProps) => {
           {t("publishedServices")}
         </h1>
 
-        <Link
-          href={`/${locale}/add-your-property`}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-primary text-white font-medium rounded-lg hover:bg-primary/90 transition-colors duration-200 shadow-sm hover:shadow-md self-center"
-        >
-          <Plus className="w-4 h-4" />
-          <span className="text-sm sm:text-base">
-            {t("addNewService")}
-          </span>
-        </Link>
+        {role === "company" && (
+          <Link
+            href={`/${locale}/add-your-property`}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-primary text-white font-medium rounded-lg hover:bg-primary/90 transition-colors duration-200 shadow-sm hover:shadow-md self-center"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="text-sm sm:text-base">
+              {t("addNewService")}
+            </span>
+          </Link>
+        )}
       </div>
 
       {services.length === 0 ? (

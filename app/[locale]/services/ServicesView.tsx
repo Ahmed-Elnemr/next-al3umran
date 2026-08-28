@@ -132,7 +132,20 @@ const ServicesPage = ({ cmsItems = [] }: { cmsItems?: any[] }) => {
     building: Building2,
     handshake: Handshake,
     briefcase: Briefcase,
+    barChart: BarChart3,
+    shield: ShieldCheck,
+    users: Users,
+    star: Star,
   };
+
+  const gradients = [
+    "from-[#0E6B58] to-[#101820]",
+    "from-[#8A5A2B] to-[#C89B3C]",
+    "from-[#315C3F] to-[#89A86B]",
+    "from-[#1A3A4A] to-[#4A7A8A]",
+    "from-[#4A3728] to-[#8B7355]",
+    "from-[#2A3A3A] to-[#5A7A7A]",
+  ];
 
   const services = cmsItems.length
     ? cmsItems.map((item: any, index: number) => ({
@@ -141,7 +154,7 @@ const ServicesPage = ({ cmsItems = [] }: { cmsItems?: any[] }) => {
         title: item.title,
         desc: item.description,
         features: item.features || [],
-        color: "from-[#0E6B58] to-[#101820]",
+        color: gradients[index % gradients.length],
       }))
     : fallbackServices;
 
@@ -271,15 +284,7 @@ const ServicesPage = ({ cmsItems = [] }: { cmsItems?: any[] }) => {
                   ))}
                 </ul>
 
-                <Link
-                  href={`/${locale}/services/${service.id}`}
-                  className={`mt-5 h-11 rounded-full bg-[#F6F4EE] text-[#101820] px-5 flex items-center justify-center gap-2 font-black hover:bg-[#0E6B58] hover:text-white transition w-full ${
-                    isAr ? "flex-row-reverse" : "flex-row"
-                  }`}
-                >
-                  {isAr ? "تعرف على المزيد" : "Learn More"}
-                  <ArrowIcon size={16} />
-                </Link>
+             
               </div>
             );
           })}
@@ -390,7 +395,7 @@ const ServicesPage = ({ cmsItems = [] }: { cmsItems?: any[] }) => {
             </div>
 
             <Link
-              href={`/${locale}/contact`}
+              href={`/${locale}/technical-support`}
               className="h-12 rounded-full bg-[#C89B3C] text-[#101820] px-8 flex items-center gap-2 font-black hover:bg-[#d8aa49] transition shrink-0"
             >
               {isAr ? "تواصل معنا الآن" : "Contact Us Now"}

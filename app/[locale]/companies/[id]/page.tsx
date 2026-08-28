@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import {
   ArrowLeft,
   ArrowRight,
@@ -38,6 +39,9 @@ export default async function CompanyProfilePage({ params }: PageProps) {
   if (!company?.id) {
     notFound();
   }
+
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value || "";
 
   const properties = (Array.isArray(payload.properties) ? payload.properties : []).map(
     (item: any) => mapApiProperty(item, locale)
@@ -167,7 +171,7 @@ export default async function CompanyProfilePage({ params }: PageProps) {
             properties={properties}
           />
 
-          <CompanyReviews isAr={isAr} locale={locale} companyId={company.id} reviews={reviews} />
+          <CompanyReviews isAr={isAr} locale={locale} companyId={company.id} reviews={reviews} token={token} />
         </div>
       </section>
     </main>

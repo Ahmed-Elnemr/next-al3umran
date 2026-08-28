@@ -6,7 +6,14 @@ import { useParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, Building2, Home } from "lucide-react";
 import PropertyFilters from "../../../src/components/properties/PropertyFilters";
 import PropertiesList from "../../../src/components/properties/PropertiesList";
-import { getProperties, mapApiProperty } from "../../../src/lib/api/client";
+import {
+  getCategories,
+  getCities,
+  getCountries,
+  getProperties,
+  mapApiProperty,
+  envelopeList,
+} from "../../../src/lib/api/client";
 
 export type PropertyType =
   | "villa"
@@ -21,6 +28,7 @@ export type PropertyStatus = "sale" | "rent";
 export type PropertyItem = {
   id: number;
   image: string;
+  gallery?: string[];
   titleAr: string;
   titleEn: string;
   countryAr: string;
@@ -34,23 +42,42 @@ export type PropertyItem = {
   currencyEn: string;
   status: PropertyStatus;
   type: PropertyType;
+  companyId?: string;
   companyAr: string;
   companyEn: string;
+  companyLogo?: string;
+  phone?: string;
+  whatsapp?: string;
+  email?: string;
   beds: number;
   baths: number;
   area: number;
   createdAt: string;
+  descriptionAr?: string;
+  descriptionEn?: string;
+  category?: string;
+  categoryId?: number;
+  features?: string[];
 };
 
 export type PropertyFiltersState = {
   keyword: string;
-  country: string;
-  city: string;
-  type: string;
-  status: string;
+  country_id: string;
+  city_id: string;
+  category_id: string;
+  listing_type: string;
   priceRange: string;
   minBeds: string;
   sort: string;
+  page: number;
+  per_page: number;
+};
+
+export type PaginationMeta = {
+  currentPage: number;
+  lastPage: number;
+  total: number;
+  perPage: number;
 };
 
 const PropertiesPage = () => {
@@ -61,99 +88,137 @@ const PropertiesPage = () => {
 
   const [filters, setFilters] = useState<PropertyFiltersState>({
     keyword: "",
-    country: "all",
-    city: "all",
-    type: "all",
-    status: "all",
+    country_id: "all",
+    city_id: "all",
+    category_id: "all",
+    listing_type: "all",
     priceRange: "all",
     minBeds: "all",
     sort: "newest",
+    page: 1,
+    per_page: 12,
   });
 
   const [properties, setProperties] = useState<PropertyItem[]>([]);
+  const [meta, setMeta] = useState<PaginationMeta>({
+    currentPage: 1,
+    lastPage: 1,
+    total: 0,
+    perPage: 12,
+  });
   const [loading, setLoading] = useState(true);
 
+  // Dynamic filter options fetched from API
+  const [countriesOptions, setCountriesOptions] = useState<{ value: string; label: string }[]>([]);
+  const [citiesOptions, setCitiesOptions] = useState<{ value: string; label: string }[]>([]);
+  const [categoriesOptions, setCategoriesOptions] = useState<{ value: string; label: string }[]>([]);
+
+  // Fetch Countries & Categories on mount
+  useEffect(() => {
+    getCountries(locale)
+      .then((res) => {
+        const list = envelopeList(res);
+        if (list && list.length > 0) {
+          setCountriesOptions(
+            list.map((c: any) => ({
+              value: String(c.id),
+              label: c.name || c.title || c.code,
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+
+    getCategories(locale)
+      .then((res) => {
+        const list = envelopeList(res);
+        if (list && list.length > 0) {
+          setCategoriesOptions(
+            list.map((cat: any) => ({
+              value: String(cat.id),
+              label: cat.name || cat.title,
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+  }, [locale]);
+
+  // Fetch Cities whenever selected country_id changes
+  useEffect(() => {
+    const countryId = filters.country_id !== "all" ? filters.country_id : undefined;
+    getCities(locale, countryId)
+      .then((res) => {
+        const list = envelopeList(res);
+        if (list) {
+          setCitiesOptions(
+            list.map((c: any) => ({
+              value: String(c.id),
+              label: c.name || c.title,
+            }))
+          );
+        }
+      })
+      .catch(() => setCitiesOptions([]));
+  }, [locale, filters.country_id]);
+
+  // Main properties API fetch call to client/properties
   useEffect(() => {
     const query = new URLSearchParams();
-    if (filters.keyword.trim()) query.set("keyword", filters.keyword.trim());
-    if (filters.status !== "all") query.set("listing_type", filters.status);
-    if (filters.minBeds !== "all") query.set("min_beds", filters.minBeds);
+
+    if (filters.country_id !== "all") query.set("country_id", filters.country_id);
+    if (filters.city_id !== "all") query.set("city_id", filters.city_id);
+    if (filters.category_id !== "all") query.set("category_id", filters.category_id);
+    if (filters.listing_type !== "all") query.set("listing_type", filters.listing_type);
     if (filters.sort) query.set("sort", filters.sort);
-    query.set("per_page", "50");
+    if (filters.keyword.trim()) query.set("keyword", filters.keyword.trim());
+    query.set("page", String(filters.page || 1));
+    query.set("per_page", String(filters.per_page || 12));
+
     setLoading(true);
     getProperties(locale, query.toString())
       .then((res) => {
-        const rows = res?.data?.data || res?.data || [];
+        const rows = res?.data?.data || res?.data?.properties || res?.data || res?.properties || [];
         const list = Array.isArray(rows) ? rows : [];
-        setProperties(list.map((item: any) => mapApiProperty(item, locale)));
+        setProperties(list.map((item: any) => mapApiProperty(item, locale)).filter(Boolean));
+
+        const metaData = res?.data?.meta || res?.meta;
+        if (metaData) {
+          setMeta({
+            currentPage: Number(metaData.current_page || filters.page || 1),
+            lastPage: Number(metaData.last_page || 1),
+            total: Number(metaData.total || list.length),
+            perPage: Number(metaData.per_page || filters.per_page || 12),
+          });
+        } else {
+          setMeta({
+            currentPage: filters.page || 1,
+            lastPage: 1,
+            total: list.length,
+            perPage: filters.per_page || 12,
+          });
+        }
       })
-      .catch(() => setProperties([]))
+      .catch(() => {
+        setProperties([]);
+        setMeta({ currentPage: 1, lastPage: 1, total: 0, perPage: 12 });
+      })
       .finally(() => setLoading(false));
-  }, [locale, filters.keyword, filters.status, filters.minBeds, filters.sort]);
+  }, [
+    locale,
+    filters.country_id,
+    filters.city_id,
+    filters.category_id,
+    filters.listing_type,
+    filters.sort,
+    filters.keyword,
+    filters.page,
+    filters.per_page,
+  ]);
 
-  const countries = useMemo(() => {
-    const map = new Map<string, string>();
-    properties.forEach((item) => {
-      map.set(item.countryEn, isAr ? item.countryAr : item.countryEn);
-    });
-    return Array.from(map, ([value, label]) => ({ value, label }));
-  }, [isAr, properties]);
-
-  const cities = useMemo(() => {
-    const filtered =
-      filters.country === "all"
-        ? properties
-        : properties.filter((item) => item.countryEn === filters.country);
-
-    const map = new Map<string, string>();
-    filtered.forEach((item) => {
-      map.set(item.cityEn, isAr ? item.cityAr : item.cityEn);
-    });
-
-    return Array.from(map, ([value, label]) => ({ value, label }));
-  }, [filters.country, isAr, properties]);
-
+  // Client-side additional filtering for priceRange and minBeds if needed
   const filteredProperties = useMemo(() => {
     let result = [...properties];
-
-    if (filters.keyword.trim()) {
-      const keyword = filters.keyword.trim().toLowerCase();
-
-      result = result.filter((item) => {
-        const text = [
-          item.titleAr,
-          item.titleEn,
-          item.countryAr,
-          item.countryEn,
-          item.cityAr,
-          item.cityEn,
-          item.locationAr,
-          item.locationEn,
-          item.companyAr,
-          item.companyEn,
-        ]
-          .join(" ")
-          .toLowerCase();
-
-        return text.includes(keyword);
-      });
-    }
-
-    if (filters.country !== "all") {
-      result = result.filter((item) => item.countryEn === filters.country);
-    }
-
-    if (filters.city !== "all") {
-      result = result.filter((item) => item.cityEn === filters.city);
-    }
-
-    if (filters.type !== "all") {
-      result = result.filter((item) => item.type === filters.type);
-    }
-
-    if (filters.status !== "all") {
-      result = result.filter((item) => item.status === filters.status);
-    }
 
     if (filters.minBeds !== "all") {
       result = result.filter((item) => item.beds >= Number(filters.minBeds));
@@ -170,41 +235,27 @@ const PropertiesPage = () => {
       }
     }
 
-    switch (filters.sort) {
-      case "price-asc":
-        result.sort((a, b) => a.price - b.price);
-        break;
-      case "price-desc":
-        result.sort((a, b) => b.price - a.price);
-        break;
-      case "area-desc":
-        result.sort((a, b) => b.area - a.area);
-        break;
-      case "area-asc":
-        result.sort((a, b) => a.area - b.area);
-        break;
-      default:
-        result.sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        break;
-    }
-
     return result;
-  }, [filters, properties]);
+  }, [filters.minBeds, filters.priceRange, properties]);
 
   const resetFilters = () => {
     setFilters({
       keyword: "",
-      country: "all",
-      city: "all",
-      type: "all",
-      status: "all",
+      country_id: "all",
+      city_id: "all",
+      category_id: "all",
+      listing_type: "all",
       priceRange: "all",
       minBeds: "all",
       sort: "newest",
+      page: 1,
+      per_page: 12,
     });
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setFilters((prev) => ({ ...prev, page: newPage }));
+    window.scrollTo({ top: 300, behavior: "smooth" });
   };
 
   return (
@@ -254,10 +305,10 @@ const PropertiesPage = () => {
 
                   <div>
                     <p className="text-xs font-bold text-white/55">
-                      {isAr ? "عدد النتائج" : "Results"}
+                      {isAr ? "إجمالي العقارات" : "Total Results"}
                     </p>
                     <h2 className="text-3xl font-black">
-                      {filteredProperties.length}
+                      {meta.total || filteredProperties.length}
                     </h2>
                   </div>
                 </div>
@@ -271,8 +322,9 @@ const PropertiesPage = () => {
               filters={filters}
               setFilters={setFilters}
               resetFilters={resetFilters}
-              countries={countries}
-              cities={cities}
+              countries={countriesOptions}
+              cities={citiesOptions}
+              categories={categoriesOptions}
             />
 
             <PropertiesList
@@ -281,6 +333,8 @@ const PropertiesPage = () => {
               properties={filteredProperties}
               resetFilters={resetFilters}
               loading={loading}
+              meta={meta}
+              onPageChange={handlePageChange}
             />
           </div>
         </div>

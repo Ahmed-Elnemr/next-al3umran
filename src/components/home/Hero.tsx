@@ -26,6 +26,31 @@ const Hero = ({ hero }: { hero?: any }) => {
   const ArrowIcon = isAr ? ArrowLeft : ArrowRight;
 
   const [showVideo, setShowVideo] = useState(false);
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const getCookie = (name: string) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
+        return null;
+      };
+      const type = getCookie("client_type");
+      if (type) {
+        setRole(type);
+      } else {
+        const userStr = getCookie("userDataInfo");
+        if (userStr) {
+          try {
+            const parsed = JSON.parse(decodeURIComponent(userStr));
+            if (parsed?.client_type) setRole(parsed.client_type);
+          } catch (e) {}
+        }
+      }
+    }
+  }, []);
+
   const videoSrc = toEmbedUrl(hero?.video_url) ||
     "https://www.youtube.com/embed/WBvuvR4vz58?autoplay=1&mute=1&loop=1&playlist=WBvuvR4vz58&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&disablekb=1&iv_load_policy=3&fs=0&start=2&vq=hd1080";
 
@@ -117,13 +142,15 @@ const Hero = ({ hero }: { hero?: any }) => {
               />
             </Link>
 
-            <Link
-              href={`/${locale}/add-your-property`}
-              className="flex h-14 items-center justify-center gap-2 rounded-full border border-white/35 bg-black/25 px-8 font-black text-white backdrop-blur-[2px] transition hover:-translate-y-1 hover:bg-white hover:text-[#101820]"
-            >
-              <Building2 size={19} />
-              {isAr ? "أضف عقارك" : "Add Property"}
-            </Link>
+            {role === "company" && (
+              <Link
+                href={`/${locale}/add-your-property`}
+                className="flex h-14 items-center justify-center gap-2 rounded-full border border-white/35 bg-black/25 px-8 font-black text-white backdrop-blur-[2px] transition hover:-translate-y-1 hover:bg-white hover:text-[#101820]"
+              >
+                <Building2 size={19} />
+                {isAr ? "أضف عقارك" : "Add Property"}
+              </Link>
+            )}
           </div>
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">

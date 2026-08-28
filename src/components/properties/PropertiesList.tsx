@@ -10,8 +10,10 @@ import {
   Maximize2,
   SearchX,
   Heart,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
-import type { PropertyItem } from "../../../app/[locale]/properties/page";
+import type { PropertyItem, PaginationMeta } from "../../../app/[locale]/properties/page";
 import { useFavorites } from "../../../src/hooks/useFavorites";
 
 type Props = {
@@ -20,15 +22,28 @@ type Props = {
   properties: PropertyItem[];
   resetFilters?: () => void;
   loading?: boolean;
+  meta?: PaginationMeta;
+  onPageChange?: (page: number) => void;
 };
 
-const PropertiesList = ({ isAr, locale, properties, resetFilters, loading }: Props) => {
+const PropertiesList = ({
+  isAr,
+  locale,
+  properties,
+  resetFilters,
+  loading,
+  meta,
+  onPageChange,
+}: Props) => {
   if (loading) {
     return (
       <div className="flex min-h-[320px] items-center justify-center rounded-[34px] border border-white/70 bg-white/80 p-8 text-center shadow-[0_25px_80px_rgba(16,24,32,0.10)] backdrop-blur-xl">
-        <p className="text-sm font-black text-[#71807B]">
-          {isAr ? "جاري تحميل العقارات..." : "Loading properties..."}
-        </p>
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#0E6B58] border-t-transparent" />
+          <p className="text-sm font-black text-[#71807B]">
+            {isAr ? "جاري تحميل العقارات..." : "Loading properties..."}
+          </p>
+        </div>
       </div>
     );
   }
@@ -72,7 +87,9 @@ const PropertiesList = ({ isAr, locale, properties, resetFilters, loading }: Pro
         </h2>
 
         <p className="text-sm font-bold text-[#71807B]">
-          {isAr ? `${properties.length} نتيجة` : `${properties.length} results`}
+          {isAr
+            ? `عرض الصفحة ${meta?.currentPage || 1} من ${meta?.lastPage || 1} (${meta?.total || properties.length} عقار)`
+            : `Showing page ${meta?.currentPage || 1} of ${meta?.lastPage || 1} (${meta?.total || properties.length} properties)`}
         </p>
       </div>
 
@@ -86,6 +103,47 @@ const PropertiesList = ({ isAr, locale, properties, resetFilters, loading }: Pro
           />
         ))}
       </div>
+
+      {/* Modern Dynamic Pagination */}
+      {meta && meta.lastPage > 1 && (
+        <div className="mt-12 flex flex-wrap items-center justify-center gap-2">
+          <button
+            disabled={meta.currentPage <= 1}
+            onClick={() => onPageChange?.(meta.currentPage - 1)}
+            className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[#E4DED1] bg-white text-[#101820] shadow-sm transition hover:bg-[#0E6B58] hover:text-white disabled:opacity-40"
+            aria-label="Previous page"
+          >
+            {isAr ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+          </button>
+
+          {Array.from({ length: meta.lastPage }).map((_, idx) => {
+            const pageNum = idx + 1;
+            const isActive = pageNum === meta.currentPage;
+            return (
+              <button
+                key={pageNum}
+                onClick={() => onPageChange?.(pageNum)}
+                className={`flex h-12 min-w-[48px] items-center justify-center rounded-2xl px-4 text-sm font-black transition ${
+                  isActive
+                    ? "bg-[#0E6B58] text-white shadow-md shadow-[#0E6B58]/20"
+                    : "border border-[#E4DED1] bg-white text-[#101820] hover:bg-[#EEF6F3] hover:text-[#0E6B58]"
+                }`}
+              >
+                {pageNum}
+              </button>
+            );
+          })}
+
+          <button
+            disabled={meta.currentPage >= meta.lastPage}
+            onClick={() => onPageChange?.(meta.currentPage + 1)}
+            className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[#E4DED1] bg-white text-[#101820] shadow-sm transition hover:bg-[#0E6B58] hover:text-white disabled:opacity-40"
+            aria-label="Next page"
+          >
+            {isAr ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
+          </button>
+        </div>
+      )}
     </section>
   );
 };
@@ -109,24 +167,21 @@ const PropertyCard = ({
   const { isFavorite, toggleFavorite } = useFavorites();
   const favorited = isFavorite(property.id);
 
-  const typeLabel = {
-    villa: isAr ? "فيلا" : "Villa",
-    house: isAr ? "بيت" : "House",
-    apartment: isAr ? "شقة" : "Apartment",
-    land: isAr ? "أرض" : "Land",
-    chalet: isAr ? "شاليه" : "Chalet",
-    office: isAr ? "مكتب" : "Office",
-  }[property.type];
-
   return (
-    <article className="group flex h-full min-h-[545px] flex-col overflow-hidden rounded-[30px] border border-[#E4DED1] bg-white  transition duration-300 ">
-      <div className="relative h-[240px] overflow-hidden">
-        <img
-          src={property.image}
-          alt={title}
-          loading="lazy"
-          className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
-        />
+    <article className="group flex h-full min-h-[545px] flex-col overflow-hidden rounded-[30px] border border-[#E4DED1] bg-white shadow-[0_18px_55px_rgba(16,24,32,0.08)] transition duration-300 hover:-translate-y-2 hover:shadow-[0_30px_90px_rgba(16,24,32,0.16)]">
+      <div className="relative h-[240px] overflow-hidden bg-gray-100 flex items-center justify-center">
+        {property.image ? (
+          <img
+            src={property.image}
+            alt={title}
+            loading="lazy"
+            className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
+          />
+        ) : (
+          <svg className="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        )}
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
 
@@ -167,7 +222,7 @@ const PropertyCard = ({
           <div className="inline-flex max-w-full items-center gap-2 rounded-full bg-black/45 px-3 py-2 text-sm font-bold text-white backdrop-blur-sm">
             <MapPin size={16} className="shrink-0 text-[#C89B3C]" />
             <span className="truncate">
-              {location} - {city} - {country}
+              {[location, city, country].filter(Boolean).join(" - ")}
             </span>
           </div>
         </div>

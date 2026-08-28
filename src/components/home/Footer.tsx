@@ -14,6 +14,7 @@ import {
   Twitter,
   Youtube,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const Footer = ({
   contact,
@@ -29,6 +30,31 @@ const Footer = ({
   const siteName = general?.site_name || (isAr ? "العمران" : "Al Omran");
   const tagline = general?.site_tagline || (isAr ? "للتطوير العقاري" : "Real Estate Platform");
   const logo = general?.footer_logo || general?.header_logo || general?.logo;
+
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const getCookie = (name: string) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
+        return null;
+      };
+      const type = getCookie("client_type");
+      if (type) {
+        setRole(type);
+      } else {
+        const userStr = getCookie("userDataInfo");
+        if (userStr) {
+          try {
+            const parsed = JSON.parse(decodeURIComponent(userStr));
+            if (parsed?.client_type) setRole(parsed.client_type);
+          } catch (e) {}
+        }
+      }
+    }
+  }, []);
 
   const socials = [
     { href: contact?.facebook_link, icon: <Facebook size={18} /> },
@@ -55,17 +81,21 @@ const Footer = ({
       label: isAr ? "العقارات" : "Properties",
       href: `/${locale}/categories`,
     },
-    {
-      label: isAr ? "أضف عقارك" : "Add Property",
-      href: `/${locale}/add-your-property`,
-    },
+    ...(role === "company"
+      ? [
+          {
+            label: isAr ? "أضف عقارك" : "Add Property",
+            href: `/${locale}/add-your-property`,
+          },
+        ]
+      : []),
     {
       label: isAr ? "من نحن" : "About Us",
-      href: `/${locale}/about`,
+      href: `/${locale}/about-us`,
     },
     {
       label: isAr ? "تواصل معنا" : "Contact Us",
-      href: `/${locale}/contact`,
+      href: `/${locale}/technical-support`,
     },
   ];
 
@@ -110,12 +140,14 @@ const Footer = ({
                 {isAr ? "استكشف العقارات" : "Explore Properties"}
               </Link>
 
-              <Link
-                href={`/${locale}/add-your-property`}
-                className="flex h-14 items-center justify-center rounded-full border border-white/20 bg-white/10 px-7 font-black text-white transition hover:-translate-y-1 hover:bg-white hover:text-[#101820]"
-              >
-                {isAr ? "أضف عقارك" : "Add Property"}
-              </Link>
+              {role === "company" && (
+                <Link
+                  href={`/${locale}/add-your-property`}
+                  className="flex h-14 items-center justify-center rounded-full border border-white/20 bg-white/10 px-7 font-black text-white transition hover:-translate-y-1 hover:bg-white hover:text-[#101820]"
+                >
+                  {isAr ? "أضف عقارك" : "Add Property"}
+                </Link>
+              )}
             </div>
           </div>
         </div>

@@ -1,3 +1,6 @@
+// Silence Node.js deprecation warnings (e.g. url.parse()) on dev server
+process.noDeprecation = true;
+
 const createNextIntlPlugin = require("next-intl/plugin");
 
 const withNextIntl = createNextIntlPlugin("./i18n.ts");
@@ -33,13 +36,20 @@ const nextConfig = {
       },
     ],
   },
-  // images: {
-  //   domains: [
-  //     "almasader.net",
-  //     "kora-ticket.almasader.net",
-  //     "https://app.koraticket.com",
-  //   ],
-  // },
+  webpack: (config, { dev }) => {
+    if (dev) {
+      config.cache = false;
+    }
+    return config;
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/backend-api/:path*",
+        destination: "https://api.al3umran.com/api/v1/:path*",
+      },
+    ];
+  },
 };
 
 module.exports = withNextIntl(nextConfig);

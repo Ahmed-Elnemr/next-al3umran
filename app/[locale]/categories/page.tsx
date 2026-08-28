@@ -37,9 +37,33 @@ const CategoriesPage = () => {
 
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [role, setRole] = useState<string | null>(null);
 
   const [categories, setCategories] = useState<any[]>([]);
   const [featuredProperties, setFeaturedProperties] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const getCookie = (name: string) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
+        return null;
+      };
+      const type = getCookie("client_type");
+      if (type) {
+        setRole(type);
+      } else {
+        const userStr = getCookie("userDataInfo");
+        if (userStr) {
+          try {
+            const parsed = JSON.parse(decodeURIComponent(userStr));
+            if (parsed?.client_type) setRole(parsed.client_type);
+          } catch (e) {}
+        }
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const icons: Record<string, any> = {
@@ -270,13 +294,15 @@ const CategoriesPage = () => {
               </p>
             </div>
 
-            <Link
-              href={`/${locale}/add-your-property`}
-              className="h-12 rounded-full bg-[#C89B3C] text-[#101820] px-8 flex items-center gap-2 font-black hover:bg-[#d8aa49] transition shrink-0"
-            >
-              {isAr ? "أضف عقارك الآن" : "Add Your Property Now"}
-              <ArrowIcon size={18} />
-            </Link>
+            {role === "company" && (
+              <Link
+                href={`/${locale}/add-your-property`}
+                className="h-12 rounded-full bg-[#C89B3C] text-[#101820] px-8 flex items-center gap-2 font-black hover:bg-[#d8aa49] transition shrink-0"
+              >
+                {isAr ? "أضف عقارك الآن" : "Add Your Property Now"}
+                <ArrowIcon size={18} />
+              </Link>
+            )}
           </div>
         </div>
       </div>

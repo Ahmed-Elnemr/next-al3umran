@@ -351,7 +351,26 @@
     "image_size_format": "PNG, JPG, JPEG (بحد أقصى 2MB)",
     "create_account_button": "إنشاء حساب كشركة",
     "register_as_client": "تسجيل كعميل",
-    "register_as_company": "تسجيل كشركة"
+    "register_as_company": "تسجيل كشركة",
+    "company_name_label": "اسم الشركة / البائع",
+    "company_name_placeholder": "اسم الشركة",
+    "company_name_required": "اسم الشركة مطلوب (3 أحرف على الأقل)",
+    "email_label": "البريد الإلكتروني",
+    "email_invalid": "البريد الإلكتروني غير صالح",
+    "phone_label": "رقم الهاتف",
+    "country_label": "البلد",
+    "country_select_placeholder": "اختر البلد",
+    "city_label": "المدينة",
+    "commercial_register_label": "رقم السجل التجاري",
+    "commercial_register_placeholder": "رقم السجل التجاري",
+    "commercial_register_required": "رقم السجل التجاري مطلوب",
+    "company_bio_label": "نبذة عن الشركة / أعمالك",
+    "company_bio_placeholder": "نبذة عن الشركة",
+    "company_bio_required": "نبذة الشركة مطلوبة (5 أحرف على الأقل)",
+    "logo_image_label": "صورة الشعار أو الهوية",
+    "terms_accepted_required": "يجب الموافقة على الشروط والأحكام وسياسة الخصوصية",
+    "send_verification_code": "إرسال رمز التحقق",
+    "sending_verification_code": "جاري إرسال الرمز..."
   },
   "sells": {
     "sales_title": "المبيعات",
@@ -775,6 +794,7 @@
     "title": "المدونة",
     "subtitle": "اكتشف أحدث المقالات والنصائح حول العناية بالسيارات والصيانة",
     "readMore": "قراءة المزيد",
+    "viewAll": "عرض الكل",
     "error": {
       "title": "عذراً!",
       "message": "حدث خطأ أثناء تحميل المقالات"

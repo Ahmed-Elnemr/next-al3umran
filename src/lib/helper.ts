@@ -43,6 +43,8 @@ export const errorsHandling = (
       toast.error(error?.message || error?.data?.message || "An error occurred");
     }
   } else {
-    console.error("Server-side error in errorsHandling:", error);
+    if (error && typeof error === "object" && Object.keys(error).length > 0) {
+      console.warn("Server-side warning in errorsHandling:", error.message || error);
+    }
   }
 };

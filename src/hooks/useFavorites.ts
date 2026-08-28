@@ -19,7 +19,7 @@ export function useFavorites() {
 
   }, []);
 
-  const toggleFavorite = (propertyId: number, isAr: boolean = true) => {
+  const toggleFavorite = async (propertyId: number, isAr: boolean = true) => {
     let newFavorites;
     if (favorites.includes(propertyId)) {
       newFavorites = favorites.filter(id => id !== propertyId);
@@ -34,6 +34,14 @@ export function useFavorites() {
     
     // Dispatch custom event to sync across tabs/components
     window.dispatchEvent(new Event('favoritesChanged'));
+
+    // API call in the background
+    try {
+      const { toggleFavoriteAction } = await import('../lib/serverActions');
+      await toggleFavoriteAction(isAr ? 'ar' : 'en', propertyId);
+    } catch (e) {
+      console.error('Failed to sync favorite with API', e);
+    }
   };
 
   // Sync across tabs or other components in the same window

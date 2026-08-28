@@ -1,11 +1,12 @@
 "use client";
 
-import { use } from "react";
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, HeartCrack } from "lucide-react";
 import PropertiesList from "../../../src/components/properties/PropertiesList";
-import { properties } from "../../../src/lib/mockData";
-import { useFavorites } from "../../../src/hooks/useFavorites";
+import { getFavoritesAction } from "../../../src/lib/serverActions";
+import type { PropertyItem } from "../../../app/[locale]/properties/page";
+import { mapApiProperty } from "../../../src/lib/api/client";
 
 interface PageProps {
   params: Promise<{
@@ -16,12 +17,27 @@ interface PageProps {
 export default function FavoritesPage({ params }: PageProps) {
   const { locale } = use(params);
   const isAr = locale === "ar";
-  const { favorites, mounted } = useFavorites();
   const BackIcon = isAr ? ArrowRight : ArrowLeft;
+  const [favoriteProperties, setFavoriteProperties] = useState<PropertyItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  if (!mounted) return null;
-
-  const favoriteProperties = properties.filter((p) => favorites.includes(p.id));
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      setLoading(true);
+      try {
+        const response = await getFavoritesAction(locale);
+        if (response?.data && Array.isArray(response.data)) {
+          const mappedData = response.data.map((item: any) => mapApiProperty(item, locale));
+          setFavoriteProperties(mappedData);
+        }
+      } catch (error) {
+        console.error("Failed to load favorites", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFavorites();
+  }, [locale]);
 
   return (
     <main dir={isAr ? "rtl" : "ltr"} className="min-h-screen bg-[#F7FAF8]">
@@ -48,7 +64,14 @@ export default function FavoritesPage({ params }: PageProps) {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-12 -mt-16">
-        {favoriteProperties.length > 0 ? (
+        {loading ? (
+          <PropertiesList
+            isAr={isAr}
+            locale={locale}
+            properties={[]}
+            loading={true}
+          />
+        ) : favoriteProperties.length > 0 ? (
           <PropertiesList
             isAr={isAr}
             locale={locale}

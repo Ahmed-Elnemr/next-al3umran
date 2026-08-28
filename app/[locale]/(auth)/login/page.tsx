@@ -9,11 +9,11 @@ import bgRight from '@/public/images/bg-right.png';
 import { LuUserRound } from "react-icons/lu";
 
 interface LayoutProps {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }
 
 const LoginPage = async ({ params }: LayoutProps) => {
-  const { locale } = params;
+  const { locale } = await params;
   const t = await getTranslations('LoginPage');
 
   return (

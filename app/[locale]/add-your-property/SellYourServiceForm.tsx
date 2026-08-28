@@ -10,6 +10,7 @@ import { FiUploadCloud, FiHome } from 'react-icons/fi';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import apiServiceCall from '@/lib/apiServiceCall';
+import { getCategories } from '@/lib/api/client';
 import {
   LuMapPin,
   LuBed,
@@ -92,29 +93,23 @@ export default function SellYourService({ token }: { token: string }) {
 
   /* ================= جلب الأقسام ================= */
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchCategoriesList = async () => {
       try {
         setLoading(true);
-        const response = await apiServiceCall({
-          url: 'categories',
-          method: 'GET',
-        });
-        
-        if (response.status_code === 200) {
-          setCategories(response.data);
-        } else {
-          toast.error(t('categoriesLoadError') || 'فشل تحميل الأقسام');
+        const res: any = await getCategories(locale);
+        const data = Array.isArray(res?.data) ? res.data : Array.isArray(res?.data?.data) ? res.data.data : [];
+        if (data.length > 0) {
+          setCategories(data);
         }
       } catch (error: any) {
-        console.error('Error fetching categories:', error);
-        toast.error(error?.data?.message || t('categoriesLoadError') || 'خطأ في تحميل الأقسام');
+        console.warn('Error fetching categories:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCategories();
-  }, []);
+    fetchCategoriesList();
+  }, [locale]);
 
   /* ================= رفع الصور ================= */
   const fileRef = useRef<HTMLInputextement | null>(null);

@@ -28,8 +28,11 @@ const LogoutModal: React.FC<LogoutModalProps> = ({ isOpen, onClose, token }) => 
     };
 
     apiServiceCall({
-      url: 'auth/logout',
+      url: 'client/auth/logout',
       method: 'POST',
+      body: {
+        device_token: null,
+      },
       headers: {
         Authorization: `Bearer ${token}`,
       },

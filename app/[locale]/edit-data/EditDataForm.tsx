@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect, useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import Image from "next/image";
@@ -6,11 +7,11 @@ import { useQuery } from "@tanstack/react-query";
 import CustomSelect from "@/components/shared/reusableComponents/CustomSelect";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "react-toastify";
-import InputComponent from "@/components/shared/reusableComponents/InputComponent";
-import ChangePasswordModal from "./ChangePasswordModal";
-import { FaChevronLeft } from "react-icons/fa";
+import ConfirmMobile from "./ConfirmMobile";
+import { User, Lock, Phone, AlertCircle, Camera, Check, Trash2, ArrowRight, ArrowLeft } from "lucide-react";
 import { apiErrorMessage } from "@/lib/apiServiceCall";
-import { envelopeList, getCities, getProfile, localizedText, updateProfile } from "@/lib/api/client";
+import { envelopeList, getCities, getProfile, localizedText, updateProfile, changePhone, deleteProfile } from "@/lib/api/client";
+import { useRouter } from "next/navigation";
 
 type FormDataType = {
   name: string;
@@ -21,6 +22,15 @@ type FormDataType = {
   commercial_register?: string;
   company_bio?: string;
   profile_image?: FileList;
+  
+  // Security Tab
+  current_password?: string;
+  password?: string;
+  password_confirmation?: string;
+  
+  // Phone Tab
+  country_code?: string;
+  new_phone?: string;
 };
 
 const EditDataForm = ({
@@ -30,18 +40,26 @@ const EditDataForm = ({
   token: string;
   role: string;
 }) => {
-  const { register, handleSubmit, setValue, control, watch } =
-    useForm<FormDataType>();
+  const { register, handleSubmit, setValue, control, watch, resetField } = useForm<FormDataType>();
+  
+  // States
+  const [activeTab, setActiveTab] = useState<"profile" | "security" | "phone" | "danger">("profile");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [mobileNumber, setMobileNumber] = useState("");
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const locale = useLocale();
   const t = useTranslations("profile");
+  const router = useRouter();
+  const isAr = locale === "ar";
   const isCompany = role === "company";
 
   const profileImage = watch("profile_image");
   const { ref: imageRegisterRef, ...imageRegister } = register("profile_image");
 
+  // Fetch initial data
   useEffect(() => {
     if (!token) return;
 
@@ -54,6 +72,11 @@ const EditDataForm = ({
         setValue("name", userData.name || "");
         setValue("email", userData.email || "");
         setValue("phone", userData.phone || "");
+        if (userData.country_code) {
+          setValue("country_code", userData.country_code);
+        } else {
+          setValue("country_code", "+971"); // default
+        }
         if (userData.city_id) {
           setValue("city_id", String(userData.city_id));
         }
@@ -82,7 +105,6 @@ const EditDataForm = ({
       const file = profileImage[0];
       const imageUrl = URL.createObjectURL(file);
       setPreviewImage(imageUrl);
-
       return () => URL.revokeObjectURL(imageUrl);
     }
   }, [profileImage]);
@@ -91,24 +113,22 @@ const EditDataForm = ({
     fileInputRef.current?.click();
   };
 
-  const onSubmit = async (data: FormDataType) => {
+  // Submit Profile Data
+  const onSubmitProfile = async (data: FormDataType) => {
+    setIsSubmitting(true);
     try {
       const formData = new FormData();
       formData.append("_method", "PUT");
 
       if (data.name) formData.append("name", data.name);
       if (data.email) formData.append("email", data.email);
-      if (data.phone) formData.append("phone", data.phone);
       if (data.city_id) formData.append("city_id", data.city_id);
 
       if (isCompany) {
         if (data.company_name) formData.append("company_name", data.company_name);
-        if (data.commercial_register)
-          formData.append("commercial_register", data.commercial_register);
+        if (data.commercial_register) formData.append("commercial_register", data.commercial_register);
         if (data.company_bio) formData.append("company_bio", data.company_bio);
-        if (!data.name && data.company_name) {
-          formData.append("name", data.company_name);
-        }
+        if (!data.name && data.company_name) formData.append("name", data.company_name);
       }
 
       if (data.profile_image?.[0]) {
@@ -117,11 +137,111 @@ const EditDataForm = ({
       }
 
       const response = await updateProfile(locale, token, formData);
-
+      
+      // Update local storage and cookie so Navbar reflects new name immediately
+      if (typeof window !== "undefined") {
+        try {
+          const cookieStr = document.cookie
+            .split("; ")
+            .find((row) => row.startsWith("userDataInfo="))
+            ?.split("=")[1];
+          if (cookieStr) {
+            const parsed = JSON.parse(decodeURIComponent(cookieStr));
+            if (data.name) parsed.name = data.name;
+            if (isCompany && data.company_name) parsed.company_name = data.company_name;
+            // update cookie
+            document.cookie = `userDataInfo=${encodeURIComponent(JSON.stringify(parsed))}; path=/`;
+            localStorage.setItem("alomran_current_user", JSON.stringify(parsed));
+          }
+        } catch (e) {}
+      }
+      
       toast.success(response?.message || t("updateSuccess"));
+      router.refresh();
     } catch (error: any) {
       console.error("Update error:", error);
       toast.error(apiErrorMessage(error, t("updateError")));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Submit Password Change
+  const onSubmitSecurity = async (data: FormDataType) => {
+    if (!data.current_password || !data.password || !data.password_confirmation) {
+      toast.error(isAr ? "يرجى تعبئة جميع الحقول" : "Please fill all password fields");
+      return;
+    }
+    if (data.password !== data.password_confirmation) {
+      toast.error(isAr ? "كلمة المرور الجديدة لا تتطابق مع التأكيد" : "New passwords do not match");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append("_method", "PUT");
+      formData.append("email", data.email); // Required by backend API
+      formData.append("current_password", data.current_password);
+      formData.append("password", data.password);
+      formData.append("password_confirmation", data.password_confirmation);
+
+      const response = await updateProfile(locale, token, formData);
+      toast.success(response?.message || (isAr ? "تم تحديث كلمة المرور بنجاح" : "Password updated successfully"));
+      
+      resetField("current_password");
+      resetField("password");
+      resetField("password_confirmation");
+    } catch (error: any) {
+      console.error("Password change error:", error);
+      toast.error(apiErrorMessage(error, isAr ? "فشل تغيير كلمة المرور" : "Failed to change password"));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Submit Phone Change
+  const onSubmitPhone = async (data: FormDataType) => {
+    if (!data.new_phone || !data.country_code) {
+      toast.error(isAr ? "يرجى إدخال رقم الهاتف وكود الدولة" : "Please enter phone and country code");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        country_code: data.country_code,
+        phone: data.new_phone
+      };
+
+      const response = await changePhone(locale, token, payload);
+      setMobileNumber(data.country_code + data.new_phone);
+      setShowOtpModal(true);
+      toast.success(response?.message || (isAr ? "تم إرسال رمز التحقق بنجاح" : "OTP sent successfully"));
+    } catch (error: any) {
+      console.error("Phone change error:", error);
+      toast.error(apiErrorMessage(error, isAr ? "فشل طلب تغيير الهاتف" : "Failed to request phone change"));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Submit Delete Account
+  const handleDeleteAccount = async () => {
+    if (!window.confirm(isAr ? "هل أنت متأكد من حذف الحساب نهائياً؟ هذا الإجراء لا يمكن التراجع عنه!" : "Are you sure you want to permanently delete your account? This cannot be undone!")) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await deleteProfile(locale, token);
+      toast.success(isAr ? "تم حذف الحساب بنجاح" : "Account deleted successfully");
+      router.push(`/${locale}`);
+    } catch (error: any) {
+      console.error("Delete account error:", error);
+      toast.error(apiErrorMessage(error, isAr ? "فشل حذف الحساب" : "Failed to delete account"));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -135,214 +255,340 @@ const EditDataForm = ({
       })),
   });
 
-  const handlePasswordChangeSuccess = () => {
-    toast.success(t("passwordChangeSuccess"));
-  };
+  const tabs = [
+    { id: "profile", label: isAr ? "البيانات الأساسية" : "Profile Info", icon: <User size={18} /> },
+    { id: "security", label: isAr ? "الأمان وكلمة المرور" : "Security", icon: <Lock size={18} /> },
+    { id: "phone", label: isAr ? "تغيير رقم الهاتف" : "Change Phone", icon: <Phone size={18} /> },
+    { id: "danger", label: isAr ? "حذف الحساب" : "Delete Account", icon: <Trash2 size={18} />, danger: true },
+  ];
 
   return (
-    <>
-      <form className="mt-5 space-y-3 md:w-[60%] lg:w-[40%] w-full" onSubmit={handleSubmit(onSubmit)}>
-        {!isCompany && (
-          <InputComponent
-            register={register}
-            name="name"
-            type="text"
-            placeholder={t("name")}
-            className="w-full"
-          />
-        )}
-
-        {isCompany && (
-          <>
-            <InputComponent
-              register={register}
-              name="company_name"
-              type="text"
-              placeholder={t("companyName")}
-            />
-
-            <InputComponent
-              register={register}
-              name="commercial_register"
-              type="text"
-              placeholder={t("commercialRegister")}
-            />
-
-            <textarea
-              {...register("company_bio")}
-              placeholder={t("companyBio")}
-              className="w-full border outline-none rounded-lg p-3 bg-[#f5f5f5] md:h-[112px] h-[80px]"
-            />
-          </>
-        )}
-
-        <InputComponent
-          register={register}
-          name="phone"
-          placeholder={t("phone")}
-          type="text"
-        />
-
-        <InputComponent
-          register={register}
-          name="email"
-          type="email"
-          placeholder={t("email")}
-        />
-
-        <CustomSelect
-          name="city_id"
-          control={control}
-          options={citiesData || []}
-          placeholder={t("city")}
-        />
-
-        <div className="pt-4">
-          <div
-            onClick={() => setShowPasswordModal(true)}
-            className="flex items-center justify-between w-full p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-primary hover:bg-yellow-50 transition-all duration-300 group active:scale-[0.98]"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-yellow-100 rounded-lg group-hover:bg-yellow-200 transition-colors">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 text-primary group-hover:text-yellow-700 transition-colors"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-800 group-hover:text-gray-900">
-                  {t("changePassword")}
-                </h3>
-                <p className="text-sm text-gray-500 mt-1 group-hover:text-gray-600">
-                  {t("clickToChangePassword")}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center">
-              <FaChevronLeft className="text-gray-400"/>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-6">
-          <label className="block mb-3 text-gray-700 font-medium">
-            {t("profileImage")}
-          </label>
-
-          <div className="relative">
-            <input
-              type="file"
-              {...imageRegister}
-              accept="image/*"
-              ref={(element) => {
-                imageRegisterRef(element);
-                fileInputRef.current = element;
-              }}
-              className="hidden"
-            />
-
-            <div
-              onClick={handleUploadClick}
-              className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:border-primary hover:bg-yellow-50 transition-all duration-300"
+    <div className="flex flex-col lg:flex-row min-h-[600px]">
+      {/* Sidebar Navigation */}
+      <div className="w-full lg:w-72 bg-[#F9F8F6] border-b lg:border-b-0 lg:border-e border-[#E7E1D6] flex flex-col p-6 lg:p-8 shrink-0">
+        <h3 className="text-lg font-black text-[#101820] mb-6">
+          {isAr ? "إعدادات الحساب" : "Account Settings"}
+        </h3>
+        
+        <nav className="flex flex-row lg:flex-col gap-2 overflow-x-auto pb-4 lg:pb-0 hide-scrollbar">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold text-sm whitespace-nowrap transition-all duration-300 ${
+                activeTab === tab.id
+                  ? tab.danger 
+                    ? "bg-[#FFEBEB] text-[#EB2302]" 
+                    : "bg-[#0E6B58] text-white shadow-lg shadow-[#0E6B58]/20"
+                  : "text-[#63756F] hover:bg-white hover:text-[#101820]"
+              }`}
             >
-              {previewImage ? (
-                <div className="flex flex-col items-center">
-                  <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg">
-                    {previewImage.startsWith("blob:") ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={previewImage}
-                        alt="Profile preview"
-                        className="absolute inset-0 h-full w-full object-cover"
-                      />
-                    ) : (
-                      <Image
-                        src={previewImage}
-                        alt="Profile preview"
-                        fill
-                        unoptimized
-                        className="object-cover"
-                        sizes="(max-width: 128px) 100vw, 128px"
-                      />
-                    )}
+              {tab.icon}
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 p-6 lg:p-10">
+        
+        {/* TAB 1: PROFILE INFO */}
+        {activeTab === "profile" && (
+          <form onSubmit={handleSubmit(onSubmitProfile)} className="max-w-3xl animate-fade-in space-y-8">
+            <div className="flex items-center gap-6">
+              <div className="relative group cursor-pointer" onClick={handleUploadClick}>
+                <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-white shadow-xl bg-gray-100 flex items-center justify-center relative">
+                  {previewImage ? (
+                    <Image
+                      src={previewImage}
+                      alt="Profile"
+                      fill
+                      unoptimized
+                      className="object-cover group-hover:scale-105 transition duration-500"
+                    />
+                  ) : (
+                    <User size={40} className="text-gray-300" />
+                  )}
+                  
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <Camera className="text-white" size={28} />
                   </div>
-                  <p className="mt-3 text-sm text-gray-600">
-                    {t("clickToChangeImage")}
-                  </p>
                 </div>
-              ) : (
-                <div className="flex flex-col items-center">
-                  <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-10 w-10 text-gray-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                      />
-                    </svg>
-                  </div>
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-600 font-medium">
-                        {t("uploadImage")}
-                      </span>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 text-gray-500"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
-                        />
-                      </svg>
-                    </div>
-                    <p className="text-xs text-gray-500">
-                      {t("recommendedSize")}
-                    </p>
-                  </div>
+                <input
+                  type="file"
+                  {...imageRegister}
+                  accept="image/*"
+                  ref={(e) => {
+                    imageRegisterRef(e);
+                    // @ts-ignore
+                    fileInputRef.current = e;
+                  }}
+                  className="hidden"
+                />
+              </div>
+              
+              <div>
+                <h4 className="text-xl font-black text-[#101820]">
+                  {isAr ? "الصورة الشخصية" : "Profile Picture"}
+                </h4>
+                <p className="text-sm text-[#63756F] mt-1">
+                  {isAr ? "نوصي بصورة مربعة لا تقل عن 256 بيكسل." : "We recommend a square image, at least 256x256px."}
+                </p>
+                <button type="button" onClick={handleUploadClick} className="mt-3 text-sm font-bold text-[#0E6B58] hover:underline">
+                  {isAr ? "تغيير الصورة" : "Change Picture"}
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {!isCompany && (
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-bold text-[#101820] mb-2">{t("name")}</label>
+                  <input {...register("name")} type="text" className="w-full h-14 rounded-2xl bg-[#F9F8F6] border border-[#E7E1D6] px-4 font-bold text-[#101820] outline-none focus:border-[#0E6B58] transition" />
                 </div>
               )}
+
+              {isCompany && (
+                <>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-bold text-[#101820] mb-2">{t("companyName")}</label>
+                    <input {...register("company_name")} type="text" className="w-full h-14 rounded-2xl bg-[#F9F8F6] border border-[#E7E1D6] px-4 font-bold text-[#101820] outline-none focus:border-[#0E6B58] transition" />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-bold text-[#101820] mb-2">{t("commercialRegister")}</label>
+                    <input {...register("commercial_register")} type="text" className="w-full h-14 rounded-2xl bg-[#F9F8F6] border border-[#E7E1D6] px-4 font-bold text-[#101820] outline-none focus:border-[#0E6B58] transition" />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-bold text-[#101820] mb-2">{t("companyBio")}</label>
+                    <textarea {...register("company_bio")} rows={4} className="w-full rounded-2xl bg-[#F9F8F6] border border-[#E7E1D6] p-4 font-bold text-[#101820] outline-none focus:border-[#0E6B58] transition resize-none" />
+                  </div>
+                </>
+              )}
+
+              <div className="md:col-span-1">
+                <label className="block text-sm font-bold text-[#101820] mb-2">{t("email")}</label>
+                <input {...register("email")} type="email" className="w-full h-14 rounded-2xl bg-[#F9F8F6] border border-[#E7E1D6] px-4 font-bold text-[#101820] outline-none focus:border-[#0E6B58] transition" />
+              </div>
+
+              <div className="md:col-span-1">
+                <label className="block text-sm font-bold text-[#101820] mb-2">{t("city")}</label>
+                <div className="w-full">
+                  <CustomSelect
+                    name="city_id"
+                    control={control}
+                    options={citiesData || []}
+                    placeholder={t("city")}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-4 border-t border-[#E7E1D6]">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="h-14 px-10 bg-[#0E6B58] text-white rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-[#095746] transition-all disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-[#0E6B58]/20"
+              >
+                {isSubmitting ? (
+                  <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
+                ) : (
+                  <>
+                    <Check size={18} />
+                    <span>{isAr ? "حفظ التعديلات" : "Save Changes"}</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* TAB 2: SECURITY */}
+        {activeTab === "security" && (
+          <form onSubmit={handleSubmit(onSubmitSecurity)} className="max-w-xl animate-fade-in space-y-6">
+            <div>
+              <h2 className="text-2xl font-black text-[#101820] mb-2">
+                {isAr ? "كلمة المرور والأمان" : "Password & Security"}
+              </h2>
+              <p className="text-sm text-[#63756F] mb-8">
+                {isAr ? "قم بتغيير كلمة المرور الخاصة بك للحفاظ على أمان حسابك." : "Change your password to keep your account secure."}
+              </p>
+            </div>
+
+            <div className="space-y-5">
+              <div>
+                <label className="block text-sm font-bold text-[#101820] mb-2">
+                  {isAr ? "كلمة المرور الحالية" : "Current Password"}
+                </label>
+                <input {...register("current_password")} type="password" placeholder="••••••••" className="w-full h-14 rounded-2xl bg-[#F9F8F6] border border-[#E7E1D6] px-4 font-bold text-[#101820] outline-none focus:border-[#0E6B58] transition" />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-[#101820] mb-2">
+                  {isAr ? "كلمة المرور الجديدة" : "New Password"}
+                </label>
+                <input {...register("password")} type="password" placeholder="••••••••" className="w-full h-14 rounded-2xl bg-[#F9F8F6] border border-[#E7E1D6] px-4 font-bold text-[#101820] outline-none focus:border-[#0E6B58] transition" />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-[#101820] mb-2">
+                  {isAr ? "تأكيد كلمة المرور الجديدة" : "Confirm New Password"}
+                </label>
+                <input {...register("password_confirmation")} type="password" placeholder="••••••••" className="w-full h-14 rounded-2xl bg-[#F9F8F6] border border-[#E7E1D6] px-4 font-bold text-[#101820] outline-none focus:border-[#0E6B58] transition" />
+              </div>
+            </div>
+
+            <div className="pt-6">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full h-14 bg-[#101820] text-white rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-[#0E6B58] transition-all disabled:opacity-70 shadow-lg"
+              >
+                {isSubmitting ? (
+                  <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
+                ) : (
+                  <>
+                    <Lock size={18} />
+                    <span>{isAr ? "تحديث كلمة المرور" : "Update Password"}</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* TAB 3: PHONE */}
+        {activeTab === "phone" && (
+          <div className="max-w-xl animate-fade-in space-y-6">
+            <div>
+              <h2 className="text-2xl font-black text-[#101820] mb-2">
+                {isAr ? "تغيير رقم الهاتف" : "Change Phone Number"}
+              </h2>
+              <p className="text-sm text-[#63756F] mb-8">
+                {isAr ? "عند تغيير رقم الهاتف سيتم إرسال رمز تحقق للرقم الجديد للتأكد من ملكيته." : "An OTP will be sent to the new number to verify ownership."}
+              </p>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-[#EEF6F3] border border-[#DCEBE5] flex items-center gap-4 mb-8">
+              <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shrink-0 shadow-sm">
+                <Phone size={20} className="text-[#0E6B58]" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-[#63756F] mb-1">{isAr ? "رقم الهاتف الحالي" : "Current Phone Number"}</p>
+                <div dir="ltr" className={`inline-block ${isAr ? "text-right" : "text-left"}`}>
+                  <p className="text-lg font-black text-[#0E6B58]">{watch("country_code")} {watch("phone")}</p>
+                </div>
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmit(onSubmitPhone)} className="space-y-6">
+              <div>
+                <label className="block text-sm font-bold text-[#101820] mb-2">
+                  {isAr ? "رقم الهاتف الجديد" : "New Phone Number"}
+                </label>
+                <div className="flex gap-3" dir="ltr">
+                  <input 
+                    {...register("country_code")} 
+                    type="text" 
+                    placeholder="+971"
+                    className="w-24 h-14 rounded-2xl bg-[#F9F8F6] border border-[#E7E1D6] text-center font-black text-[#101820] outline-none focus:border-[#0E6B58] transition" 
+                  />
+                  <input 
+                    {...register("new_phone")} 
+                    type="tel" 
+                    placeholder="50XXXXXXX"
+                    className="flex-1 h-14 rounded-2xl bg-[#F9F8F6] border border-[#E7E1D6] px-4 font-bold text-[#101820] outline-none focus:border-[#0E6B58] transition tracking-wider" 
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full h-14 bg-[#101820] text-white rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-[#0E6B58] transition-all disabled:opacity-70 shadow-lg"
+                >
+                  {isSubmitting ? (
+                    <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
+                  ) : (
+                    <>
+                      <span>{isAr ? "إرسال رمز التحقق" : "Send Verification Code"}</span>
+                      {isAr ? <ArrowLeft size={18} /> : <ArrowRight size={18} />}
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* TAB 4: DANGER ZONE */}
+        {activeTab === "danger" && (
+          <div className="max-w-xl animate-fade-in space-y-6">
+            <div>
+              <h2 className="text-2xl font-black text-[#EB2302] mb-2 flex items-center gap-2">
+                <AlertCircle size={24} />
+                <span>{isAr ? "منطقة الخطر" : "Danger Zone"}</span>
+              </h2>
+              <p className="text-sm text-[#63756F] mb-8">
+                {isAr 
+                  ? "تنبيه: حذف الحساب سيؤدي إلى فقدان جميع بياناتك وعقاراتك وحجوزاتك بشكل نهائي، ولا يمكن التراجع عن هذه الخطوة." 
+                  : "Warning: Deleting your account will permanently remove all your data, properties, and bookings. This cannot be undone."}
+              </p>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-[#FFEBEB] border border-[#FFD6D6] space-y-6">
+              <div>
+                <h4 className="text-lg font-black text-[#101820] mb-2">
+                  {isAr ? "هل تريد حقاً حذف حسابك؟" : "Do you really want to delete your account?"}
+                </h4>
+                <p className="text-sm text-[#EB2302] font-bold">
+                  {isAr ? "سيتم مسح كافة التفاصيل الخاصة بك من خوادمنا." : "All your details will be erased from our servers."}
+                </p>
+              </div>
+
+              <button
+                onClick={handleDeleteAccount}
+                disabled={isSubmitting}
+                className="w-full h-14 bg-[#EB2302] text-white rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-[#d02c00] transition-all disabled:opacity-70 shadow-lg shadow-[#EB2302]/20"
+              >
+                {isSubmitting ? (
+                  <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
+                ) : (
+                  <>
+                    <Trash2 size={18} />
+                    <span>{isAr ? "تأكيد حذف الحساب نهائياً" : "Confirm Permanent Deletion"}</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
-        </div>
+        )}
 
-        <button
-          type="submit"
-          className="w-full h-[65px] bg-primary rounded-[15px] mt-5 text-white hover:bg-primary-dark transition-colors font-medium text-lg disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {t("save")}
-        </button>
-      </form>
+      </div>
 
-      <ChangePasswordModal
-        isOpen={showPasswordModal}
-        onClose={() => setShowPasswordModal(false)}
+      {/* Verification Modal for Phone Change */}
+      <ConfirmMobile
+        isOpen={showOtpModal}
+        onClose={() => setShowOtpModal(false)}
+        countryCode={watch("country_code") || ""}
+        phone={watch("new_phone") || ""}
         token={token}
-        onSuccess={handlePasswordChangeSuccess}
+        formData={{
+          name: watch("name"),
+          email: watch("email"),
+          phone: watch("phone"),
+          city_id: watch("city_id"),
+        }}
+        onVerificationSuccess={() => {
+          setShowOtpModal(false);
+          toast.success(isAr ? "تم تحديث رقم الهاتف بنجاح" : "Phone updated successfully");
+          setValue("phone", watch("new_phone") || "");
+          setValue("new_phone", "");
+          setActiveTab("profile");
+        }}
       />
-    </>
+    </div>
   );
 };
 

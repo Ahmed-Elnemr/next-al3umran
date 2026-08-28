@@ -10,8 +10,6 @@ const intlMiddleware = createMiddleware({
 // List of fully public static routes
 const staticPublicRoutes = [
   '/', '/ar', '/en',
-  '/ar/login', '/en/login',
-  '/ar/register', '/en/register',
   '/ar/about', '/en/about',
 ];
 
@@ -29,7 +27,6 @@ const protectedRoutes = [
   /^\/(ar|en)\/edit-data/,
   /^\/(ar|en)\/notifications/,
   /^\/(ar|en)\/orders/,
-
 ];
 
 const isPublicPath = (pathname: string): boolean => {
@@ -54,14 +51,29 @@ export default function middleware(request: NextRequest) {
     pathname.startsWith('/fonts') ||
     pathname.startsWith('/icons');
 
-  if (isStaticAsset || isPublicPath(pathname)) {
+  if (isStaticAsset) {
     return intlResponse;
   }
 
   const token = request.cookies.get('token')?.value;
+  const locale = pathname.split('/')[1] || 'ar';
+  const pathWithoutLocale = pathname.replace(/^\/(ar|en)/, '');
 
+  // 1. If user is logged in (token exists) and attempts to visit login or register pages, redirect to Home Page!
+  const isAuthRoute =
+    pathWithoutLocale === '/login' ||
+    pathWithoutLocale === '/register' ||
+    pathname === '/ar/login' ||
+    pathname === '/en/login' ||
+    pathname === '/ar/register' ||
+    pathname === '/en/register';
+
+  if (token && isAuthRoute) {
+    return NextResponse.redirect(new URL(`/${locale}`, request.url));
+  }
+
+  // 2. If route is protected and user has no token, redirect to login page!
   if (isProtectedPath(pathname) && !token) {
-    const locale = pathname.split('/')[1] || 'ar';
     const callbackUrl = encodeURIComponent(pathname + request.nextUrl.search); 
     return NextResponse.redirect(
       new URL(`/${locale}/login?callbackUrl=${callbackUrl}`, request.url)

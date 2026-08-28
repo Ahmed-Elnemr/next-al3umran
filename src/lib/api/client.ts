@@ -21,35 +21,91 @@ export async function fetchClient<T = any>(
   });
 }
 
-export const getHome = (locale: string) => fetchClient("home", locale);
-export const getProperties = (locale: string, query = "") =>
-  fetchClient(`properties${query ? `?${query}` : ""}`, locale);
-export const getProperty = (locale: string, id: string | number) =>
-  fetchClient(`properties/${id}`, locale);
-export const getCategories = (locale: string) => fetchClient("categories", locale);
-export const getCategory = (locale: string, id: string | number) =>
-  fetchClient(`categories/${id}`, locale);
+export const getHome = (locale: string) => fetchClient("client/home", locale);
+export const getProperties = async (locale: string, query = "") => {
+  const queryString = query ? `?${query}` : "";
+  try {
+    return await fetchClient(`client/properties${queryString}`, locale);
+  } catch {
+    return fetchClient(`properties${queryString}`, locale);
+  }
+};
+
+export const getProperty = async (locale: string, id: string | number) => {
+  try {
+    return await fetchClient(`client/properties/${id}`, locale);
+  } catch {
+    return fetchClient(`properties/${id}`, locale);
+  }
+};
+
+export const getCategories = async (locale: string) => {
+  try {
+    return await fetchClient("client/categories", locale);
+  } catch {
+    try {
+      return await fetchClient("categories", locale);
+    } catch {
+      return { data: [] };
+    }
+  }
+};
+
+export const getCategory = async (locale: string, id: string | number) => {
+  try {
+    return await fetchClient(`client/categories/${id}`, locale);
+  } catch {
+    return fetchClient(`categories/${id}`, locale);
+  }
+};
+
 export const postContactMessage = (locale: string, body: Record<string, unknown>) =>
-  fetchClient("contact-us", locale, { method: "POST", body });
+  fetchClient("client/contact-us", locale, { method: "POST", body });
 export const getPackages = (locale: string) => fetchClient("packages", locale);
 export const getFaqs = (locale: string) => fetchClient("faqs", locale);
-export const getCompanies = (locale: string, query = "") =>
-  fetchClient(`companies${query ? `?${query}` : ""}`, locale);
-export const getCompany = (locale: string, id: string | number) =>
-  fetchClient(`companies/${id}`, locale);
+export const getCompanies = async (locale: string, query = "") => {
+  try {
+    return await fetchClient(`client/companies${query ? `?${query}` : ""}`, locale);
+  } catch {
+    return fetchClient(`companies${query ? `?${query}` : ""}`, locale);
+  }
+};
+export const getCompany = async (locale: string, id: string | number) => {
+  try {
+    return await fetchClient(`client/companies/${id}`, locale);
+  } catch {
+    return fetchClient(`companies/${id}`, locale);
+  }
+};
 export const postCompanyReview = (
   locale: string,
   id: string | number,
   body: { rating: number; comment?: string },
   token: string
-) => fetchClient(`companies/${id}/reviews`, locale, { method: "POST", body, token });
-export const getCountries = (locale: string) => fetchClient("countries", locale);
-export const getCities = (locale: string, countryId?: number | string) =>
-  fetchClient(`cities${countryId ? `?country_id=${countryId}` : ""}`, locale);
+) => fetchClient(`client/companies/${id}/reviews`, locale, { method: "POST", body, token });
+export const getCountries = async (locale: string) => {
+  try {
+    return await fetchClient("client/countries", locale);
+  } catch {
+    return fetchClient("countries", locale);
+  }
+};
+export const getCities = async (locale: string, countryId?: number | string) => {
+  const path = countryId ? `?country_id=${countryId}` : "";
+  try {
+    return await fetchClient(`client/cities${path}`, locale);
+  } catch {
+    return fetchClient(`cities${path}`, locale);
+  }
+};
 export const getProfile = (locale: string, token: string) =>
-  fetchClient("profile", locale, { token });
+  fetchClient("client/profile", locale, { token });
 export const updateProfile = (locale: string, token: string, body: FormData) =>
-  fetchClient("profile", locale, { method: "POST", body, token });
+  fetchClient("client/profile", locale, { method: "POST", body, token });
+export const changePhone = (locale: string, token: string, body: Record<string, unknown>) =>
+  fetchClient("client/profile/change-phone", locale, { method: "POST", body, token });
+export const deleteProfile = (locale: string, token: string) =>
+  fetchClient("client/profile", locale, { method: "DELETE", token });
 
 export function envelopeList(res: any): any[] {
   const data = res?.data;
@@ -92,8 +148,9 @@ export function formatMoney(price: number, currency: string, locale: string, cur
 }
 
 export function mapApiProperty(item: any, locale = "ar") {
+  if (!item) return null;
   const listingType = item.listing_type === "rent" ? "rent" : "sale";
-  const categorySlug = item.category?.slug || "apartment";
+  const categorySlug = item.category?.slug || item.category_slug || "apartment";
   const typeMap: Record<string, string> = {
     apartments: "apartment",
     villas: "villa",
@@ -101,23 +158,31 @@ export function mapApiProperty(item: any, locale = "ar") {
     chalets: "chalet",
     offices: "office",
     "new-projects": "house",
+    apartment: "apartment",
+    villa: "villa",
+    land: "land",
+    chalet: "chalet",
+    office: "office",
+    house: "house",
   };
-  const title = item.title || "";
-  const location = item.location || item.city?.name || "";
-  const company = item.company?.name || "";
+  const title = item.title || item.name || "";
+  const location = item.location || item.city?.name || item.address || "";
+  const company = item.company?.name || item.company_name || "";
   const code = item.currency || "AED";
   const money = formatMoney(item.price, code, locale, item.currency_label);
+  const mainImg = item.image || item.image_url || item.main_image || item.cover_image || (item.gallery && item.gallery[0]) || "";
+  const galleryImgs = (item.gallery && item.gallery.length > 0) ? item.gallery : (mainImg ? [mainImg] : []);
 
   return {
     id: item.id,
-    image: item.image || item.image || "/images/placeholder-property.jpg",
-    gallery: item.gallery?.length ? item.gallery : [item.image || item.image].filter(Boolean),
+    image: mainImg,
+    gallery: galleryImgs,
     titleAr: title,
     titleEn: title,
-    countryAr: item.country?.name || "",
-    countryEn: item.country?.name || "",
-    cityAr: item.city?.name || "",
-    cityEn: item.city?.name || "",
+    countryAr: item.country?.name || item.country_name || "",
+    countryEn: item.country?.name || item.country_name || "",
+    cityAr: item.city?.name || item.city_name || "",
+    cityEn: item.city?.name || item.city_name || "",
     locationAr: location,
     locationEn: location,
     price: Number(item.price || 0),
@@ -127,21 +192,21 @@ export function mapApiProperty(item: any, locale = "ar") {
     currencyEn: currencyLabel(code, "en", locale === "en" ? item.currency_label : undefined),
     status: listingType,
     type: typeMap[categorySlug] || "apartment",
-    companyId: String(item.company?.id || ""),
+    companyId: String(item.company?.id || item.company_id || ""),
     companyAr: company,
     companyEn: company,
-    companyLogo: item.company?.logo,
-    whatsapp: item.whatsapp,
-    phone: item.phone,
-    email: item.email,
-    beds: item.bedrooms || 0,
-    baths: item.bathrooms || 0,
+    companyLogo: item.company?.logo || item.company_logo,
+    whatsapp: item.whatsapp || item.company?.phone || item.phone || "",
+    phone: item.phone || item.company?.phone || "",
+    email: item.email || item.company?.email || "",
+    beds: item.bedrooms ?? item.beds ?? 0,
+    baths: item.bathrooms ?? item.baths ?? 0,
     area: item.area || 0,
-    createdAt: item.created_at,
+    createdAt: item.created_at || new Date().toISOString(),
     descriptionAr: item.description || "",
     descriptionEn: item.description || "",
-    category: item.category?.slug,
-    categoryId: item.category?.id,
-    features: (item.features || []).map((feature: any) => feature.value || feature),
+    category: item.category?.slug || item.category,
+    categoryId: item.category?.id || item.category_id,
+    features: (item.features || []).map((feature: any) => (typeof feature === "object" ? feature.value || feature.name || feature.title : String(feature))),
   };
 }

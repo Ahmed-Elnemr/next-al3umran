@@ -41,6 +41,13 @@ export const translateOrRaw = (t: (key: string) => string, message?: string): st
   return isI18nKey(message) ? t(message) : message;
 };
 
+const getBaseUrl = (): string => {
+  if (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
+    return "/backend-api/";
+  }
+  return "https://api.al3umran.com/api/v1/";
+};
+
 const apiServiceCall = async ({
   url,
   method,
@@ -66,10 +73,16 @@ const apiServiceCall = async ({
     requestHeaders["Content-Type"] = "application/json";
   }
 
+  const baseUrl = getBaseUrl();
+  let fullUrl = url;
+  if (!url.startsWith("http://") && !url.startsWith("https://")) {
+    fullUrl = `${baseUrl}${url.replace(/^\//, "")}`;
+  }
+
   try {
     const response = await axios({
       method: method?.toUpperCase() || "GET",
-      url: `${process.env.NEXT_PUBLIC_API_URL}${url.replace(/^\//, "")}`,
+      url: fullUrl,
       data: body,
       headers: requestHeaders,
     });
@@ -82,7 +95,6 @@ const apiServiceCall = async ({
         message: error.message,
       };
     }
-    console.error("apiServiceCall error:", error);
     throw { data: null, status: 500, message: String(error) };
   }
 };

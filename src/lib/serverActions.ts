@@ -86,7 +86,7 @@ export const getMyServices = async (lang: string) => {
 export const getHomeData = async (lang: string) => {
   try {
     const data = await apiServiceCall({
-      url: "home",
+      url: "client/home",
       headers: { "Accept-Language": lang, "X-Locale": lang },
     });
     return data;
@@ -99,11 +99,10 @@ export const getHomeData = async (lang: string) => {
 export const getGeneralSettings = async (lang: string) => {
   try {
     return await apiServiceCall({
-      url: "general-settings",
+      url: "client/general-settings",
       headers: { "Accept-Language": lang, "X-Locale": lang },
     });
   } catch (error) {
-    console.warn("Failed to load general settings", error);
     return { data: {} };
   }
 };
@@ -115,7 +114,6 @@ export const getPublicCategories = async (lang: string) => {
       headers: { "Accept-Language": lang, "X-Locale": lang },
     });
   } catch (error) {
-    console.warn("Failed to load categories", error);
     return { data: [] };
   }
 };
@@ -123,11 +121,10 @@ export const getPublicCategories = async (lang: string) => {
 export const getContactData = async (lang: string) => {
   try {
     return await apiServiceCall({
-      url: "contact",
+      url: "client/contact",
       headers: { "Accept-Language": lang, "X-Locale": lang },
     });
   } catch (error) {
-    console.warn("Failed to load contact settings", error);
     return { data: {} };
   }
 };
@@ -139,7 +136,6 @@ export const getAboutUs = async (lang: string) => {
       headers: { "Accept-Language": lang, "X-Locale": lang },
     });
   } catch (error) {
-    console.warn("Failed to load about us", error);
     return { data: {} };
   }
 };
@@ -147,11 +143,10 @@ export const getAboutUs = async (lang: string) => {
 export const getPrivacy = async (lang: string) => {
   try {
     return await apiServiceCall({
-      url: "privacy",
+      url: "client/privacy",
       headers: { "Accept-Language": lang, "X-Locale": lang },
     });
   } catch (error) {
-    console.warn("Failed to load privacy", error);
     return { data: {} };
   }
 };
@@ -159,11 +154,10 @@ export const getPrivacy = async (lang: string) => {
 export const getTerms = async (lang: string) => {
   try {
     return await apiServiceCall({
-      url: "terms",
+      url: "client/terms",
       headers: { "Accept-Language": lang, "X-Locale": lang },
     });
   } catch (error) {
-    console.warn("Failed to load terms", error);
     return { data: {} };
   }
 };
@@ -175,7 +169,6 @@ export const getSiteServices = async (lang: string) => {
       headers: { "Accept-Language": lang, "X-Locale": lang },
     });
   } catch (error) {
-    console.warn("Failed to load services", error);
     return { data: [] };
   }
 };
@@ -229,7 +222,7 @@ export const getNotificaionsCount = async (lang: string) => {
 
 export const getBlogPosts = async (lang: string, page: number = 1, perPage?: number) => {
   try {
-    let url = `blog-posts?page=${page}`;
+    let url = `client/blogs?page=${page}`;
     if (perPage) {
       url += `&per_page=${perPage}`;
     }
@@ -248,12 +241,76 @@ export const getBlogPosts = async (lang: string, page: number = 1, perPage?: num
 export const getSingleBlogPost = async (lang: string, slug: string) => {
   try {
     const data = await apiServiceCall({
-      url: `blog-posts/${slug}`,
+      url: `client/blogs/${slug}`,
       headers: { "Accept-Language": lang },
     });
     return data;
   } catch (error) {
     errorsHandling(error, lang);
     return { data: null };
+  }
+};
+
+export const postBlogComment = async (lang: string, blogId: string, content: string) => {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+    const headers: any = { "Accept-Language": lang };
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const data = await apiServiceCall({
+      url: `client/blogs/${blogId}/comments`,
+      method: "POST",
+      body: { content },
+      headers,
+    });
+    return data;
+  } catch (error) {
+    errorsHandling(error, lang);
+    return null;
+  }
+};
+
+export const toggleFavoriteAction = async (lang: string, propertyId: number | string) => {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+    const headers: any = { "Accept-Language": lang };
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const data = await apiServiceCall({
+      url: `client/favorites/${propertyId}`,
+      method: "POST",
+      headers,
+    });
+    return data;
+  } catch (error) {
+    errorsHandling(error, lang);
+    return null;
+  }
+};
+
+export const getFavoritesAction = async (lang: string) => {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+    if (!token) {
+      return { data: [] };
+    }
+    const headers: any = { "Accept-Language": lang, Authorization: `Bearer ${token}` };
+
+    const data = await apiServiceCall({
+      url: `client/favorites`,
+      method: "GET",
+      headers,
+    });
+    return data;
+  } catch (error) {
+    errorsHandling(error, lang);
+    return { data: [] };
   }
 };

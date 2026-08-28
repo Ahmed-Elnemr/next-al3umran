@@ -7,6 +7,7 @@ import { cookies } from "next/headers";
 import React from "react";
 import type { Metadata } from "next";
 
+import "react-toastify/dist/ReactToastify.css";
 import "react-photo-view/dist/react-photo-view.css";
 import Navbar from "../../src/components/navbar";
 import { getContactData, getGeneralSettings, getPublicCategories, getNotificaionsCount } from "../../src/lib/serverActions";
@@ -22,6 +23,8 @@ export async function generateMetadata({
   const favicon = generalData?.data?.favicon;
 
   return {
+    title: generalData?.data?.site_name || (locale === "ar" ? "العمران" : "Al Omran"),
+    description: generalData?.data?.site_tagline || (locale === "ar" ? "منصة العقارات الذكية" : "Smart Real Estate Platform"),
     icons: favicon
       ? { icon: favicon, apple: favicon, shortcut: favicon }
       : { icon: "/images/logo.png", apple: "/images/logo.png" },

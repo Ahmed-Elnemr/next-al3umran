@@ -1,6 +1,7 @@
 import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import BlogCard from '../../../src/components/shared/BlogCard'
 
 // استدعاء دالة جلب المقالات
 import { getBlogPosts } from '../../../src/lib/serverActions'
@@ -8,12 +9,14 @@ import { getTranslations } from 'next-intl/server'
 
 interface BlogPost {
   id: number
-  title: string
+  name: string
   description: string
-  slug: string
-  thumbnail: string
-  preview_image: string
-  keywords: string[]
+  content: string
+  main_image: string
+  meta_title: string
+  meta_description: string
+  image_alt: string
+  created_at: string
 }
 
 interface PaginationMeta {
@@ -42,7 +45,7 @@ const BlogPage = async ({ params, searchParams }: BlogPageProps) => {
   const response = await getBlogPosts(locale, currentPage, postsPerPage)
   
   // التحقق من نجاح الطلب
-  if (!response || response.status_code !== 200) {
+  if (!response || (response.status_code !== 200 && response.status_code !== "1000")) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -58,7 +61,7 @@ const BlogPage = async ({ params, searchParams }: BlogPageProps) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
-      <div className="container mx-auto px-4">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* عنوان الصفحة */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">{t('title')}</h1>
@@ -82,7 +85,7 @@ const BlogPage = async ({ params, searchParams }: BlogPageProps) => {
                 currentPage={meta.current_page}
                 totalPages={meta.last_page}
                 totalItems={meta.total}
-                postsPerPage={postsPerPage}
+                postsPerPage={meta.per_page || postsPerPage}
                 t={t}
                 locale={locale}
               />
@@ -93,59 +96,6 @@ const BlogPage = async ({ params, searchParams }: BlogPageProps) => {
         )}
       </div>
     </div>
-  )
-}
-
-// مكون بطاقة المقالة
-const BlogCard = ({ post, t, locale }: { post: BlogPost; t: any; locale: string }) => {
-  return (
-    <article className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col h-full group">
-      {/* صورة المقال */}
-      <Link href={`/${locale}/blogs/${post.slug}`} className="relative h-56 w-full overflow-hidden block">
-        <Image
-          src={post.thumbnail || '/images/placeholder.jpg'}
-          alt={post.title}
-          fill
-          className="object-cover group-hover:scale-105 transition-transform duration-300"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-        />
-      </Link>
-
-      {/* محتوى المقال */}
-      <div className="p-6 flex-1 flex flex-col">
-        <Link href={`/${locale}/blogs/${post.slug}`} className="block group">
-          <h2 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-primary/80 transition-colors line-clamp-2">
-            {post.title}
-          </h2>
-        </Link>
-
-        <p className="text-gray-600 mb-4 line-clamp-3">
-          {post.description}
-        </p>
-
-        {/* الكلمات المفتاحية */}
-        {post.keywords && post.keywords.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-4">
-            {post.keywords.slice(0, 3).map((keyword, index) => (
-              <span
-                key={index}
-                className="px-3 py-1 bg-primary/10 text-primary-foreground text-sm rounded-full"
-              >
-                {keyword}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {/* رابط قراءة المزيد */}
-        <Link
-          href={`/${locale}/blogs/${post.slug}`}
-          className="mt-auto inline-flex items-center justify-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors duration-200 w-full font-medium"
-        >
-          {t('readMore')}
-        </Link>
-      </div>
-    </article>
   )
 }
 
