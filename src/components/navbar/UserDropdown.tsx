@@ -18,6 +18,7 @@ import {
 
 import LogoutModal from "./LogoutModal";
 import DeleteAccountModal from "./DeleteAccountModal";
+import apiServiceCall from "../../lib/apiServiceCall";
 
 interface UserDropdownProps {
   isOpen: boolean;
@@ -55,7 +56,31 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
 
   const isAr = locale === "ar";
   const ArrowIcon = isAr ? ChevronLeft : ChevronRight;
-  const unreadCount = Number(notificationsUnReadCount || 0);
+  
+  const [localUnreadCount, setLocalUnreadCount] = useState(Number(notificationsUnReadCount || 0));
+
+  useEffect(() => {
+    if (isOpen && token) {
+      const fetchUnreadCount = async () => {
+        try {
+          const res = await apiServiceCall({
+            method: 'get',
+            url: 'client/notifications/unread-count',
+            headers: {
+              'Accept-Language': locale,
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (res?.data?.unread_count !== undefined) {
+            setLocalUnreadCount(Number(res.data.unread_count));
+          }
+        } catch (error) {
+          console.error('Error fetching unread count:', error);
+        }
+      };
+      fetchUnreadCount();
+    }
+  }, [isOpen, token, locale]);
 
   const closeDropdown = () => {
     setShowDeleteModal(false);
@@ -151,11 +176,9 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
               </span>
 
               <span className="flex items-center gap-2">
-                {unreadCount > 0 && (
-                  <span className="min-w-6 h-6 px-2 rounded-full bg-[#C89B3C] text-[#101820] text-xs font-black flex items-center justify-center">
-                    {unreadCount}
-                  </span>
-                )}
+                <span className={`min-w-6 h-6 px-1.5 rounded-full text-xs font-black flex items-center justify-center ${localUnreadCount > 0 ? 'bg-red-500 text-white' : 'bg-[#E2ECE8] text-[#7B8B86]'}`}>
+                  {localUnreadCount}
+                </span>
                 <ArrowIcon size={16} className="text-[#9BAAA5]" />
               </span>
             </Link>
@@ -203,7 +226,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
             <li>
               <Link
                 onClick={closeDropdown}
-                href={`/${locale}/my-services`}
+                href={`/${locale}/my-properties`}
                 className={itemClass}
               >
                 <span className={contentClass}>

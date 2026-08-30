@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { use, useEffect, useRef, useState } from "react";
+import { getMyPropertyAction } from "../../../../src/lib/serverActions";
 import { getProperty, mapApiProperty } from "../../../../src/lib/api/client";
 import {
   ArrowLeft,
@@ -18,6 +19,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { Heart } from "lucide-react";
+import { ensureHttps } from "../../../../src/lib/helper";
 import { useFavorites } from "../../../../src/hooks/useFavorites";
 
 interface PageProps {
@@ -42,14 +44,33 @@ export default function PropertyDetailsPage({ params }: PageProps) {
   const scrollLeft = useRef(0);
 
   useEffect(() => {
-    getProperty(locale, id)
-      .then((res) => {
+    const fetchProp = async () => {
+      try {
+        const res = await getProperty(locale, id);
         if (res?.data) {
           setProperty(mapApiProperty(res.data, locale));
+          setLoading(false);
+          return;
         }
-      })
-      .catch(() => setProperty(null))
-      .finally(() => setLoading(false));
+      } catch (err) {
+        // Continue to fallback
+      }
+      
+      try {
+        const authRes = await getMyPropertyAction(locale, id);
+        if (authRes?.data) {
+          setProperty(mapApiProperty(authRes.data, locale));
+        } else {
+          setProperty(null);
+        }
+      } catch (err) {
+        setProperty(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchProp();
   }, [locale, id]);
   const { isFavorite, toggleFavorite } = useFavorites();
   const favorited = property ? isFavorite(property.id) : false;
@@ -84,7 +105,7 @@ export default function PropertyDetailsPage({ params }: PageProps) {
     );
   }
 
-  const currentMainImage = mainImage || property.image;
+  const currentMainImage = ensureHttps(mainImage || property.image);
 
   const title = isAr ? property.titleAr : property.titleEn;
   const location = isAr ? property.locationAr : property.locationEn;
@@ -92,7 +113,10 @@ export default function PropertyDetailsPage({ params }: PageProps) {
   const company = isAr ? property.companyAr : property.companyEn;
   const description = isAr ? property.descriptionAr : property.descriptionEn;
   const isSale = property.status === "sale";
-  const visibleGallery = (property.gallery || [property.image]).filter(Boolean).slice(0, 5);
+  const visibleGallery = (property.gallery || [property.image])
+    .filter((img: any) => typeof img === 'string' && img.trim() !== "")
+    .map((img: string) => ensureHttps(img))
+    .slice(0, 5);
 
   const whatsappText = encodeURIComponent(
     isAr
@@ -161,13 +185,19 @@ export default function PropertyDetailsPage({ params }: PageProps) {
 
           <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
             <div className="overflow-hidden rounded-[36px] border border-white/70 bg-white/65 p-4 shadow-[0_30px_100px_rgba(16,24,32,0.10)] backdrop-blur-xl">
-              <div className="relative h-[460px] overflow-hidden rounded-[28px]">
-                <img
-                  src={currentMainImage}
-                  alt={title}
-                  draggable={false}
-                  className="h-full w-full object-cover transition-opacity duration-300"
-                />
+              <div className="relative h-[460px] overflow-hidden rounded-[28px] bg-gray-100 flex items-center justify-center">
+                {currentMainImage ? (
+                  <img
+                    src={currentMainImage}
+                    alt={title}
+                    draggable={false}
+                    className="h-full w-full object-cover transition-opacity duration-300"
+                  />
+                ) : (
+                  <svg className="w-20 h-20 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                )}
 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
@@ -198,42 +228,54 @@ export default function PropertyDetailsPage({ params }: PageProps) {
                 </div>
               </div>
 
-              <div className="mt-4 overflow-hidden rounded-[28px] bg-white p-3">
-                <div
-                  ref={sliderRef}
-                  onMouseDown={handleMouseDown}
-                  onMouseLeave={handleMouseLeave}
-                  onMouseUp={handleMouseUp}
-                  onMouseMove={handleMouseMove}
-                  className="flex cursor-grab select-none gap-3 overflow-x-auto scroll-smooth pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-                >
-                  {visibleGallery.map((img, index) => (
-                    <div
-                      key={`${img}-${index}`}
-                      className={`h-32 shrink-0 overflow-hidden rounded-2xl ${visibleGallery.length === 1
-                          ? "w-full"
-                          : visibleGallery.length === 2
-                            ? "w-[calc(50%-6px)]"
-                            : visibleGallery.length === 3
-                              ? "w-[calc(33.333%-8px)]"
-                              : visibleGallery.length === 4
-                                ? "w-[calc(25%-9px)]"
-                                : "w-[calc(20%-10px)]"
+              {visibleGallery.length > 0 && (
+                <div className="mt-4 overflow-hidden rounded-[28px] bg-white p-3">
+                  <div
+                    ref={sliderRef}
+                    onMouseDown={handleMouseDown}
+                    onMouseLeave={handleMouseLeave}
+                    onMouseUp={handleMouseUp}
+                    onMouseMove={handleMouseMove}
+                    className="flex cursor-grab select-none gap-3 overflow-x-auto scroll-smooth pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                  >
+                    {visibleGallery.map((img, index) => (
+                      <div
+                        key={`${img}-${index}`}
+                        className={`h-32 shrink-0 overflow-hidden rounded-2xl ${
+                          visibleGallery.length <= 3
+                            ? "w-[calc(33.333%-8px)]"
+                            : visibleGallery.length === 4
+                              ? "w-[calc(25%-9px)]"
+                              : "w-[calc(20%-10px)]"
                         } min-w-[170px]`}
-                    >
-                      <img
-                        src={img}
-                        alt={`${title} ${index + 1}`}
-                        draggable={false}
-                        onClick={() => setMainImage(img)}
-                        className={`h-full w-full object-cover transition duration-500 hover:scale-105 cursor-pointer ${
-                          currentMainImage === img ? "opacity-100" : "opacity-70 hover:opacity-100"
-                        }`}
-                      />
-                    </div>
-                  ))}
+                      >
+                        {img && img.trim() !== "" ? (
+                          <img
+                            src={img}
+                            alt={`${title} ${index + 1}`}
+                            draggable={false}
+                            onClick={() => setMainImage(img)}
+                            className={`h-full w-full object-cover transition duration-500 hover:scale-105 cursor-pointer ${
+                              currentMainImage === img ? "opacity-100" : "opacity-70 hover:opacity-100"
+                            }`}
+                          />
+                        ) : (
+                          <div 
+                            onClick={() => setMainImage(img)}
+                            className={`w-full h-full bg-gray-100 flex items-center justify-center cursor-pointer transition duration-500 hover:scale-105 ${
+                              currentMainImage === img ? "opacity-100" : "opacity-70 hover:opacity-100"
+                            }`}
+                          >
+                            <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             <aside className="rounded-[36px] border border-white/70 bg-white p-6 shadow-[0_30px_100px_rgba(16,24,32,0.10)]">
@@ -328,36 +370,25 @@ export default function PropertyDetailsPage({ params }: PageProps) {
               </p>
             </section>
 
-            <section className="rounded-[36px] border border-white/70 bg-white p-8 shadow-[0_20px_70px_rgba(16,24,32,0.08)] md:p-12">
-              <h2 className="text-2xl font-black text-[#101820]">
-                {isAr ? "مميزات العقار" : "Property Features"}
-              </h2>
+            {property.features && property.features.length > 0 && (
+              <section className="rounded-[36px] border border-white/70 bg-white p-8 shadow-[0_20px_70px_rgba(16,24,32,0.08)] md:p-12">
+                <h2 className="text-2xl font-black text-[#101820]">
+                  {isAr ? "مميزات العقار" : "Property Features"}
+                </h2>
 
-              <div className="mt-5 space-y-3">
-                {(isAr
-                  ? [
-                    "موقع مميز",
-                    "قريب من الخدمات",
-                    "تشطيب فاخر",
-                    "مساحات عملية",
-                  ]
-                  : [
-                    "Prime location",
-                    "Close to services",
-                    "Luxury finishing",
-                    "Practical spaces",
-                  ]
-                ).map((item) => (
-                  <div
-                    key={item}
-                    className="flex items-center gap-3 text-sm font-bold text-[#5E6D68]"
-                  >
-                    <CheckCircle2 size={18} className="text-[#0E6B58]" />
-                    {item}
-                  </div>
-                ))}
-              </div>
-            </section>
+                <div className="mt-5 space-y-3">
+                  {property.features.map((feature: string, index: number) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-3 text-sm font-bold text-[#5E6D68]"
+                    >
+                      <CheckCircle2 size={18} className="text-[#0E6B58]" />
+                      {feature}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
           </div>
         </div>
       </section>

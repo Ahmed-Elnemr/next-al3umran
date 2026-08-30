@@ -21,9 +21,8 @@ export default async function BlogDetailsPage({ params }: PageProps) {
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
       
      
-
       <div className="relative w-full h-80 mb-6 bg-gray-100 rounded-lg overflow-hidden">
-        {blog.main_image ? (
+        {blog.main_image && blog.main_image.trim() !== "" ? (
           <Image
             src={blog.main_image}
             alt={blog.image_alt || blog.name}

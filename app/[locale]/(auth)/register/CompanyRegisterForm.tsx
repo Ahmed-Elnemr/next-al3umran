@@ -16,6 +16,7 @@ import apiServiceCall, { apiErrorMessage, apiFieldErrors, translateOrRaw } from 
 import { getCountries, getCities } from '@/lib/api/client';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import FieldError from '@/components/shared/reusableComponents/FieldError';
 import OtpCode from '../login/OtpCode';
 
 // ------------------------- Schema Validation ---------------------------
@@ -332,11 +333,7 @@ const CompanyRegisterForm = () => {
               type="text"
               icon={<Image src={user} alt="" width={24} height={24} />}
             />
-            {errors.company_name && (
-              <p className="mt-1 text-sm text-red-600 font-medium">
-                {renderErrorMessage(errors.company_name.message)}
-              </p>
-            )}
+            <FieldError message={errors.company_name ? renderErrorMessage(errors.company_name.message) : undefined} />
           </div>
 
           {/* البريد الإلكتروني */}
@@ -351,11 +348,7 @@ const CompanyRegisterForm = () => {
               type="email"
               icon={<Image src={email} alt="" width={24} height={24} />}
             />
-            {errors.email && (
-              <p className="mt-1 text-sm text-red-600 font-medium">
-                {renderErrorMessage(errors.email.message)}
-              </p>
-            )}
+            <FieldError message={errors.email ? renderErrorMessage(errors.email.message) : undefined} />
           </div>
 
           {/* رقم الجوال مع اختيار الدولة */}
@@ -377,11 +370,7 @@ const CompanyRegisterForm = () => {
               locale={locale}
             />
             
-            {errors.phone && (
-              <p className="mt-1 text-sm text-red-600 font-medium">
-                {renderErrorMessage(errors.phone.message)}
-              </p>
-            )}
+            <FieldError message={errors.phone ? renderErrorMessage(errors.phone.message) : undefined} />
           </div>
 
           {/* اختيار البلد */}
@@ -396,11 +385,7 @@ const CompanyRegisterForm = () => {
               placeholder={isAr ? 'اختر البلد' : 'Select Country'}
               icon={<Image src={location} alt="" width={24} height={24} />}
             />
-            {errors.country_id && (
-              <p className="mt-1 text-sm text-red-600 font-medium">
-                {renderErrorMessage(errors.country_id.message)}
-              </p>
-            )}
+            <FieldError message={errors.country_id ? renderErrorMessage(errors.country_id.message) : undefined} />
           </div>
 
           {/* اختيار المدينة */}
@@ -415,11 +400,7 @@ const CompanyRegisterForm = () => {
               placeholder={isAr ? 'اختر المدينة التابعة لك' : 'Select your city'}
               icon={<Image src={location} alt="" width={24} height={24} />}
             />
-            {errors.city_id && (
-              <p className="mt-1 text-sm text-red-600 font-medium">
-                {renderErrorMessage(errors.city_id.message)}
-              </p>
-            )}
+            <FieldError message={errors.city_id ? renderErrorMessage(errors.city_id.message) : undefined} />
           </div>
 
           {/* رقم السجل التجاري */}
@@ -434,11 +415,7 @@ const CompanyRegisterForm = () => {
               type="text"
               icon={<Image src={check} alt="" width={24} height={24} />}
             />
-            {errors.commercial_register && (
-              <p className="mt-1 text-sm text-red-600 font-medium">
-                {renderErrorMessage(errors.commercial_register.message)}
-              </p>
-            )}
+            <FieldError message={errors.commercial_register ? renderErrorMessage(errors.commercial_register.message) : undefined} />
           </div>
 
           {/* نبذة عن الشركة */}
@@ -453,11 +430,7 @@ const CompanyRegisterForm = () => {
               type="text"
               icon={<Image src={check} alt="" width={24} height={24} />}
             />
-            {errors.company_bio && (
-              <p className="mt-1 text-sm text-red-600 font-medium">
-                {renderErrorMessage(errors.company_bio.message)}
-              </p>
-            )}
+            <FieldError message={errors.company_bio ? renderErrorMessage(errors.company_bio.message) : undefined} />
           </div>
 
         </div>
@@ -480,11 +453,7 @@ const CompanyRegisterForm = () => {
               <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
             </label>
           </div>
-          {errors.profile_image && (
-            <p className="mt-1 text-sm text-red-600 font-medium">
-              {renderErrorMessage(errors.profile_image.message)}
-            </p>
-          )}
+          <FieldError message={errors.profile_image ? renderErrorMessage(errors.profile_image.message) : undefined} />
         </div>
 
         {/* الموافقة على الشروط */}
@@ -508,11 +477,7 @@ const CompanyRegisterForm = () => {
               : 'I agree to the Terms and Privacy Policy'}
           </label>
         </div>
-        {errors.terms_accepted && (
-          <p className="text-sm text-red-600 font-medium">
-            {renderErrorMessage(errors.terms_accepted.message)}
-          </p>
-        )}
+        <FieldError message={errors.terms_accepted ? renderErrorMessage(errors.terms_accepted.message) : undefined} />
 
         {/* زر الإرسال */}
         <button

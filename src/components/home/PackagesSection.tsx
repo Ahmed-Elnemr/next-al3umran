@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
 import { Check, ShieldCheck, Sparkles, Zap, ArrowRight, ArrowLeft } from 'lucide-react';
+import { toast } from 'react-toastify';
+import apiServiceCall from '../../../src/lib/apiServiceCall';
 
 interface PreviewPackage {
   id: string;
@@ -20,11 +22,10 @@ interface PreviewPackage {
   bgGradient: string;
 }
 
-const PackagesSection = ({ items = [] }: { items?: any[] }) => {
+const PackagesSection = ({ items = [], token }: { items?: any[], token?: string | null }) => {
   const locale = useLocale();
   const isAr = locale === 'ar';
 
-  const [token, setToken] = useState<string | null>(null);
   const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
@@ -36,9 +37,48 @@ const PackagesSection = ({ items = [] }: { items?: any[] }) => {
       return null;
     };
 
-    setToken(getCookie('token'));
     setRole(getCookie('client_type'));
   }, []);
+
+  const [loadingId, setLoadingId] = useState<string | null>(null);
+
+  const handleSubscribe = async (pkg: any) => {
+    if (!token) {
+      toast.error(isAr ? 'يرجى تسجيل الدخول أولاً للاشتراك في هذه الباقة.' : 'Please login first to subscribe to this package.', { autoClose: 5000, position: "bottom-right" });
+      return;
+    }
+
+    const pkgIdStr = String(pkg.id);
+    setLoadingId(pkgIdStr);
+    try {
+      const response = await apiServiceCall({
+        method: 'post',
+        url: 'client/subscriptions',
+        body: { package_id: Number(pkg.id) },
+        headers: {
+          'Accept-Language': locale,
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      console.log('Subscription response:', response);
+      const successMessage = response?.message || response?.data?.message || (
+        isAr
+          ? `تهانينا! تم الاشتراك في باقة ${pkg.nameAr || pkg.name || ''} بنجاح.`
+          : `Congratulations! Subscribed to ${pkg.nameEn || pkg.name || ''} successfully.`
+      );
+      toast.success(successMessage, { autoClose: 5000, position: "bottom-right" });
+    } catch (error: any) {
+      const message =
+        error?.data?.message || error?.message ||
+        (isAr
+          ? 'رصيد محفظتك غير كافٍ للاشتراك بهذه الباقة. يرجى شحن المحفظة أولاً.'
+          : 'Insufficient wallet balance. Please top up your wallet first.');
+      toast.error(message, { autoClose: 5000, position: "bottom-right" });
+    } finally {
+      setLoadingId(null);
+    }
+  };
 
   const apiPackages = items.map((pkg, index) => {
     const palettes = [
@@ -102,21 +142,21 @@ const PackagesSection = ({ items = [] }: { items?: any[] }) => {
         </div>
 
         {/* Dynamic Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center pt-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center pt-8 relative z-50">
           {previewPackages.map((pkg) => (
               <div
                 key={pkg.id}
-                className={"relative flex flex-col justify-between px-8 rounded-[32px] transition-all duration-300 bg-gradient-to-b " + pkg.bgGradient + (pkg.id === "silver" ? " py-12 shadow-[0_30px_60px_rgba(14,107,88,0.15)] md:-translate-y-4 md:scale-105 z-10" : " py-8 shadow-sm hover:shadow-xl hover:-translate-y-1 z-0")} style={{ borderColor: pkg.id === "silver" ? pkg.color : pkg.color + '40', borderWidth: pkg.id === "silver" ? '2px' : '1px' }}
+                className={"relative flex flex-col justify-between px-8 rounded-[32px] transition-all duration-300 bg-gradient-to-b " + pkg.bgGradient + (pkg.id === "silver" ? " py-12 shadow-xl md:-translate-y-4 md:scale-105 z-20" : " py-8 shadow-sm border border-[#E7E1D6] hover:shadow-lg z-10")} style={{ borderColor: pkg.id === "silver" ? pkg.color : pkg.color + '40', borderWidth: pkg.id === "silver" ? '2px' : '1px' }}
               >
                 {pkg.badgeAr && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex justify-center z-20">
+                  <div className="absolute -top-3 left-0 right-0 flex justify-center pointer-events-none">
                     <span className="inline-flex whitespace-nowrap rounded-full px-5 py-1.5 text-[11px] font-black uppercase tracking-wider text-white shadow-md" style={{ backgroundColor: pkg.color }}>
                       {isAr ? pkg.badgeAr : pkg.badgeEn}
                     </span>
                   </div>
                 )}
 
-              <div>
+              <div className="flex-1">
                 {/* Icon Circle */}
                 <div className={"w-12 h-12 rounded-2xl flex items-center justify-center mb-6 shadow-sm " + (pkg.id === "silver" ? "bg-white/10 border-white/10" : "bg-white border-[#E2ECE8]")}>
                   {pkg.icon}
@@ -154,13 +194,22 @@ const PackagesSection = ({ items = [] }: { items?: any[] }) => {
               </div>
 
               {/* Action Redirect CTA */}
-              <div className="mt-8">
-                <Link
-                  href={token ? `/${locale}/packages` : `/${locale}/login`}
-                  className="w-full py-3.5 rounded-xl font-black text-xs text-center block transition-all duration-200 shadow-sm border-2" style={{ backgroundColor: pkg.id === 'silver' ? pkg.color : 'white', color: pkg.id === 'silver' ? 'white' : pkg.color, borderColor: pkg.color }}
+              <div className="mt-8 pt-4">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSubscribe(pkg);
+                  }}
+                  disabled={loadingId === pkg.id}
+                  className="w-full py-3.5 rounded-xl font-black text-xs text-center block transition-all duration-200 shadow-sm border-2 disabled:opacity-70 hover:scale-105 hover:shadow-md cursor-pointer"
+                  style={{ backgroundColor: pkg.id === 'silver' ? pkg.color : 'white', color: pkg.id === 'silver' ? 'white' : pkg.color, borderColor: pkg.color }}
                 >
-                  {isAr ? 'اشترك الآن' : 'Subscribe Now'}
-                </Link>
+                  {loadingId === pkg.id 
+                    ? (isAr ? 'جاري الاشتراك...' : 'Subscribing...') 
+                    : (isAr ? 'اشترك الآن' : 'Subscribe Now')}
+                </button>
               </div>
 
             </div>

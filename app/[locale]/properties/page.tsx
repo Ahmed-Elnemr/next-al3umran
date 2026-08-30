@@ -261,9 +261,9 @@ const PropertiesPage = () => {
   return (
     <main
       dir={isAr ? "rtl" : "ltr"}
-      className="min-h-screen bg-[#EEF2EC] pt-6 pb-16"
+      className="min-h-screen bg-[#EEF2EC]"
     >
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden pt-12 pb-24">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(200,155,60,0.25),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(14,107,88,0.2),transparent_36%)]" />
         <div className="absolute inset-0 opacity-[0.23] bg-[linear-gradient(rgba(16,24,32,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(16,24,32,0.06)_1px,transparent_1px)] bg-[size:64px_64px]" />
 

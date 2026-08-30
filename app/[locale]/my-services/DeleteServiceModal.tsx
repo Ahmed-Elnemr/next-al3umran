@@ -4,25 +4,33 @@ import { useTranslations } from "next-intl";
 import apiServiceCall from "../../../src/lib/apiServiceCall";
 import { toast } from "react-toastify";
 
-const DeleteServiceModal = ({ open, onClose, serviceId , token }: any) => {
+const DeleteServiceModal = ({ open, onClose, serviceId, token, type = "service" }: any) => {
   const t = useTranslations("services");
 
   if (!open) return null;
 
   const handleDelete = async () => {
     try {
+      const endpoint = type === "property" 
+        ? `client/my/properties/${serviceId}` 
+        : `user/services/${serviceId}`;
+        
       await apiServiceCall({
-        url: `user/services/${serviceId}`,
+        url: endpoint,
         method: "DELETE",
-         headers: {
-      Authorization: `Bearer ${token}`,
-    },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       toast.success(t("deleteSuccess"));
+      // Give time for toast and then reload to show updated list
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
       onClose();
     } catch (error: any) {
-      toast.error(error?.data?.message || "Error deleting service");
+      toast.error(error?.data?.message || "Error deleting");
     }
   };
 

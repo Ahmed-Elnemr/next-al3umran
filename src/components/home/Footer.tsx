@@ -64,14 +64,42 @@ const Footer = ({
     { href: contact?.youtube_link, icon: <Youtube size={18} /> },
   ].filter((item) => Boolean(item.href));
 
-  const propertyTypes = (Array.isArray(categories) ? categories : [])
-    .slice(0, 6)
-    .map((category: any) => ({
-      id: category.id,
-      label: category.name,
-      href: `/${locale}/category/${category.id}`,
-    }));
-
+  const importantLinks = [
+    {
+      id: "services",
+      label: isAr ? "الخدمات" : "Services",
+      href: `/${locale}/services`,
+    },
+    {
+      id: "companies",
+      label: isAr ? "الشركات" : "Companies",
+      href: `/${locale}/companies`,
+    },
+    ...(role === "company"
+      ? [
+          {
+            id: "packages",
+            label: isAr ? "الباقات" : "Packages",
+            href: `/${locale}/packages`,
+          },
+        ]
+      : []),
+    {
+      id: "faq",
+      label: isAr ? "الأسئلة الشائعة" : "FAQ",
+      href: `/${locale}/faq`,
+    },
+    {
+      id: "privacy",
+      label: isAr ? "سياسة الخصوصية" : "Privacy Policy",
+      href: `/${locale}/privacy`,
+    },
+    {
+      id: "terms",
+      label: isAr ? "الشروط والأحكام" : "Terms & Conditions",
+      href: `/${locale}/terms`,
+    },
+  ];
   const quickLinks = [
     {
       label: isAr ? "الرئيسية" : "Home",
@@ -97,6 +125,22 @@ const Footer = ({
       label: isAr ? "تواصل معنا" : "Contact Us",
       href: `/${locale}/technical-support`,
     },
+    {
+      label: isAr ? "المدونة" : "Blogs",
+      href: `/${locale}/blogs`,
+    },
+    ...(!role
+      ? [
+          {
+            label: isAr ? "تسجيل الدخول" : "Login",
+            href: `/${locale}/login`,
+          },
+          {
+            label: isAr ? "إنشاء حساب" : "Sign Up",
+            href: `/${locale}/register`,
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -205,15 +249,10 @@ const Footer = ({
           </div>
 
           <div>
-            <FooterTitle title={isAr ? "أنواع العقارات" : "Property Types"} />
+            <FooterTitle title={isAr ? "روابط هامة" : "Important Links"} />
 
             <ul className="mt-5 space-y-3">
-              {(propertyTypes.length
-                ? propertyTypes
-                : [
-                    { id: "all", label: isAr ? "كل العقارات" : "All Properties", href: `/${locale}/categories` },
-                  ]
-              ).map((item) => (
+              {importantLinks.map((item) => (
                 <li key={item.id}>
                   <Link
                     href={item.href}
@@ -233,11 +272,13 @@ const Footer = ({
               <ContactItem
                 icon={<Phone size={18} />}
                 text={contact?.contact_numbers?.[0] || contact?.whatsapp_number || "+20 100 000 0000"}
+                href={`tel:${contact?.contact_numbers?.[0] || contact?.whatsapp_number || "+20 100 000 0000"}`}
               />
 
               <ContactItem
                 icon={<Mail size={18} />}
                 text={contact?.email || "info@alomran.com"}
+                href={`mailto:${contact?.email || "info@alomran.com"}`}
               />
 
               <ContactItem
@@ -246,23 +287,7 @@ const Footer = ({
               />
             </div>
 
-            <div className="mt-6 rounded-3xl border border-white/12 bg-white/8 p-4">
-              <p className="mb-3 text-sm font-black text-white">
-                {isAr ? "اشترك ليصلك الجديد" : "Subscribe for updates"}
-              </p>
 
-              <div className="flex overflow-hidden rounded-2xl bg-white">
-                <input
-                  type="email"
-                  placeholder={isAr ? "بريدك الإلكتروني" : "Your email"}
-                  className="min-w-0 flex-1 bg-transparent px-4 text-sm font-bold text-[#101820] outline-none placeholder:text-[#8A9894]"
-                />
-
-                <button className="flex h-12 w-12 items-center justify-center bg-[#C89B3C] text-[#101820] transition hover:bg-[#d8aa49]">
-                  <Send size={18} />
-                </button>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -333,16 +358,24 @@ const SocialIcon = ({ icon, href }: { icon: React.ReactNode; href: string }) => 
 const ContactItem = ({
   icon,
   text,
+  href,
 }: {
   icon: React.ReactNode;
   text: string;
+  href?: string;
 }) => {
   return (
     <div className="flex items-center gap-3 text-sm font-bold text-white/62">
       <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/8 text-[#C89B3C]">
         {icon}
       </span>
-      <span>{text}</span>
+      {href ? (
+        <a href={href} className="transition hover:text-[#C89B3C]" dir="ltr">
+          {text}
+        </a>
+      ) : (
+        <span>{text}</span>
+      )}
     </div>
   );
 };

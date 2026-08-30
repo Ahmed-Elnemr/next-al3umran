@@ -6,6 +6,9 @@ import { useForm } from "react-hook-form";
 import { FiTrash2, FiPlus, FiImage, FiX, FiCheck, FiAlertCircle } from "react-icons/fi";
 import Image from "next/image";
 import apiServiceCall from "../../../src/lib/apiServiceCall";
+import { MdDeleteOutline } from 'react-icons/md';
+import FieldError from '@/components/shared/reusableComponents/FieldError';
+import FormValidationAlert from '@/components/shared/reusableComponents/FormValidationAlert';
 import CustomSelect from "../../../src/components/shared/reusableComponents/CustomSelect";
 
 const EditServiceModal = ({ open, onClose, service, token, onSuccess }: any) => {
@@ -382,9 +385,7 @@ placeholder={t('selectCategory')}
                     rules={{ required: "الفئة مطلوبة" }}
                   />
                 )}
-                {errors.catalog_category_id && (
-                  <p className="text-red-500 text-sm mt-1">{errors.catalog_category_id.message}</p>
-                )}
+                <FieldError message={errors.catalog_category_id?.message as string | undefined} />
               </div>
 
               {/* العنوان */}
@@ -400,9 +401,7 @@ placeholder={t('selectCategory')}
                   placeholder={isArabic ? "أدخل العنوان" : "Enter title"}
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                 />
-                {errors.title && (
-                  <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>
-                )}
+                <FieldError message={errors.title?.message as string | undefined} />
               </div>
 
               {/* الوصف */}
@@ -418,9 +417,7 @@ placeholder={t('selectCategory')}
                   placeholder={isArabic ? "أدخل الوصف" : "Enter description"}
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none min-h-[100px] transition-all"
                 />
-                {errors.content && (
-                  <p className="text-red-500 text-sm mt-1">{errors.content.message}</p>
-                )}
+                <FieldError message={errors.content?.message as string | undefined} />
               </div>
 
               {/* السعر */}
@@ -438,9 +435,7 @@ placeholder={t('selectCategory')}
                   placeholder={isArabic ? "أدخل السعر" : "Enter price"}
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                 />
-                {errors.price && (
-                  <p className="text-red-500 text-sm mt-1">{errors.price.message}</p>
-                )}
+                <FieldError message={errors.price?.message as string | undefined} />
               </div>
 
               {/* الهاتف والموبايل */}

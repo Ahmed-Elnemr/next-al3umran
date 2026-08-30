@@ -170,7 +170,7 @@ const PropertyCard = ({
   return (
     <article className="group flex h-full min-h-[545px] flex-col overflow-hidden rounded-[30px] border border-[#E4DED1] bg-white shadow-[0_18px_55px_rgba(16,24,32,0.08)] transition duration-300 hover:-translate-y-2 hover:shadow-[0_30px_90px_rgba(16,24,32,0.16)]">
       <div className="relative h-[240px] overflow-hidden bg-gray-100 flex items-center justify-center">
-        {property.image ? (
+        {property.image && property.image.trim() !== "" ? (
           <img
             src={property.image}
             alt={title}

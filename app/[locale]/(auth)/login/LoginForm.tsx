@@ -10,6 +10,7 @@ import { z } from "zod";
 import { useTranslations, useLocale } from "next-intl";
 import CustomSelect from "@/components/shared/reusableComponents/CustomSelect";
 import CountryPhoneInput from "@/components/shared/reusableComponents/CountryPhoneInput";
+import FieldError from "@/components/shared/reusableComponents/FieldError";
 import OtpCode from "./OtpCode";
 
 const loginSchema = z.object({
@@ -124,11 +125,7 @@ const LoginForm: React.FC = () => {
             onCountryChange={setSelectedCountry}
             locale={locale}
           />
-          {errors.phone && (
-            <p className="mt-1 text-sm text-red-600">
-              {translateOrRaw(t, errors.phone.message)}
-            </p>
-          )}
+          <FieldError message={errors.phone ? translateOrRaw(t, errors.phone.message) : undefined} />
         </div>
 
         <div>
@@ -144,11 +141,7 @@ const LoginForm: React.FC = () => {
               { value: "company", label: t("company") },
             ]}
           />
-          {errors.client_type && (
-            <p className="mt-1 text-sm text-red-600">
-              {translateOrRaw(t, errors.client_type.message)}
-            </p>
-          )}
+          <FieldError message={errors.client_type ? translateOrRaw(t, errors.client_type.message) : undefined} />
         </div>
 
         <button
@@ -179,3 +172,4 @@ const LoginForm: React.FC = () => {
 };
 
 export default LoginForm;
+

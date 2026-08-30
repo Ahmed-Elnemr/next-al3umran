@@ -107,7 +107,7 @@ const page = async ({ params }: LayoutProps) => {
                 </div>
 
                 {/* Actions */}
-                <ServicesActions service={service} token={token} />
+                <ServicesActions service={service} token={token} type="service" />
               </div>
             </div>
           ))}

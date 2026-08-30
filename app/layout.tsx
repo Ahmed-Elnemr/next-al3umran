@@ -23,55 +23,53 @@ export async function generateMetadata({
   const { locale } = await params;
   const isAr = locale === "ar";
    
- return {
-  title: isAr
-    ? "العمران | منصة العقارات والتطوير العقاري في العراق وسوريا والإمارات"
-    : "Al Omran | Real Estate & Property Development Platform in Iraq, Syria & UAE",
+  return {
+   title: isAr
+     ? "العمران | افضل منصة عقارية تطوير عقاري بيع وايجار في سوريا والعراق والأمارات"
+     : "Al Omran | The Best Real Estate & Property Development Platform for Sale & Rent in Syria, Iraq & UAE",
 
-  description: isAr
-    ? "العمران منصة متكاملة لبيع وشراء وتأجير العقارات والتطوير العقاري في العراق وسوريا والإمارات، اكتشف الشقق والفلل والأراضي والمشاريع العقارية بسهولة."
-    : "Al Omran is a comprehensive real estate and property development platform for buying, selling, and renting properties in Iraq, Syria, and the UAE. Discover apartments, villas, lands, and real estate projects easily.",
+   description: isAr
+     ? "اكتشف العمران، افضل منصة عقارية تطوير عقاري بيع وايجار في سوريا والعراق والأمارات. استكشف الشقق، الفلل، والأراضي في أكبر سوق عقاري متكامل."
+     : "Discover Al Omran, the best real estate and property development platform for sale and rent in Syria, Iraq, and the UAE. Explore apartments, villas, and lands in the largest integrated real estate market.",
 
-  keywords: isAr
-    ? [
-        "العمران",
-        "عقارات",
-        "تطوير عقاري",
-        "عقارات العراق",
-        "عقارات سوريا",
-        "عقارات الإمارات",
-        "بيع شقق",
-        "شراء عقارات",
-        "تأجير عقارات",
-        "فلل للبيع",
-        "شقق للإيجار",
-        "مشاريع عقارية",
-        "أراضي للبيع",
-        "منصة عقارية",
-      ]
-    : [
-        "Al Omran",
-        "real estate",
-        "property development",
-        "Iraq real estate",
-        "Syria real estate",
-        "UAE real estate",
-        "apartments for sale",
-        "property rental",
-        "villas for sale",
-        "real estate platform",
-        "lands for sale",
-        "property marketplace",
-      ],
+   keywords: isAr
+     ? [
+         "افضل منصة عقارية",
+         "تطوير عقاري",
+         "بيع وايجار",
+         "عقارات سوريا",
+         "عقارات العراق",
+         "عقارات الإمارات",
+         "العمران",
+         "شقق للبيع",
+         "شقق للإيجار",
+         "فلل للبيع",
+         "أراضي للبيع",
+         "مشاريع عقارية",
+       ]
+     : [
+         "best real estate platform",
+         "property development",
+         "sale and rent",
+         "Syria real estate",
+         "Iraq real estate",
+         "UAE real estate",
+         "Al Omran",
+         "apartments for sale",
+         "apartments for rent",
+         "villas for sale",
+         "lands for sale",
+         "real estate projects",
+       ],
 
-  openGraph: {
-    title: isAr
-      ? "العمران | منصة العقارات والتطوير العقاري"
-      : "Al Omran | Real Estate Platform",
+   openGraph: {
+     title: isAr
+       ? "العمران | افضل منصة عقارية تطوير عقاري بيع وايجار في سوريا والعراق والأمارات"
+       : "Al Omran | The Best Real Estate Platform for Sale & Rent in Syria, Iraq & UAE",
 
-    description: isAr
-      ? "اكتشف أفضل العقارات والمشاريع العقارية في العراق وسوريا والإمارات عبر منصة العمران."
-      : "Discover the best real estate properties and development projects across Iraq, Syria, and the UAE with Al Omran.",
+     description: isAr
+       ? "اكتشف العمران، افضل منصة عقارية تطوير عقاري بيع وايجار في سوريا والعراق والأمارات. تصفح آلاف العقارات والمشاريع الآن."
+       : "Discover Al Omran, the best real estate and property development platform for sale and rent in Syria, Iraq, and the UAE.",
 
     url: "https://alomran.com",
     siteName: "Al Omran",
@@ -131,6 +129,9 @@ export async function generateMetadata({
   },
 
   metadataBase: new URL("https://alomran.com"),
+  verification: {
+    google: "1-uh-_u93SNcd9mAE7UHc3ey5D0DOTVW7bYhVcX4RyI",
+  },
 };
 }
 

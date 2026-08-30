@@ -78,7 +78,7 @@ export default async function CompanyProfilePage({ params }: PageProps) {
 
       <section className="relative mx-auto -mt-24 max-w-7xl px-4 md:-mt-32">
         <div className="rounded-[40px] border border-white/60 bg-white/80 p-6 shadow-[0_40px_100px_rgba(16,24,32,0.08)] backdrop-blur-2xl md:p-10">
-          <div className="flex flex-col items-center gap-6 text-center md:flex-row md:items-start md:text-start">
+          <div className={`flex flex-col items-center gap-6 text-center md:flex-row md:items-start ${isAr ? 'md:text-right' : 'md:text-left'}`}>
             <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-[30px] border-4 border-white bg-white shadow-xl md:h-40 md:w-40">
               <div className="flex h-full w-full items-center justify-center bg-[#F6F4EE]">
                 {company.logo ? (
@@ -89,7 +89,7 @@ export default async function CompanyProfilePage({ params }: PageProps) {
               </div>
             </div>
 
-            <div className="w-full flex-1 space-y-4 md:pt-4 text-start">
+            <div className={`w-full flex-1 space-y-4 md:pt-4 ${isAr ? 'text-right' : 'text-left'}`}>
               <div className="flex flex-col items-start gap-3 md:flex-row">
                 <h1 className="text-3xl font-black text-[#101820] md:text-4xl">{companyName}</h1>
                 {company.is_verified ? (
@@ -101,7 +101,9 @@ export default async function CompanyProfilePage({ params }: PageProps) {
               </div>
 
               {company.bio ? (
-                <p className="max-w-2xl text-base leading-relaxed text-[#5E6D68]">{company.bio}</p>
+                <p className={`max-w-2xl text-base leading-relaxed text-[#5E6D68] ${isAr ? 'text-right' : 'text-left'}`}>
+                  {company.bio}
+                </p>
               ) : null}
 
               <div className="flex flex-wrap items-center justify-start gap-4 pt-2">

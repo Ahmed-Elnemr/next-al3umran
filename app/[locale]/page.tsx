@@ -7,6 +7,7 @@ import AvailableProperties from "../../src/components/home/AvailableProperties";
 import PackagesSection from "../../src/components/home/PackagesSection";
 import Faq from "../../src/components/faq";
 import LatestBlogs from "../../src/components/home/LatestBlogs";
+import { cookies } from "next/headers";
 import { getHomeData, getBlogPosts } from "../../src/lib/serverActions";
 import { getTranslations } from "next-intl/server";
 
@@ -18,6 +19,9 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage({ params }: LayoutProps) {
   const { locale } = await params;
+  const cookieStore = await cookies();
+  const token = cookieStore.get('token')?.value;
+
   const [homeData, blogsResponse] = await Promise.all([
     getHomeData(locale),
     getBlogPosts(locale, 1, 3)
@@ -38,7 +42,7 @@ export default async function HomePage({ params }: LayoutProps) {
 
       <BookingSteps items={payload.booking_steps || []} />
 
-      <PackagesSection items={payload.packages || []} />
+      <PackagesSection items={payload.packages || []} token={token} />
 
       <LatestBlogs posts={latestBlogs} t={tBlogs} locale={locale} />
 

@@ -11,6 +11,8 @@ import { toast } from 'react-toastify'
 import CustomSelect from '../../../src/components/shared/reusableComponents/CustomSelect'
 import Container from '../shared/container'
 import InputComponent from '../shared/reusableComponents/InputComponent'
+import FormValidationAlert from '../shared/reusableComponents/FormValidationAlert';
+import FieldError from '../shared/reusableComponents/FieldError';
 import { useLocale, useTranslations } from 'next-intl' // or your i18n solution
 import FileUploadField from '../shared/reusableComponents/FileUploadField'
 
@@ -19,7 +21,7 @@ const createContactFormSchema = (t: any) => z.object({
   event_name: z.string().min(3, t('validation.event_name')),
   phone: z.string().min(10, t('validation.phone')),
   email: z.string().email(t('validation.email')),
-//   messageType: z.string().min(1, t('validation.messageType')),
+  //   messageType: z.string().min(1, t('validation.messageType')),
   message: z.string().min(10, t('validation.message'))
 })
 
@@ -30,35 +32,35 @@ type FileWithPreview = {
   preview: string;
   isImage: boolean;
 };
-const Reports = ({token} :{token:string}) => {
+const Reports = ({ token }: { token: string }) => {
   const t = useTranslations('technicalSupport')
-const locale = useLocale()
+  const locale = useLocale()
   const messageTypes = [
     { value: "Inquiry", label: t('messageTypes.inquiry') },
     { value: "Suggestion", label: t('messageTypes.suggestion') },
     { value: "Complaint", label: t('messageTypes.complaint') },
   ]
 
-  const { 
-    register, 
-    control, 
+  const {
+    register,
+    control,
     getValues,
     setValue,
-    handleSubmit, 
+    handleSubmit,
     watch,
     formState: { errors },
     reset
   } = useForm<ContactFormValues>({
     resolver: zodResolver(createContactFormSchema(t))
   })
-const watchedFiles = watch("files") || [];
+  const watchedFiles = watch("files") || [];
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: ContactFormValues) => 
+    mutationFn: (data: ContactFormValues) =>
       apiServiceCall({
         url: 'claims/store',
         method: 'POST',
         body: data,
-        headers:{
+        headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token}`,
         }
@@ -81,24 +83,24 @@ const watchedFiles = watch("files") || [];
   })
 
   const onSubmit = (data: ContactFormValues) => {
-  const form = new FormData();
+    const form = new FormData();
 
-  // Append file if exists
-  if (watchedFiles?.length > 0) {
-    form.append("file", watchedFiles[0].file);
-  }
+    // Append file if exists
+    if (watchedFiles?.length > 0) {
+      form.append("file", watchedFiles[0].file);
+    }
 
-  // Append other fields
-  form.append("name", data.fullName);
-  form.append("phone", data.phone);
-  form.append("type", "Complaint");
-  form.append("event_name", data.event_name);
-  form.append("message_content", data.message);
-  form.append("email", data.email);
+    // Append other fields
+    form.append("name", data.fullName);
+    form.append("phone", data.phone);
+    form.append("type", "Complaint");
+    form.append("event_name", data.event_name);
+    form.append("message_content", data.message);
+    form.append("email", data.email);
 
-  // Send FormData
-  mutate(form);
-};
+    // Send FormData
+    mutate(form);
+  };
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       if (!e.target.files?.length) return;
@@ -143,20 +145,20 @@ const watchedFiles = watch("files") || [];
       <div className="flex flex-col lg:flex-row justify-between w-full gap-10 my-20">
         <div>
           <div>
-            <h2 className='font-extrabold text-[#EB2302] text-[29px]'>{locale === "ar"?"البلاغات" :"Reports"}</h2>
+            <h2 className='font-extrabold text-[#EB2302] text-[29px]'>{locale === "ar" ? "البلاغات" : "Reports"}</h2>
             <p className='text-[#989898] font-medium text-lg mt-2'>
               {t('description')}
             </p>
           </div>
-          <Image 
-            src={img} 
-            alt='technical-support' 
-            width={445.64} 
-            height={399.53} 
-            className='object-contain mt-5 lg:mt-10 min-h-[400px]' 
+          <Image
+            src={img}
+            alt='technical-support'
+            width={445.64}
+            height={399.53}
+            className='object-contain mt-5 lg:mt-10 min-h-[400px]'
           />
         </div>
-        
+
         <div className='lg:w-1/2 w-full'>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 w-full">
             <InputComponent
@@ -166,7 +168,7 @@ const watchedFiles = watch("files") || [];
               placeholder={t('form.fullName')}
               error={errors.fullName?.message}
             />
-            
+
             <InputComponent
               register={register}
               name="phone"
@@ -174,7 +176,7 @@ const watchedFiles = watch("files") || [];
               placeholder={t('form.phone')}
               error={errors.phone?.message}
             />
-            
+
             <InputComponent
               register={register}
               name="email"
@@ -186,15 +188,15 @@ const watchedFiles = watch("files") || [];
               register={register}
               name="event_name"
               type="text"
-              placeholder={locale === "ar"?"ادخل اسم الفعاليه" : "Type Event Name"}
+              placeholder={locale === "ar" ? "ادخل اسم الفعاليه" : "Type Event Name"}
               error={errors.event_name?.message}
             />
 
-<FileUploadField
-        files={watchedFiles}
-        onFileChange={handleFileChange}
-        onFileRemove={removeFile}
-      />            
+            <FileUploadField
+              files={watchedFiles}
+              onFileChange={handleFileChange}
+              onFileRemove={removeFile}
+            />
             {/* <CustomSelect
               control={control}
               name="messageType"
@@ -203,20 +205,18 @@ const watchedFiles = watch("files") || [];
               className="w-full text-right flex-row-reverse"
               error={errors.messageType?.message}
             /> */}
-            
+
             <div>
-              <textarea 
+              <textarea
                 {...register('message')}
                 placeholder={t('form.message')}
                 className='bg-[#f5f5f5] p-5 h-[186px] rounded-[15px] outline-none w-full px-5'
               />
-              {errors.message?.message && (
-                <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>
-              )}
+              <FieldError message={errors.message?.message} />
             </div>
-            
-            <button 
-              type="submit" 
+
+            <button
+              type="submit"
               disabled={isPending}
               className="w-full bg-[#EB2302] text-white py-4 rounded-[15px] font-bold text-lg disabled:opacity-70"
             >

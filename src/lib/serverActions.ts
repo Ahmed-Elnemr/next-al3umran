@@ -83,6 +83,48 @@ export const getMyServices = async (lang: string) => {
   }
 };
 
+export const getMyProperties = async (lang: string, page: number = 1) => {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value; 
+
+    const data = await apiServiceCall({
+      url: `client/my/properties?page=${page}&per_page=12`,
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+        "Accept-Language": lang,
+      },
+    });
+    return data;
+  } catch (error) {
+    errorsHandling(error, lang);
+    return { data: { data: [], meta: null } };
+  }
+};
+
+export const getMyPropertyAction = async (lang: string, id: string | number) => {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value; 
+    if (!token) return { data: null };
+
+    const data = await apiServiceCall({
+      url: `client/my/properties/${id}`,
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+        "Accept-Language": lang,
+      },
+    });
+    return data;
+  } catch (error) {
+    return { data: null };
+  }
+};
+
 export const getHomeData = async (lang: string) => {
   try {
     const data = await apiServiceCall({

@@ -19,7 +19,7 @@ export default function BlogCard({ post, t, locale }: { post: BlogPost; t: any; 
     <article className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col h-full group">
       {/* صورة المقال */}
       <Link href={`/${locale}/blogs/${post.id}`} className="relative h-56 w-full overflow-hidden block bg-gray-100 group-hover:bg-gray-200 transition-colors">
-        {post.main_image ? (
+        {post.main_image && post.main_image.trim() !== "" ? (
           <Image
             src={post.main_image}
             alt={post.image_alt || post.name}

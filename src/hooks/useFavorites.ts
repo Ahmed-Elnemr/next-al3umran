@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { toast } from "react-toastify";
+let hasSyncedFavorites = false;
 
 export function useFavorites() {
   const [favorites, setFavorites] = useState<number[]>([]);
@@ -16,16 +17,41 @@ export function useFavorites() {
       }
     }
 
+    // Background sync with the server for logged in users
+    const hasToken = document.cookie.includes('token=');
+    if (hasToken && !hasSyncedFavorites) {
+      hasSyncedFavorites = true;
+      const syncWithBackend = async () => {
+        try {
+          const { getFavoritesAction } = await import('../lib/serverActions');
+          const locale = window.location.pathname.startsWith('/en') ? 'en' : 'ar';
+          const response = await getFavoritesAction(locale);
+          if (response?.data && Array.isArray(response.data)) {
+            const realIds = response.data.map((item: any) => Number(item.id));
+            const currentSaved = localStorage.getItem('al3umran_favorites');
+            if (currentSaved !== JSON.stringify(realIds)) {
+              setFavorites(realIds);
+              localStorage.setItem('al3umran_favorites', JSON.stringify(realIds));
+              window.dispatchEvent(new Event('favoritesChanged'));
+            }
+          }
+        } catch (e) {
+          hasSyncedFavorites = false; // retry next time if failed
+        }
+      };
+      syncWithBackend();
+    }
 
   }, []);
 
-  const toggleFavorite = async (propertyId: number, isAr: boolean = true) => {
+  const toggleFavorite = async (propertyId: number | string, isAr: boolean = true) => {
+    const numericId = Number(propertyId);
     let newFavorites;
-    if (favorites.includes(propertyId)) {
-      newFavorites = favorites.filter(id => id !== propertyId);
+    if (favorites.some(id => Number(id) === numericId)) {
+      newFavorites = favorites.filter(id => Number(id) !== numericId);
       toast.info(isAr ? "تم إزالة العقار من المفضلة" : "Property removed from favorites", { autoClose: 2000 });
     } else {
-      newFavorites = [...favorites, propertyId];
+      newFavorites = [...favorites, numericId];
       toast.success(isAr ? "تم إضافة العقار إلى المفضلة" : "Property added to favorites", { autoClose: 2000 });
     }
     
@@ -71,7 +97,7 @@ export function useFavorites() {
   return {
     favorites,
     toggleFavorite,
-    isFavorite: (id: number) => favorites.includes(id),
+    isFavorite: (id: number | string) => favorites.some(favId => Number(favId) === Number(id)),
     mounted
   };
 }

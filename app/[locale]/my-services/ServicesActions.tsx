@@ -1,26 +1,27 @@
   "use client";
 
   import { useState } from "react";
-  import { FiEdit, FiTrash2 } from "react-icons/fi";
-  import { useTranslations } from "next-intl";
-  import EditServiceModal from "./EditServiceModal";
+  import { FiEye, FiTrash2 } from "react-icons/fi";
+  import { useTranslations, useLocale } from "next-intl";
+  import Link from "next/link";
   import DeleteServiceModal from "./DeleteServiceModal";
 
-  const ServicesActions = ({ service , token }: { service: any , token : string }) => {
+  const ServicesActions = ({ service, token, type = "service" }: { service: any, token: string, type?: "service" | "property" }) => {
     const t = useTranslations("services");
-    const [openEdit, setOpenEdit] = useState(false);
+    const locale = useLocale();
+    const isAr = locale === 'ar';
     const [openDelete, setOpenDelete] = useState(false);
 
     return (
       <>
         <div className="flex gap-3 pt-4">
-          <button
-            onClick={() => setOpenEdit(true)}
+          <Link
+            href={`/${locale}/${type === "property" ? "properties" : "services"}/${service.id}`}
             className="flex-1 flex items-center justify-center gap-2 border border-primary text-primary rounded-lg py-2 text-sm hover:bg-primary hover:text-white transition"
           >
-            <FiEdit />
-            {t("edit")}
-          </button>
+            <FiEye />
+            {isAr ? "عرض التفاصيل" : "View Details"}
+          </Link>
 
           <button
             onClick={() => setOpenDelete(true)}
@@ -31,19 +32,12 @@
           </button>
         </div>
 
-        <EditServiceModal
-          open={openEdit}
-          onClose={() => setOpenEdit(false)}
-          service={service}
-          token = {token}
-        />
-
         <DeleteServiceModal
           open={openDelete}
           onClose={() => setOpenDelete(false)}
           serviceId={service.id}
-          token = {token}
-
+          token={token}
+          type={type}
         />
       </>
     );

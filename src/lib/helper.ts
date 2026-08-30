@@ -48,3 +48,11 @@ export const errorsHandling = (
     }
   }
 };
+
+export const ensureHttps = (url?: string): string => {
+  if (!url) return "";
+  if (url.startsWith("http://")) {
+    return url.replace(/^http:\/\//i, "https://");
+  }
+  return url;
+};

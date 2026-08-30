@@ -23,10 +23,14 @@ const dynamicPublicPatterns = [
 ];
 
 const protectedRoutes = [
+  /^\/(ar|en)\/my-properties/,
   /^\/(ar|en)\/my-services/,
+  /^\/(ar|en)\/add-your-property/,
   /^\/(ar|en)\/edit-data/,
   /^\/(ar|en)\/notifications/,
   /^\/(ar|en)\/orders/,
+  /^\/(ar|en)\/wallet/,
+  /^\/(ar|en)\/favorites/,
 ];
 
 const isPublicPath = (pathname: string): boolean => {

@@ -13,6 +13,7 @@ import apiServiceCall, { apiErrorMessage, apiFieldErrors, translateOrRaw } from 
 import { getCountries, getCities } from '@/lib/api/client';
 import { z } from 'zod';
 import { useTranslations, useLocale } from 'next-intl';
+import FieldError from '@/components/shared/reusableComponents/FieldError';
 import OtpCode from '../login/OtpCode';
 
 import emailIcon from '@/public/images/register-email.png';
@@ -308,7 +309,7 @@ const RegisterForm: React.FC = () => {
             placeholder={t('name_placeholder')}
             icon={<Image src={userIcon} alt="" width={24} height={24} />}
           />
-          {errors.name && <p className="text-sm text-red-600 mt-1 font-medium">{renderErrorMessage(errors.name.message)}</p>}
+          <FieldError message={errors.name ? renderErrorMessage(errors.name.message) : undefined} />
         </div>
 
         {/* الموبايل والدولة */}
@@ -330,7 +331,7 @@ const RegisterForm: React.FC = () => {
             locale={locale}
           />
           
-          {errors.phone && <p className="text-sm text-red-600 mt-1 font-medium">{renderErrorMessage(errors.phone.message)}</p>}
+          <FieldError message={errors.phone ? renderErrorMessage(errors.phone.message) : undefined} />
         </div>
 
         {/* البلد */}
@@ -345,7 +346,7 @@ const RegisterForm: React.FC = () => {
             placeholder={isAr ? 'اختر البلد' : 'Select Country'}
             icon={<Image src={locationIcon} alt="" width={24} height={24} />}
           />
-          {errors.country_id && <p className="text-sm text-red-600 mt-1 font-medium">{renderErrorMessage(errors.country_id.message)}</p>}
+          <FieldError message={errors.country_id ? renderErrorMessage(errors.country_id.message) : undefined} />
         </div>
 
         {/* الايميل */}
@@ -360,7 +361,7 @@ const RegisterForm: React.FC = () => {
             placeholder={t('email_placeholder')}
             icon={<Image src={emailIcon} alt="" width={24} height={24} />}
           />
-          {errors.email && <p className="text-sm text-red-600 mt-1 font-medium">{renderErrorMessage(errors.email.message)}</p>}
+          <FieldError message={errors.email ? renderErrorMessage(errors.email.message) : undefined} />
         </div>
 
         {/* المدينة */}
@@ -375,7 +376,7 @@ const RegisterForm: React.FC = () => {
             placeholder={t('city_placeholder')}
             icon={<Image src={locationIcon} alt="" width={24} height={24} />}
           />
-          {errors.city_id && <p className="text-sm text-red-600 mt-1 font-medium">{renderErrorMessage(errors.city_id.message)}</p>}
+          <FieldError message={errors.city_id ? renderErrorMessage(errors.city_id.message) : undefined} />
         </div>
 
         {/* رفع الصورة */}
@@ -405,9 +406,7 @@ const RegisterForm: React.FC = () => {
               onChange={handleImageChange}
             />
           </label>
-          {errors.profile_image && (
-            <p className="text-sm text-red-600 mt-1 font-medium">{renderErrorMessage(errors.profile_image.message)}</p>
-          )}
+          <FieldError message={errors.profile_image ? renderErrorMessage(errors.profile_image.message) : undefined} />
         </div>
 
         {/* الشروط */}
@@ -423,11 +422,9 @@ const RegisterForm: React.FC = () => {
           </label>
         </div>
 
-        {errors.terms_accepted && (
-          <p className="text-sm text-red-600 lg:col-span-2 mt-1 font-medium">
-            {renderErrorMessage(errors.terms_accepted.message)}
-          </p>
-        )}
+        <div className="lg:col-span-2">
+          <FieldError message={errors.terms_accepted ? renderErrorMessage(errors.terms_accepted.message) : undefined} />
+        </div>
 
         {/* زر التسجيل */}
         <div className="lg:col-span-2">

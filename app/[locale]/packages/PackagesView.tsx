@@ -104,11 +104,12 @@ const PackagesView: React.FC<PackagesViewProps> = ({ initialPackages = [] }) => 
       });
       setBalance(Number(res?.data?.balance ?? balance - (pkg.price || 0)));
       setSubscribedPackage(pkgIdStr);
-      toast.success(
+      const successMessage = res?.message || res?.data?.message || (
         isAr
           ? `تهانينا! تم الاشتراك في باقة ${pkg.name} بنجاح.`
           : `Congratulations! Subscribed to ${pkg.name} successfully.`
       );
+      toast.success(successMessage);
     } catch (error: any) {
       const message =
         error?.data?.message ||
@@ -189,7 +190,7 @@ const PackagesView: React.FC<PackagesViewProps> = ({ initialPackages = [] }) => 
         </div>
 
         {/* Pricing Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center pt-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center pt-4 relative z-50">
           {formattedPackages.map((pkg) => {
             const pkgIdStr = String(pkg.id);
             const isActive = subscribedPackage === pkgIdStr;
@@ -202,13 +203,13 @@ const PackagesView: React.FC<PackagesViewProps> = ({ initialPackages = [] }) => 
                   "relative flex flex-col justify-between px-8 rounded-[32px] transition-all duration-300 bg-gradient-to-b " +
                   pkg.bgGradient +
                   (isHighlighted
-                    ? " py-12 shadow-[0_30px_60px_rgba(14,107,88,0.15)] md:-translate-y-4 md:scale-105 z-10 border-2 border-[#0E6B58]"
-                    : " py-8 shadow-sm hover:shadow-xl hover:-translate-y-1 border border-[#E7E1D6] z-0")
+                    ? " py-12 shadow-xl md:-translate-y-4 md:scale-105 border-2 border-[#0E6B58] z-20"
+                    : " py-8 shadow-sm border border-[#E7E1D6] z-10 hover:shadow-lg")
                 }
               >
                 {/* Badge */}
                 {(pkg.badge || isActive) && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 flex justify-center z-20">
+                  <div className="absolute -top-3.5 left-0 right-0 flex justify-center pointer-events-none">
                     <span
                       className="inline-flex whitespace-nowrap rounded-full px-5 py-1.5 text-[11px] font-black uppercase tracking-wider text-white shadow-md"
                       style={{ backgroundColor: isActive ? '#0E6B58' : pkg.color }}
@@ -218,7 +219,7 @@ const PackagesView: React.FC<PackagesViewProps> = ({ initialPackages = [] }) => 
                   </div>
                 )}
 
-                <div>
+                <div className="flex-1">
                   {/* Icon */}
                   <div className="w-14 h-14 rounded-2xl bg-white border border-[#E7E1D6] flex items-center justify-center mb-6 shadow-sm">
                     {pkg.icon}
@@ -244,7 +245,7 @@ const PackagesView: React.FC<PackagesViewProps> = ({ initialPackages = [] }) => 
                   <ul className="space-y-4">
                     {pkg.features.map((feature: string, idx: number) => (
                       <li key={idx} className="flex items-start gap-3">
-                        <span className="w-5 h-5 rounded-full bg-[#EEF6F3] text-[#0E6B58] flex items-center justify-center shrink-0 mt-0.5">
+                         <span className="w-5 h-5 rounded-full bg-[#EEF6F3] text-[#0E6B58] flex items-center justify-center shrink-0 mt-0.5">
                           <Check size={12} strokeWidth={3} />
                         </span>
                         <span className="text-xs font-bold text-[#40524C] leading-relaxed">
@@ -256,16 +257,15 @@ const PackagesView: React.FC<PackagesViewProps> = ({ initialPackages = [] }) => 
                 </div>
 
                 {/* Subscription Action Button */}
-                <div className="mt-8">
+                <div className="mt-8 pt-4">
                   <button
-                    disabled={isActive || loadingId !== null}
-                    onClick={() => handleSubscribe(pkg)}
+                    type="button"
                     className={
-                      "w-full py-4 rounded-xl font-black text-xs transition-all duration-200 shadow-md border-2 disabled:opacity-70 cursor-pointer " +
+                      "w-full py-4 rounded-xl font-black text-xs transition-colors duration-200 shadow-md border-2 cursor-pointer " +
                       (isActive
-                        ? "bg-[#EEF6F3] text-[#0E6B58] border-[#0E6B58] cursor-default"
+                        ? "bg-[#EEF6F3] text-[#0E6B58] border-[#0E6B58]"
                         : isHighlighted
-                        ? "bg-[#0E6B58] text-white border-[#0E6B58] hover:bg-[#095746]"
+                        ? "bg-[#0E6B58] text-white border-[#0E6B58] hover:bg-[#095746] hover:border-[#095746]"
                         : "bg-white text-[#101820] border-[#E7E1D6] hover:border-[#0E6B58] hover:bg-[#0E6B58] hover:text-white")
                     }
                   >
