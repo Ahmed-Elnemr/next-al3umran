@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://alomran.com';
+  const baseUrl = 'https://al3umran.com';
   
   // Core routes for the platform
   const routes = [

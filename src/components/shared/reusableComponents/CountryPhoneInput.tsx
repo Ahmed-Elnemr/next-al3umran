@@ -81,9 +81,7 @@ const CountryPhoneInput: React.FC<CountryPhoneInputProps> = ({
       {/* Custom Dropdown List */}
       {isOpen && (
         <div 
-          className={`absolute top-[105%] w-[220px] bg-white border border-gray-200 rounded-2xl shadow-xl z-50 p-2 animate-in fade-in slide-in-from-top-2 duration-200 ${
-            isAr ? 'right-0' : 'left-0'
-          }`}
+          className="absolute top-[105%] w-[220px] bg-white border border-gray-200 rounded-2xl shadow-xl z-50 p-2 animate-in fade-in slide-in-from-top-2 duration-200 left-0"
           dir={isAr ? 'rtl' : 'ltr'}
         >
           <p className="text-[10px] font-black text-gray-400 px-3 py-1 uppercase tracking-wider">

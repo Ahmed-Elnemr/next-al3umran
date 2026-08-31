@@ -36,9 +36,14 @@ interface BankAccount {
 interface WalletOperation {
   id: number | string;
   status?: string;
+  status_label?: string;
   content?: string;
+  title?: string;
+  description?: string;
   amount?: number | string;
   type?: string;
+  type_label?: string;
+  reference?: string;
   created_at?: string;
 }
 
@@ -389,28 +394,60 @@ export default function WalletClientView({
             {operations.map((op) => (
               <div
                 key={op.id}
-                className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-[#F9F8F6] border border-[#E7E1D6] hover:border-[#0E6B58]/30 transition"
+                className="flex items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-[#F9F8F6] border border-[#E7E1D6] hover:border-[#0E6B58]/30 transition flex-col sm:flex-row"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#EEF6F3] text-[#0E6B58] flex items-center justify-center shrink-0">
+                <div className="flex items-start gap-3 w-full sm:w-auto">
+                  <div className="w-10 h-10 mt-0.5 rounded-xl bg-[#EEF6F3] text-[#0E6B58] flex items-center justify-center shrink-0">
                     <CheckCircle2 size={20} />
                   </div>
-                  <div>
-                    <p className="text-sm font-bold text-[#101820]">{op.content || (isAr ? 'عملية محفظة' : 'Wallet Operation')}</p>
-                    {op.created_at && (
-                      <p className="text-xs text-[#63756F] flex items-center gap-1 mt-0.5">
-                        <Clock size={12} />
-                        <span>{op.created_at}</span>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-[#101820]">
+                      {op.title || op.content || (isAr ? 'عملية محفظة' : 'Wallet Operation')}
+                    </p>
+                    {op.description && (
+                      <p className="text-xs text-[#63756F] mt-1 leading-relaxed">
+                        {op.description}
                       </p>
                     )}
+                    <div className="flex flex-wrap items-center gap-2 mt-2.5">
+                      {op.type_label && (
+                        <span className="text-[10px] bg-[#E7E1D6] text-[#101820] px-2 py-0.5 rounded-md font-bold">
+                          {op.type_label}
+                        </span>
+                      )}
+                      {op.status_label && (
+                        <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold ${
+                          op.status === 'completed' || op.status === 'approved'
+                            ? 'bg-[#EEF6F3] text-[#0E6B58]'
+                            : op.status === 'pending'
+                            ? 'bg-[#FFF3CD] text-[#856404]'
+                            : 'bg-[#FFEBEB] text-[#EB2302]'
+                        }`}>
+                          {op.status_label}
+                        </span>
+                      )}
+                      {op.created_at && (
+                        <p className="text-[10px] text-[#63756F] flex items-center gap-1 font-medium">
+                          <Clock size={10} />
+                          <span dir="ltr">{op.created_at}</span>
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                {op.amount && (
-                  <span className="text-sm font-black text-[#0E6B58]">
-                    {op.amount} {isAr ? 'درهم' : 'AED'}
-                  </span>
-                )}
+                <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto gap-1 border-t sm:border-0 border-[#E7E1D6] pt-3 sm:pt-0">
+                  {op.amount && (
+                    <span className="text-base sm:text-sm font-black text-[#0E6B58] whitespace-nowrap">
+                      {op.amount} {isAr ? 'درهم' : 'AED'}
+                    </span>
+                  )}
+                  {op.reference && (
+                    <span className="text-[10px] text-[#63756F] font-bold uppercase tracking-wide">
+                      {op.reference}
+                    </span>
+                  )}
+                </div>
               </div>
             ))}
           </div>

@@ -5,6 +5,7 @@ import InputComponent from '@/components/shared/reusableComponents/InputComponen
 import CustomSelect from '@/components/shared/reusableComponents/CustomSelect';
 import CountryPhoneInput from '@/components/shared/reusableComponents/CountryPhoneInput';
 import Image from 'next/image';
+import Link from 'next/link';
 import user from '@/public/images/register-user.png';
 import email from '@/public/images/register-email.png';
 import location from '@/public/images/register-location.png';
@@ -471,10 +472,11 @@ const CompanyRegisterForm = () => {
               />
             )}
           />
-          <label htmlFor="terms_accepted" className="text-sm text-gray-700 font-medium cursor-pointer">
-            {isAr
-              ? 'أوافق على الشروط والأحكام وسياسة الخصوصية الخاصة بالمنصة'
-              : 'I agree to the Terms and Privacy Policy'}
+          <label htmlFor="terms_accepted" className="text-sm text-gray-700 font-medium cursor-pointer mt-0.5">
+            {isAr ? 'أوافق على ' : 'I agree to the '}
+            <Link href={`/${locale}/terms`} target="_blank" className="text-[#0E6B58] underline hover:text-[#0a4e40]">
+              {isAr ? 'الشروط والأحكام وسياسة الخصوصية الخاصة بالمنصة' : 'Terms and Privacy Policy'}
+            </Link>
           </label>
         </div>
         <FieldError message={errors.terms_accepted ? renderErrorMessage(errors.terms_accepted.message) : undefined} />

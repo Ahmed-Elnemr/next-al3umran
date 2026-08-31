@@ -281,6 +281,7 @@ const Navbar = ({
                     width={36}
                     height={36}
                     alt="user"
+                    unoptimized
                     className="h-full w-full object-cover"
                   />
                 </div>
@@ -405,6 +406,7 @@ const Navbar = ({
                       alt="profile"
                       width={44}
                       height={44}
+                      unoptimized
                       className="h-full w-full object-cover"
                     />
                   </button>

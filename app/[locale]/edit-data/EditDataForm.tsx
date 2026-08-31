@@ -23,11 +23,6 @@ type FormDataType = {
   company_bio?: string;
   profile_image?: FileList;
   
-  // Security Tab
-  current_password?: string;
-  password?: string;
-  password_confirmation?: string;
-  
   // Phone Tab
   country_code?: string;
   new_phone?: string;
@@ -43,10 +38,11 @@ const EditDataForm = ({
   const { register, handleSubmit, setValue, control, watch, resetField } = useForm<FormDataType>();
   
   // States
-  const [activeTab, setActiveTab] = useState<"profile" | "security" | "phone" | "danger">("profile");
+  const [activeTab, setActiveTab] = useState<"profile" | "phone" | "danger">("profile");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showOtpModal, setShowOtpModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [mobileNumber, setMobileNumber] = useState("");
   
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -166,40 +162,6 @@ const EditDataForm = ({
     }
   };
 
-  // Submit Password Change
-  const onSubmitSecurity = async (data: FormDataType) => {
-    if (!data.current_password || !data.password || !data.password_confirmation) {
-      toast.error(isAr ? "يرجى تعبئة جميع الحقول" : "Please fill all password fields");
-      return;
-    }
-    if (data.password !== data.password_confirmation) {
-      toast.error(isAr ? "كلمة المرور الجديدة لا تتطابق مع التأكيد" : "New passwords do not match");
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const formData = new FormData();
-      formData.append("_method", "PUT");
-      formData.append("email", data.email); // Required by backend API
-      formData.append("current_password", data.current_password);
-      formData.append("password", data.password);
-      formData.append("password_confirmation", data.password_confirmation);
-
-      const response = await updateProfile(locale, token, formData);
-      toast.success(response?.message || (isAr ? "تم تحديث كلمة المرور بنجاح" : "Password updated successfully"));
-      
-      resetField("current_password");
-      resetField("password");
-      resetField("password_confirmation");
-    } catch (error: any) {
-      console.error("Password change error:", error);
-      toast.error(apiErrorMessage(error, isAr ? "فشل تغيير كلمة المرور" : "Failed to change password"));
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   // Submit Phone Change
   const onSubmitPhone = async (data: FormDataType) => {
     if (!data.new_phone || !data.country_code) {
@@ -227,20 +189,27 @@ const EditDataForm = ({
   };
 
   // Submit Delete Account
-  const handleDeleteAccount = async () => {
-    if (!window.confirm(isAr ? "هل أنت متأكد من حذف الحساب نهائياً؟ هذا الإجراء لا يمكن التراجع عنه!" : "Are you sure you want to permanently delete your account? This cannot be undone!")) {
-      return;
-    }
+  const handleDeleteAccount = () => {
+    setShowDeleteModal(true);
+  };
 
+  const confirmDelete = async () => {
     setIsSubmitting(true);
+    setShowDeleteModal(false);
     try {
-      await deleteProfile(locale, token);
-      toast.success(isAr ? "تم حذف الحساب بنجاح" : "Account deleted successfully");
-      router.push(`/${locale}`);
+      const response = await deleteProfile(locale, token);
+      
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("alomran_current_user");
+      }
+      
+      fetch("/api/auth/logout", { method: "GET" }).finally(() => {
+        toast.success(response?.message || (isAr ? "تم حذف الحساب بنجاح" : "Account deleted successfully"));
+        window.location.href = `/${locale}`;
+      });
     } catch (error: any) {
       console.error("Delete account error:", error);
       toast.error(apiErrorMessage(error, isAr ? "فشل حذف الحساب" : "Failed to delete account"));
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -257,7 +226,6 @@ const EditDataForm = ({
 
   const tabs = [
     { id: "profile", label: isAr ? "البيانات الأساسية" : "Profile Info", icon: <User size={18} /> },
-    { id: "security", label: isAr ? "الأمان وكلمة المرور" : "Security", icon: <Lock size={18} /> },
     { id: "phone", label: isAr ? "تغيير رقم الهاتف" : "Change Phone", icon: <Phone size={18} /> },
     { id: "danger", label: isAr ? "حذف الحساب" : "Delete Account", icon: <Trash2 size={18} />, danger: true },
   ];
@@ -403,60 +371,6 @@ const EditDataForm = ({
           </form>
         )}
 
-        {/* TAB 2: SECURITY */}
-        {activeTab === "security" && (
-          <form onSubmit={handleSubmit(onSubmitSecurity)} className="max-w-xl animate-fade-in space-y-6">
-            <div>
-              <h2 className="text-2xl font-black text-[#101820] mb-2">
-                {isAr ? "كلمة المرور والأمان" : "Password & Security"}
-              </h2>
-              <p className="text-sm text-[#63756F] mb-8">
-                {isAr ? "قم بتغيير كلمة المرور الخاصة بك للحفاظ على أمان حسابك." : "Change your password to keep your account secure."}
-              </p>
-            </div>
-
-            <div className="space-y-5">
-              <div>
-                <label className="block text-sm font-bold text-[#101820] mb-2">
-                  {isAr ? "كلمة المرور الحالية" : "Current Password"}
-                </label>
-                <input {...register("current_password")} type="password" placeholder="••••••••" className="w-full h-14 rounded-2xl bg-[#F9F8F6] border border-[#E7E1D6] px-4 font-bold text-[#101820] outline-none focus:border-[#0E6B58] transition" />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-[#101820] mb-2">
-                  {isAr ? "كلمة المرور الجديدة" : "New Password"}
-                </label>
-                <input {...register("password")} type="password" placeholder="••••••••" className="w-full h-14 rounded-2xl bg-[#F9F8F6] border border-[#E7E1D6] px-4 font-bold text-[#101820] outline-none focus:border-[#0E6B58] transition" />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-[#101820] mb-2">
-                  {isAr ? "تأكيد كلمة المرور الجديدة" : "Confirm New Password"}
-                </label>
-                <input {...register("password_confirmation")} type="password" placeholder="••••••••" className="w-full h-14 rounded-2xl bg-[#F9F8F6] border border-[#E7E1D6] px-4 font-bold text-[#101820] outline-none focus:border-[#0E6B58] transition" />
-              </div>
-            </div>
-
-            <div className="pt-6">
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full h-14 bg-[#101820] text-white rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-[#0E6B58] transition-all disabled:opacity-70 shadow-lg"
-              >
-                {isSubmitting ? (
-                  <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
-                ) : (
-                  <>
-                    <Lock size={18} />
-                    <span>{isAr ? "تحديث كلمة المرور" : "Update Password"}</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
-        )}
-
         {/* TAB 3: PHONE */}
         {activeTab === "phone" && (
           <div className="max-w-xl animate-fade-in space-y-6">
@@ -588,6 +502,49 @@ const EditDataForm = ({
           setActiveTab("profile");
         }}
       />
+
+      {/* Delete Account Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center !z-[9999999] p-4">
+          <div className="bg-white relative rounded-[15px] p-6 w-full max-w-md flex flex-col items-center text-center shadow-2xl animate-fade-in">
+            <button
+              onClick={() => setShowDeleteModal(false)}
+              className="absolute top-3 right-3 text-gray-500 hover:text-black text-2xl transition"
+              aria-label="Close Modal"
+            >
+              &times;
+            </button>
+            <div className="w-16 h-16 rounded-full bg-[#FFEBEB] flex items-center justify-center mb-4">
+              <AlertCircle size={32} className="text-[#EB2302]" />
+            </div>
+            <h2 className="text-[22px] font-extrabold mb-2 text-[#101820]">
+              {isAr ? "هل أنت متأكد من حذف الحساب؟" : "Are you sure you want to delete your account?"}
+            </h2>
+            <p className="mb-8 text-[#63756F] font-medium text-sm px-4">
+              {isAr ? "حذف الحساب سيؤدي إلى فقدان جميع بياناتك وعقاراتك بشكل نهائي، ولا يمكن التراجع عن هذه الخطوة." : "This will permanently remove all your data and properties. This action cannot be undone."}
+            </p>
+            <div className="flex gap-3 w-full">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 px-4 py-3 bg-[#F9F8F6] text-[#101820] border border-[#E7E1D6] rounded-2xl font-bold hover:bg-gray-100 transition"
+              >
+                {isAr ? "إلغاء" : "Cancel"}
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={isSubmitting}
+                className="flex-1 px-4 py-3 bg-[#EB2302] text-white rounded-2xl font-bold hover:bg-[#d02c00] transition disabled:opacity-70 flex items-center justify-center shadow-lg shadow-[#EB2302]/20"
+              >
+                {isSubmitting ? (
+                  <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
+                ) : (
+                  isAr ? "تأكيد الحذف" : "Confirm Delete"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

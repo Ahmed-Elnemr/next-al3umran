@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { toast, ToastContainer } from 'react-toastify';
 import Image from 'next/image';
+import Link from 'next/link';
 import CustomSelect from '@/components/shared/reusableComponents/CustomSelect';
 import InputComponent from '@/components/shared/reusableComponents/InputComponent';
 import CountryPhoneInput from '@/components/shared/reusableComponents/CountryPhoneInput';
@@ -418,7 +419,7 @@ const RegisterForm: React.FC = () => {
             className="h-5 w-5 text-primary rounded focus:ring"
           />
           <label htmlFor="terms_accepted" className="text-sm text-gray-500">
-            {t('terms_agree')} <a href="#" className="text-primary underline">{t('terms_link')}</a>
+            {t('terms_agree')} <Link href={`/${locale}/terms`} target="_blank" className="text-primary underline hover:text-primary/80">{t('terms_link')}</Link>
           </label>
         </div>
 

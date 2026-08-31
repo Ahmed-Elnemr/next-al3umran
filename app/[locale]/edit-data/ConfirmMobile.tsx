@@ -96,7 +96,7 @@ const ConfirmMobile: React.FC<OtpModalProps> = ({
   const verifyMutation = useMutation({
     mutationFn: async (code: string) => {
       const response = await apiServiceCall({
-        url: "client/profile/change-phone",
+        url: "client/profile/verify-change-phone",
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
