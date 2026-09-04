@@ -46,7 +46,7 @@ const PackagesView: React.FC<PackagesViewProps> = ({ initialPackages = [] }) => 
     const userRole = getCookie('client_type');
     setRole(userRole);
 
-    // If role is loaded and user is NOT a seller (is customer), redirect to home
+    // If user is a logged-in normal buyer, redirect to home. Show to guests and companies.
     if (userRole && userRole !== 'company') {
       router.push(`/${locale}`);
       return;
@@ -90,7 +90,8 @@ const PackagesView: React.FC<PackagesViewProps> = ({ initialPackages = [] }) => 
     };
     const token = getCookie('token');
     if (!token) {
-      router.push(`/${locale}/login`);
+      toast.error(isAr ? 'يرجى تسجيل الدخول أو إنشاء حساب كشركة للاشتراك.' : 'Please login or register as a company to subscribe.');
+      setTimeout(() => router.push(`/${locale}/login`), 2000);
       return;
     }
 

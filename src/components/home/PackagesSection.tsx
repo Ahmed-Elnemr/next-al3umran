@@ -27,6 +27,7 @@ const PackagesSection = ({ items = [], token }: { items?: any[], token?: string 
   const isAr = locale === 'ar';
 
   const [role, setRole] = useState<string | null>(null);
+  const [roleLoaded, setRoleLoaded] = useState(false);
 
   useEffect(() => {
     const getCookie = (name: string) => {
@@ -38,13 +39,15 @@ const PackagesSection = ({ items = [], token }: { items?: any[], token?: string 
     };
 
     setRole(getCookie('client_type'));
+    setRoleLoaded(true);
   }, []);
 
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
   const handleSubscribe = async (pkg: any) => {
     if (!token) {
-      toast.error(isAr ? 'يرجى تسجيل الدخول أولاً للاشتراك في هذه الباقة.' : 'Please login first to subscribe to this package.', { autoClose: 5000, position: "bottom-right" });
+      toast.error(isAr ? 'يرجى تسجيل الدخول أو إنشاء حساب كشركة للاشتراك في هذه الباقة.' : 'Please login or register as a company to subscribe to this package.', { autoClose: 5000, position: "bottom-right" });
+      window.location.href = `/${locale}/login`;
       return;
     }
 
@@ -103,8 +106,8 @@ const PackagesSection = ({ items = [], token }: { items?: any[], token?: string 
 
   const previewPackages: PreviewPackage[] = apiPackages.length ? apiPackages : [];
 
-  // If role is loaded and user is NOT a seller (is buyer), hide this section entirely since buyers don't buy packages.
-  if (role && role !== 'company') {
+  // If role is loaded and user is a logged-in normal buyer, hide this section entirely. Show to guests and companies.
+  if (roleLoaded && role !== null && role !== 'company') {
     return null;
   }
 

@@ -75,7 +75,7 @@ const Footer = ({
       label: isAr ? "الشركات" : "Companies",
       href: `/${locale}/companies`,
     },
-    ...(role === "company"
+    ...((role === "company" || !role)
       ? [
           {
             id: "packages",
