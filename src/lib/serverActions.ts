@@ -120,7 +120,7 @@ export const getMyPropertyAction = async (lang: string, id: string | number) => 
       },
     });
     return data;
-  } catch (error) {
+  } catch {
     return { data: null };
   }
 };
@@ -144,7 +144,7 @@ export const getGeneralSettings = async (lang: string) => {
       url: "client/general-settings",
       headers: { "Accept-Language": lang, "X-Locale": lang },
     });
-  } catch (error) {
+  } catch {
     return { data: {} };
   }
 };
@@ -155,7 +155,7 @@ export const getPublicCategories = async (lang: string) => {
       url: "categories",
       headers: { "Accept-Language": lang, "X-Locale": lang },
     });
-  } catch (error) {
+  } catch {
     return { data: [] };
   }
 };
@@ -166,7 +166,7 @@ export const getContactData = async (lang: string) => {
       url: "client/contact",
       headers: { "Accept-Language": lang, "X-Locale": lang },
     });
-  } catch (error) {
+  } catch {
     return { data: {} };
   }
 };
@@ -177,7 +177,7 @@ export const getAboutUs = async (lang: string) => {
       url: "about-us",
       headers: { "Accept-Language": lang, "X-Locale": lang },
     });
-  } catch (error) {
+  } catch {
     return { data: {} };
   }
 };
@@ -188,7 +188,7 @@ export const getPrivacy = async (lang: string) => {
       url: "client/privacy",
       headers: { "Accept-Language": lang, "X-Locale": lang },
     });
-  } catch (error) {
+  } catch {
     return { data: {} };
   }
 };
@@ -199,7 +199,7 @@ export const getTerms = async (lang: string) => {
       url: "client/terms",
       headers: { "Accept-Language": lang, "X-Locale": lang },
     });
-  } catch (error) {
+  } catch {
     return { data: {} };
   }
 };
@@ -210,7 +210,7 @@ export const getSiteServices = async (lang: string) => {
       url: "services",
       headers: { "Accept-Language": lang, "X-Locale": lang },
     });
-  } catch (error) {
+  } catch {
     return { data: [] };
   }
 };
@@ -297,7 +297,7 @@ export const postBlogComment = async (lang: string, blogId: string, content: str
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
-    const headers: any = { "Accept-Language": lang };
+    const headers: Record<string, string> = { "Accept-Language": lang };
     if (token) {
       headers.Authorization = `Bearer ${token}`;
     }
@@ -319,7 +319,7 @@ export const toggleFavoriteAction = async (lang: string, propertyId: number | st
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
-    const headers: any = { "Accept-Language": lang };
+    const headers: Record<string, string> = { "Accept-Language": lang };
     if (token) {
       headers.Authorization = `Bearer ${token}`;
     }
@@ -343,7 +343,7 @@ export const getFavoritesAction = async (lang: string) => {
     if (!token) {
       return { data: [] };
     }
-    const headers: any = { "Accept-Language": lang, Authorization: `Bearer ${token}` };
+    const headers: Record<string, string> = { "Accept-Language": lang, Authorization: `Bearer ${token}` };
 
     const data = await apiServiceCall({
       url: `client/favorites`,

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useLocale } from "next-intl";
 import {
@@ -100,6 +101,17 @@ const Hero = ({ hero }: { hero?: any }) => {
           frameBorder="0"
           allow="autoplay; encrypted-media; picture-in-picture"
           referrerPolicy="strict-origin-when-cross-origin"
+        />
+      </div>
+
+      {/* Poster Image */}
+      <div className={`absolute inset-0 z-0 h-full w-full transition-opacity duration-700 ${showVideo ? "opacity-0" : "opacity-100"}`}>
+        <Image
+          src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=2000"
+          alt="Al Omran Real Estate Background"
+          fill
+          priority
+          className="object-cover"
         />
       </div>
 

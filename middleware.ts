@@ -45,6 +45,13 @@ const isProtectedPath = (pathname: string): boolean => {
 };
 
 export default function middleware(request: NextRequest) {
+  const host = request.headers.get('host');
+  if (host && host.startsWith('www.')) {
+    const url = request.nextUrl.clone();
+    url.hostname = host.replace('www.', '');
+    return NextResponse.redirect(url, 301);
+  }
+
   const { pathname } = request.nextUrl;
   const intlResponse = intlMiddleware(request);
 

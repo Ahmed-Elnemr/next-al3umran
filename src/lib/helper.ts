@@ -1,11 +1,11 @@
-import { redirect } from "next/navigation";
 import { toast } from "react-toastify";
 
 export const errorsHandling = (
-  error: { data: any; status: number } | any,
+  error: unknown,
   lang: string,
   client?: boolean
 ) => {
+  const err = (error || {}) as { data?: unknown; status?: number; message?: string };
 
   const path =
     typeof window !== "undefined"
@@ -21,7 +21,7 @@ export const errorsHandling = (
   // -------------------------
   // 401 → redirect للصفحة الرئيسية
   // -------------------------
-  if (error.status === 401) {
+  if (err.status === 401) {
     if (client) {
       window.location.href = `/${lang}`;
     } else {
@@ -35,16 +35,16 @@ export const errorsHandling = (
   // -------------------------
   if (client) {
     if (
-      error?.message === "الرجاء تسجيل الدخول أولاً" ||
-      error?.message === "please login first"
+      err?.message === "الرجاء تسجيل الدخول أولاً" ||
+      err?.message === "please login first"
     ) {
       window.location.href = `/${lang}`;
     } else {
-      toast.error(error?.message || error?.data?.message || "An error occurred");
+      toast.error(err?.message || (err?.data as any)?.message || "An error occurred");
     }
   } else {
-    if (error && typeof error === "object" && Object.keys(error).length > 0) {
-      console.warn("Server-side warning in errorsHandling:", error.message || error);
+    if (err && typeof err === "object" && Object.keys(err).length > 0) {
+      console.warn("Server-side warning in errorsHandling:", err.message || error);
     }
   }
 };

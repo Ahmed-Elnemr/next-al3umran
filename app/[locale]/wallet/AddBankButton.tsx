@@ -57,7 +57,7 @@ const AddBankButton: React.FC<{ token: string }> = ({ token }) => {
   });
 
   const onSubmit = async (data: FormValues) => {
-    let payload = {
+    const payload = {
       bank_name: "",
       number: "",
       iban: ""

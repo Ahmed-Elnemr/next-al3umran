@@ -123,11 +123,10 @@ const PropertiesList = ({
               <button
                 key={pageNum}
                 onClick={() => onPageChange?.(pageNum)}
-                className={`flex h-12 min-w-[48px] items-center justify-center rounded-2xl px-4 text-sm font-black transition ${
-                  isActive
+                className={`flex h-12 min-w-[48px] items-center justify-center rounded-2xl px-4 text-sm font-black transition ${isActive
                     ? "bg-[#0E6B58] text-white shadow-md shadow-[#0E6B58]/20"
                     : "border border-[#E4DED1] bg-white text-[#101820] hover:bg-[#EEF6F3] hover:text-[#0E6B58]"
-                }`}
+                  }`}
               >
                 {pageNum}
               </button>
@@ -193,28 +192,27 @@ const PropertyCard = ({
             }}
             className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-lg backdrop-blur transition-all hover:scale-110"
           >
-            <Heart 
-              size={18} 
-              className={favorited ? "fill-red-500 text-red-500" : "text-gray-600"} 
+            <Heart
+              size={18}
+              className={favorited ? "fill-red-500 text-red-500" : "text-gray-600"}
             />
           </button>
         </div>
 
         <div className="absolute right-4 top-4 flex flex-wrap gap-2 z-10">
           <span
-            className={`w-max rounded-full px-4 py-2 text-xs font-black shadow-lg ${
-              isSale
+            className={`w-max rounded-full px-4 py-2 text-xs font-black shadow-lg ${isSale
                 ? "bg-[#C89B3C] text-[#101820]"
                 : "bg-[#0E6B58] text-white"
-            }`}
+              }`}
           >
             {isSale
               ? isAr
                 ? "للبيع"
                 : "For Sale"
               : isAr
-              ? "للإيجار"
-              : "For Rent"}
+                ? "للإيجار"
+                : "For Rent"}
           </span>
         </div>
 

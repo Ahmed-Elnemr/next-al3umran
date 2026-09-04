@@ -277,8 +277,8 @@ const Footer = ({
 
               <ContactItem
                 icon={<Mail size={18} />}
-                text={contact?.email || "info@alomran.com"}
-                href={`mailto:${contact?.email || "info@alomran.com"}`}
+                text={contact?.email || "info@al3umran.com"}
+                href={`mailto:${contact?.email || "info@al3umran.com"}`}
               />
 
               <ContactItem

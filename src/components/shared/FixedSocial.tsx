@@ -25,7 +25,7 @@ interface Settings {
 }
 function FixedSocial(params: any) {
   const [res, setRes] = useState<Settings | null>(null);
-  let whatsappLink = "https://wa.me/+966";
+  const whatsappLink = "https://wa.me/+966";
   async function getData() {
     try {
       const res = await fetch("https://era.almasader.net/api/home", {

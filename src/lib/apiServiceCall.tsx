@@ -1,6 +1,6 @@
-import axios from "axios";
 
-const resolveRequestLocale = (headers?: Record<string, any>): string => {
+
+const resolveRequestLocale = (headers?: Record<string, unknown>): string => {
   const headerLocale =
     headers?.["X-Locale"] || headers?.["x-locale"] || headers?.["Accept-Language"];
   if (headerLocale) {
@@ -15,8 +15,13 @@ const resolveRequestLocale = (headers?: Record<string, any>): string => {
   return "ar";
 };
 
-export const apiErrorMessage = (error: any, fallback = ""): string => {
-  const body = error?.data ?? error;
+interface ApiErrorBody {
+  message?: string;
+  errors?: Record<string, unknown>;
+}
+
+export const apiErrorMessage = (error: unknown, fallback = ""): string => {
+  const body = ((error as Record<string, unknown>)?.data ?? error) as ApiErrorBody;
   if (typeof body?.message === "string" && body.message.trim()) {
     return body.message;
   }
@@ -24,8 +29,9 @@ export const apiErrorMessage = (error: any, fallback = ""): string => {
   return typeof first === "string" && first.trim() ? first : fallback;
 };
 
-export const apiFieldErrors = (error: any): Record<string, string> => {
-  const errors = error?.data?.errors ?? {};
+export const apiFieldErrors = (error: unknown): Record<string, string> => {
+  const body = (error as Record<string, unknown>)?.data as ApiErrorBody;
+  const errors = body?.errors ?? {};
   const mapped: Record<string, string> = {};
   Object.entries(errors).forEach(([key, value]) => {
     mapped[key] = Array.isArray(value) ? String(value[0] ?? "") : String(value ?? "");
@@ -56,8 +62,8 @@ const apiServiceCall = async ({
 }: {
   url: string;
   method?: string;
-  body?: any;
-  headers?: any;
+  body?: unknown;
+  headers?: Record<string, string>;
 }) => {
   const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
   const locale = resolveRequestLocale(headers);
@@ -80,21 +86,46 @@ const apiServiceCall = async ({
   }
 
   try {
-    const response = await axios({
+    let finalBody: BodyInit | undefined;
+    if (body !== undefined && body !== null) {
+      if (isFormData) {
+        finalBody = body as FormData;
+      } else {
+        finalBody = JSON.stringify(body);
+      }
+    }
+
+    const response = await fetch(fullUrl, {
       method: method?.toUpperCase() || "GET",
-      url: fullUrl,
-      data: body,
+      body: finalBody,
       headers: requestHeaders,
     });
-    return response?.data;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
+
+    let data;
+    try {
+      const text = await response.text();
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      data = null;
+    }
+
+    if (!response.ok) {
       throw {
-        data: error.response?.data,
-        status: error.response?.status || 500,
-        message: error.message,
+        data,
+        status: response.status,
+        message: `HTTP Error ${response.status}: ${response.statusText}`,
       };
     }
+
+    return data;
+  } catch (error: unknown) {
+    const err = error as Record<string, unknown>;
+    // If it's already formatted by our throw above
+    if (err.status && err.message) {
+      throw err;
+    }
+    
+    // Otherwise it's a generic network error
     throw { data: null, status: 500, message: String(error) };
   }
 };

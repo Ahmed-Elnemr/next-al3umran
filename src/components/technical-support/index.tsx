@@ -117,7 +117,7 @@ const TechnicalSupport = ({
     : fallbackFaqs;
 
   const phoneDisplay = contact.contact_numbers?.[0] || contact.whatsapp_number || "+971 52 731 5488";
-  const emailDisplay = contact.email || "info@alomran.com";
+  const emailDisplay = contact.email || "info@al3umran.com";
   const addressDisplay = isAr
     ? contact.address_ar || contact.address || "الأمارات - عجمان"
     : contact.address_en || contact.address || "Ajman, UAE";

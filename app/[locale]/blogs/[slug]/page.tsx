@@ -1,3 +1,4 @@
+import { Metadata, ResolvingMetadata } from "next";
 import { getSingleBlogPost } from "../../../../src/lib/serverActions";
 import Image from "next/image";
 import CommentForm from "./CommentForm";
@@ -7,6 +8,53 @@ interface PageProps {
     locale: string;
     slug: string;
   }>;
+}
+
+export async function generateMetadata(
+  { params }: PageProps,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const { locale, slug } = await params;
+  const isAr = locale === "ar";
+  
+  let blog = null;
+  try {
+    const res = await getSingleBlogPost(locale, slug);
+    blog = res?.data;
+  } catch (err) {}
+
+  if (!blog) {
+    return {
+      title: isAr ? "مقال غير موجود | العمران" : "Blog Not Found | Al Omran",
+    };
+  }
+
+  const title = blog.name || "Al Omran Blog";
+  
+  // Clean HTML tags from content for description
+  const cleanDescription = (blog.content || "").replace(/<[^>]*>?/gm, '');
+  const description = cleanDescription.substring(0, 160) || title;
+  
+  const image = blog.main_image || "/og-image.jpg";
+
+  const seoTitle = `${title} | ${isAr ? "مدونة العمران" : "Al Omran Blog"}`;
+
+  return {
+    title: seoTitle,
+    description: description,
+    openGraph: {
+      title: seoTitle,
+      description: description,
+      images: [{ url: image }],
+      type: "article",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: seoTitle,
+      description: description,
+      images: [image],
+    },
+  };
 }
 
 export default async function BlogDetailsPage({ params }: PageProps) {

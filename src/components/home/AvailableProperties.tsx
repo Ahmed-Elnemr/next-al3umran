@@ -107,15 +107,18 @@ const AvailableProperties = ({ items = [] }: { items?: any[] }) => {
             }}
             className="!overflow-hidden !pb-2"
           >
-            {properties.map((property) => (
-              <SwiperSlide key={property.id} className="!h-auto">
-                <PropertyCard
-                  property={property}
-                  isAr={isAr}
-                  locale={locale}
-                />
-              </SwiperSlide>
-            ))}
+            {properties.map((property, index) => {
+              if (!property) return null;
+              return (
+                <SwiperSlide key={String(property.id) || index} className="!h-auto">
+                  <PropertyCard
+                    property={property}
+                    isAr={isAr}
+                    locale={locale}
+                  />
+                </SwiperSlide>
+              );
+            })}
           </Swiper>
         </div>
       </div>

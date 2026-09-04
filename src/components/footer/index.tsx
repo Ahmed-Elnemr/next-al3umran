@@ -122,8 +122,8 @@ const Footer: React.FC<Props> = ({ settings, locale, token }) => {
             )}
 
             <p className="text-xs md:text-sm text-gray-600 leading-relaxed">
-              منصة متخصصة في خدمات السيارات المتنقلة، نوفر غسيل وتلميع وتعقيم
-              احترافي أينما كنت لنجعل سيارتك نظيفة ولامعة كأنها جديدة.
+              منصة متخصصة في الخدمات العقارية، نوفر أفضل العروض لبيع وتأجير العقارات
+              بسهولة وأمان لنجعل تجربة البحث عن عقارك مثالية.
             </p>
 
             {/* <p className="text-xs md:text-sm text-gray-400">

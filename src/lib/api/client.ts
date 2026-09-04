@@ -1,9 +1,9 @@
 import apiServiceCall from "../apiServiceCall";
 
-export async function fetchClient<T = any>(
+export async function fetchClient<T = unknown>(
   path: string,
   locale: string,
-  options: { method?: string; body?: any; token?: string } = {}
+  options: { method?: string; body?: unknown; token?: string } = {}
 ): Promise<T> {
   const headers: Record<string, string> = {
     "Accept-Language": locale,
@@ -107,10 +107,10 @@ export const changePhone = (locale: string, token: string, body: Record<string, 
 export const deleteProfile = (locale: string, token: string) =>
   fetchClient("client/profile", locale, { method: "DELETE", token });
 
-export function envelopeList(res: any): any[] {
-  const data = res?.data;
+export function envelopeList(res: unknown): unknown[] {
+  const data = (res as Record<string, unknown>)?.data;
   if (Array.isArray(data)) return data;
-  if (Array.isArray(data?.data)) return data.data;
+  if (Array.isArray((data as Record<string, unknown>)?.data)) return (data as Record<string, unknown>).data as unknown[];
   return [];
 }
 
@@ -147,7 +147,7 @@ export function formatMoney(price: number, currency: string, locale: string, cur
   return isAr ? `${amount} ${label}` : `${label} ${amount}`;
 }
 
-export function mapApiProperty(item: any, locale = "ar") {
+export function mapApiProperty(item: Record<string, unknown> | null, locale = "ar") {
   if (!item) return null;
   const listingType = item.listing_type === "rent" ? "rent" : "sale";
   const categorySlug = item.category?.slug || item.category_slug || "apartment";
@@ -206,7 +206,13 @@ export function mapApiProperty(item: any, locale = "ar") {
     descriptionAr: item.description || "",
     descriptionEn: item.description || "",
     category: item.category?.slug || item.category,
-    categoryId: item.category?.id || item.category_id,
-    features: (item.features || []).map((feature: any) => (typeof feature === "object" ? feature.value || feature.name || feature.title : String(feature))),
+    categoryId: (item.category as Record<string, unknown>)?.id || item.category_id,
+    features: (Array.isArray(item.features) ? item.features : []).map((feature: unknown) => {
+      if (typeof feature === "object" && feature !== null) {
+        const f = feature as Record<string, unknown>;
+        return String(f.value || f.name || f.title || "");
+      }
+      return String(feature);
+    }),
   };
 }

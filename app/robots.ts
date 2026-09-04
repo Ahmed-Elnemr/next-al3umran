@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/api/', '/_next/', '/dashboard/'],
     },
-    sitemap: 'https://alomran.com/sitemap.xml',
+    sitemap: 'https://al3umran.com/sitemap.xml',
   };
 }
